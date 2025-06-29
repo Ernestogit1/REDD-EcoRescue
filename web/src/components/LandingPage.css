@@ -1,0 +1,1113 @@
+/* Minecraft-style Font Import */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.landing-page {
+  font-family: 'Press Start 2P', monospace;
+  line-height: 1.6;
+  color: #ffffff;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #2c5530; /* Minecraft grass green */
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Minecraft-style Block Background */
+.pixel-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    linear-gradient(0deg, #2c5530 0%, #3d6b3f 25%, #4a7c4e 50%, #5a8d5e 75%, #6b9e6e 100%),
+    repeating-linear-gradient(90deg, transparent, transparent 16px, rgba(0,0,0,0.1) 16px, rgba(0,0,0,0.1) 17px),
+    repeating-linear-gradient(0deg, transparent, transparent 16px, rgba(0,0,0,0.1) 16px, rgba(0,0,0,0.1) 17px);
+  z-index: -1;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Minecraft Text Effect */
+.pixel-text {
+  text-shadow: 
+    2px 2px 0px #000000,
+    4px 4px 0px #333333;
+  letter-spacing: 2px;
+  line-height: 1.4;
+  font-size: inherit;
+}
+
+/* Navigation Styles - Minecraft Toolbar Style */
+.navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: linear-gradient(180deg, #8B4513 0%, #654321 100%); /* Minecraft wood */
+  border-bottom: 4px solid #3d2914;
+  z-index: 1000;
+  padding: 1rem 0;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.pixel-logo {
+  font-size: 2rem;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+.nav-menu {
+  display: flex;
+  list-style: none;
+  gap: 0.5rem;
+}
+
+.nav-item {
+  position: relative;
+}
+
+/* Minecraft Button Style */
+.pixel-nav-btn {
+  background: linear-gradient(180deg, #7FB069 0%, #6A994E 50%, #588157 100%); /* Minecraft green button */
+  border: 3px solid #3A5A40;
+  border-top-color: #A7C957;
+  border-left-color: #A7C957;
+  color: #ffffff;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.6rem;
+  padding: 0.8rem 1.2rem;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.pixel-nav-btn:hover {
+  background: linear-gradient(180deg, #A7C957 0%, #7FB069 50%, #6A994E 100%);
+  transform: translateY(1px);
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.pixel-nav-btn:active,
+.nav-item.active .pixel-nav-btn {
+  background: linear-gradient(180deg, #6A994E 0%, #588157 50%, #3A5A40 100%);
+  border-top-color: #3A5A40;
+  border-left-color: #3A5A40;
+  border-bottom-color: #A7C957;
+  border-right-color: #A7C957;
+  transform: translateY(2px);
+  box-shadow: inset 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Hero Section - Minecraft Sky */
+.hero-section {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #87CEEB 0%, #98D8E8 30%, #B0E0E6 60%, #2c5530 100%); /* Sky to grass */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 20px 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    repeating-linear-gradient(90deg, transparent, transparent 32px, rgba(255,255,255,0.05) 32px, rgba(255,255,255,0.05) 33px),
+    repeating-linear-gradient(0deg, transparent, transparent 32px, rgba(255,255,255,0.05) 32px, rgba(255,255,255,0.05) 33px);
+  pointer-events: none;
+}
+
+.hero-content {
+  flex: 1;
+  max-width: 600px;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.title-container {
+  margin-bottom: 2rem;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  color: #FFD700; /* Minecraft gold */
+  margin-bottom: 0.5rem;
+  text-shadow: 
+    3px 3px 0px #B8860B,
+    6px 6px 0px #000000;
+}
+
+.hero-subtitle {
+  font-size: 2rem;
+  color: #32CD32; /* Minecraft lime green */
+  margin-bottom: 1rem;
+  text-shadow: 
+    2px 2px 0px #228B22,
+    4px 4px 0px #000000;
+}
+
+.subtitle-text {
+  font-size: 0.8rem;
+  color: #FFFFFF;
+  font-family: 'Press Start 2P', monospace;
+  text-shadow: 2px 2px 0px #000000;
+  margin-bottom: 1rem;
+}
+
+.hero-description {
+  margin-bottom: 2rem;
+  background: rgba(139, 69, 19, 0.8); /* Wood background */
+  border: 3px solid #8B4513;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+}
+
+.hero-description p {
+  font-size: 0.7rem;
+  color: #FFFFFF;
+  margin-bottom: 0.8rem;
+  text-align: left;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+/* Minecraft-style Buttons */
+.pixel-button {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.8rem;
+  padding: 1rem 2rem;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 3px solid;
+  box-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+}
+
+.pixel-button.primary {
+  background: linear-gradient(180deg, #DC143C 0%, #B22222 50%, #8B0000 100%); /* Minecraft red */
+  border-color: #8B0000;
+  border-top-color: #FF6347;
+  border-left-color: #FF6347;
+  color: #FFFFFF;
+}
+
+.pixel-button.primary:hover {
+  background: linear-gradient(180deg, #FF6347 0%, #DC143C 50%, #B22222 100%);
+  transform: translateY(1px);
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.pixel-button.primary:active {
+  background: linear-gradient(180deg, #B22222 0%, #8B0000 50%, #696969 100%);
+  transform: translateY(2px);
+  box-shadow: inset 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.pixel-button.secondary {
+  background: linear-gradient(180deg, #4169E1 0%, #0000CD 50%, #00008B 100%); /* Minecraft blue */
+  border-color: #00008B;
+  border-top-color: #6495ED;
+  border-left-color: #6495ED;
+  color: #FFFFFF;
+}
+
+.pixel-button.secondary:hover {
+  background: linear-gradient(180deg, #6495ED 0%, #4169E1 50%, #0000CD 100%);
+  transform: translateY(1px);
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.hero-visual {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.forest-scene {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  background: linear-gradient(180deg, #87CEEB 0%, #2c5530 70%);
+  border: 4px solid #8B4513;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+}
+
+.tree, .animal, .player {
+  position: absolute;
+  font-size: 2rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+.tree-1 { top: 60%; left: 10%; animation-delay: 0s; }
+.tree-2 { top: 50%; left: 40%; animation-delay: 0.5s; }
+.tree-3 { top: 65%; right: 10%; animation-delay: 1s; }
+.animal-1 { top: 70%; left: 60%; animation-delay: 1.5s; }
+.animal-2 { top: 75%; right: 30%; animation-delay: 2s; }
+.player { top: 80%; left: 30%; animation-delay: 0.3s; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Section Styles - Minecraft Blocks */
+section {
+  padding: 80px 0;
+  position: relative;
+  border-bottom: 4px solid rgba(0,0,0,0.2);
+}
+
+.section-title {
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 3rem;
+  color: #FFD700; /* Minecraft gold */
+  text-shadow: 
+    2px 2px 0px #B8860B,
+    4px 4px 0px #000000;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(90deg, #FFD700 0%, #B8860B 100%);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.section-subtitle {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #FFFFFF;
+  margin-bottom: 3rem;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+/* About Section - Stone Block Style */
+.about-section {
+  background: linear-gradient(45deg, #808080 0%, #A9A9A9 25%, #C0C0C0 50%, #A9A9A9 75%, #808080 100%);
+  position: relative;
+}
+
+.about-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    repeating-linear-gradient(90deg, transparent, transparent 32px, rgba(0,0,0,0.1) 32px, rgba(0,0,0,0.1) 33px),
+    repeating-linear-gradient(0deg, transparent, transparent 32px, rgba(0,0,0,0.1) 32px, rgba(0,0,0,0.1) 33px);
+  pointer-events: none;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.about-card {
+  background: linear-gradient(180deg, #8B4513 0%, #654321 50%, #3d2914 100%); /* Wood block */
+  border: 4px solid #3d2914;
+  border-top-color: #CD853F;
+  border-left-color: #CD853F;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+  transition: all 0.2s ease;
+}
+
+.about-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 6px 6px 12px rgba(0,0,0,0.7);
+}
+
+.card-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.about-card h3 {
+  font-size: 1rem;
+  color: #FFD700;
+  margin-bottom: 1rem;
+  text-shadow: 
+    1px 1px 0px #B8860B,
+    2px 2px 0px #000000;
+}
+
+.about-card p {
+  color: #FFFFFF;
+  line-height: 1.6;
+  font-size: 0.6rem;
+  text-shadow: 1px 1px 0px #000000;
+  font-family: 'Courier New', monospace;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pixel-button {
+  background: #2c3e50;
+  border: 4px solid #34495e;
+  color: #ecf0f1;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.8rem;
+  padding: 1rem 2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pixel-button:hover {
+  background: #34495e;
+  border-color: #4ade80;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.pixel-button.primary {
+  background: #4ade80;
+  border-color: #22c55e;
+  color: #1a4d2e;
+}
+
+.pixel-button.primary:hover {
+  background: #22c55e;
+  border-color: #16a34a;
+}
+
+.pixel-button.secondary {
+  background: transparent;
+  border-color: #4ade80;
+  color: #4ade80;
+}
+
+.pixel-button.secondary:hover {
+  background: #4ade80;
+  color: #1a4d2e;
+}
+
+.pixel-button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pixel-button.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.hero-visual {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.forest-scene {
+  position: relative;
+  width: 400px;
+  height: 300px;
+  background: rgba(26, 77, 46, 0.3);
+  border: 4px solid #27ae60;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tree {
+  position: absolute;
+  font-size: 2.5rem;
+  animation: sway 3s ease-in-out infinite;
+}
+
+.tree-1 { left: 20%; animation-delay: 0s; }
+.tree-2 { left: 40%; animation-delay: 1s; }
+.tree-3 { left: 60%; animation-delay: 2s; }
+
+.animal {
+  position: absolute;
+  font-size: 2rem;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.animal-1 { 
+  top: 30%; 
+  right: 20%; 
+  animation-delay: 0.5s; 
+}
+
+.animal-2 { 
+  bottom: 30%; 
+  right: 40%; 
+  animation-delay: 1.5s; 
+}
+
+.player {
+  position: absolute;
+  font-size: 2rem;
+  bottom: 20%;
+  left: 30%;
+  animation: walk 2s ease-in-out infinite;
+}
+
+/* Section Styles */
+section {
+  padding: 4rem 0;
+  position: relative;
+  scroll-margin-top: 100px; /* Account for fixed navbar */
+}
+
+.section-title {
+  text-align: center;
+  font-size: 2rem;
+  color: #4ade80;
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background: #4ade80;
+}
+
+.section-subtitle {
+  text-align: center;
+  font-size: 1rem;
+  color: #bdc3c7;
+  margin-bottom: 3rem;
+  font-family: 'Courier New', monospace;
+}
+
+/* About Section */
+.about-section {
+  background: rgba(0, 0, 0, 0.8);
+  border-top: 4px solid #4ade80;
+  border-bottom: 4px solid #4ade80;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.about-card {
+  background: rgba(26, 77, 46, 0.3);
+  border: 3px solid #27ae60;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.about-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  border-color: #4ade80;
+}
+
+.card-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.about-card h3 {
+  font-size: 1rem;
+  color: #4ade80;
+  margin-bottom: 1rem;
+}
+
+.about-card p {
+  font-size: 0.8rem;
+  color: #bdc3c7;
+  font-family: 'Courier New', monospace;
+  line-height: 1.5;
+}
+
+/* Project Section - Dirt Block Style */
+.project-section {
+  background: linear-gradient(45deg, #8B4513 0%, #A0522D 25%, #CD853F 50%, #A0522D 75%, #8B4513 100%);
+  position: relative;
+}
+
+.project-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    repeating-linear-gradient(90deg, transparent, transparent 24px, rgba(0,0,0,0.15) 24px, rgba(0,0,0,0.15) 25px),
+    repeating-linear-gradient(0deg, transparent, transparent 24px, rgba(0,0,0,0.15) 24px, rgba(0,0,0,0.15) 25px);
+  pointer-events: none;
+}
+
+.project-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 3rem;
+  align-items: start;
+  position: relative;
+  z-index: 1;
+}
+
+.project-text h3 {
+  color: #FFD700;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  text-shadow: 
+    1px 1px 0px #B8860B,
+    2px 2px 0px #000000;
+}
+
+.project-text p {
+  color: #FFFFFF;
+  margin-bottom: 1.5rem;
+  line-height: 1.7;
+  font-size: 0.7rem;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+.mission-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.mission-item {
+  background: linear-gradient(180deg, #32CD32 0%, #228B22 50%, #006400 100%);
+  border: 2px solid #006400;
+  border-top-color: #7CFC00;
+  border-left-color: #7CFC00;
+  padding: 0.8rem;
+  color: #FFFFFF;
+  font-size: 0.6rem;
+  text-shadow: 1px 1px 0px #000000;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.project-stats {
+  background: linear-gradient(180deg, #2F4F4F 0%, #1C1C1C 50%, #000000 100%);
+  border: 4px solid #000000;
+  border-top-color: #696969;
+  border-left-color: #696969;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: rgba(255,255,255,0.1);
+  border: 2px solid rgba(255,255,255,0.2);
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #FFD700;
+  text-shadow: 
+    2px 2px 0px #B8860B,
+    4px 4px 0px #000000;
+}
+
+.stat-label {
+  color: #FFFFFF;
+  font-size: 0.6rem;
+  margin-top: 0.5rem;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+/* Games Section - Grass Block Style */
+.games-section {
+  background: linear-gradient(180deg, #7FB069 0%, #6A994E 30%, #588157 70%, #3A5A40 100%);
+  position: relative;
+  width: 100vw;
+  margin: 0;
+}
+
+.games-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    repeating-linear-gradient(90deg, transparent, transparent 16px, rgba(0,0,0,0.1) 16px, rgba(0,0,0,0.1) 17px),
+    repeating-linear-gradient(0deg, transparent, transparent 16px, rgba(0,0,0,0.1) 16px, rgba(0,0,0,0.1) 17px);
+  pointer-events: none;
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.game-card {
+  background: linear-gradient(180deg, #8B4513 0%, #654321 50%, #3d2914 100%);
+  border: 4px solid #3d2914;
+  border-top-color: #CD853F;
+  border-left-color: #CD853F;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+  transition: all 0.2s ease;
+}
+
+.game-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 6px 6px 12px rgba(0,0,0,0.7);
+}
+
+.game-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.game-card h3 {
+  color: #FFD700;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  text-shadow: 
+    1px 1px 0px #B8860B,
+    2px 2px 0px #000000;
+}
+
+.game-card p {
+  color: #FFFFFF;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  font-size: 0.6rem;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+.game-btn {
+  background: linear-gradient(180deg, #32CD32 0%, #228B22 50%, #006400 100%);
+  border: 3px solid #006400;
+  border-top-color: #7CFC00;
+  border-left-color: #7CFC00;
+  color: #FFFFFF;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.6rem;
+  padding: 0.8rem 1.2rem;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  text-transform: uppercase;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.game-btn:hover {
+  background: linear-gradient(180deg, #7CFC00 0%, #32CD32 50%, #228B22 100%);
+  transform: translateY(1px);
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.game-btn.disabled {
+  background: linear-gradient(180deg, #696969 0%, #2F2F2F 50%, #000000 100%);
+  border-color: #000000;
+  cursor: not-allowed;
+}
+
+.game-btn.disabled:hover {
+  transform: none;
+  background: linear-gradient(180deg, #696969 0%, #2F2F2F 50%, #000000 100%);
+}
+
+/* Contact Section - Stone Brick Style */
+.contact-section {
+  background: linear-gradient(45deg, #708090 0%, #778899 25%, #B0C4DE 50%, #778899 75%, #708090 100%);
+  position: relative;
+}
+
+.contact-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    repeating-linear-gradient(90deg, transparent, transparent 32px, rgba(0,0,0,0.2) 32px, rgba(0,0,0,0.2) 34px),
+    repeating-linear-gradient(0deg, transparent, transparent 32px, rgba(0,0,0,0.2) 32px, rgba(0,0,0,0.2) 34px);
+  pointer-events: none;
+}
+
+.contact-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  position: relative;
+  z-index: 1;
+}
+
+.contact-info h3,
+.contact-form h3 {
+  color: #FFD700;
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+  text-shadow: 
+    1px 1px 0px #B8860B,
+    2px 2px 0px #000000;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  color: #FFFFFF;
+  font-size: 0.7rem;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+.contact-icon {
+  font-size: 1.2rem;
+}
+
+.contact-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  position: relative;
+}
+
+.pixel-input,
+.pixel-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 3px solid #3d2914;
+  border-top-color: #000000;
+  border-left-color: #000000;
+  border-bottom-color: #CD853F;
+  border-right-color: #CD853F;
+  background: linear-gradient(180deg, #F5F5DC 0%, #FFFACD 100%);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.6rem;
+  color: #000000;
+  box-shadow: inset 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.pixel-input:focus,
+.pixel-textarea:focus {
+  outline: none;
+  background: linear-gradient(180deg, #FFFACD 0%, #FFFFE0 100%);
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.pixel-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Social Links */
+.social-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.social-link {
+  background: linear-gradient(180deg, #4169E1 0%, #0000CD 50%, #00008B 100%);
+  border: 2px solid #00008B;
+  border-top-color: #6495ED;
+  border-left-color: #6495ED;
+  color: #FFFFFF;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.social-link:hover {
+  background: linear-gradient(180deg, #6495ED 0%, #4169E1 50%, #0000CD 100%);
+  transform: translateY(1px);
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Footer - Bedrock Style */
+.footer {
+  background: linear-gradient(180deg, #2F2F2F 0%, #1C1C1C 50%, #000000 100%);
+  color: #FFFFFF;
+  padding: 3rem 0 1rem;
+  position: relative;
+  border-top: 4px solid #000000;
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    repeating-linear-gradient(90deg, transparent, transparent 8px, rgba(255,255,255,0.05) 8px, rgba(255,255,255,0.05) 9px),
+    repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(255,255,255,0.05) 8px, rgba(255,255,255,0.05) 9px);
+  pointer-events: none;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.footer-section h4 {
+  color: #FFD700;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  text-shadow: 
+    1px 1px 0px #B8860B,
+    2px 2px 0px #000000;
+}
+
+.footer-section p {
+  color: #CCCCCC;
+  line-height: 1.6;
+  font-size: 0.6rem;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+.footer-section ul {
+  list-style: none;
+}
+
+.footer-section ul li {
+  margin-bottom: 0.5rem;
+}
+
+.footer-link {
+  background: none;
+  border: none;
+  color: #CCCCCC;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.6rem;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+.footer-link:hover {
+  color: #FFD700;
+}
+
+.footer-bottom {
+  border-top: 2px solid #333333;
+  padding-top: 1rem;
+  text-align: center;
+  color: #CCCCCC;
+  font-size: 0.6rem;
+  position: relative;
+  z-index: 1;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+/* Animations */
+@keyframes glow {
+  from { text-shadow: 2px 2px 0px #000, 4px 4px 0px #000, 6px 6px 0px #000; }
+  to { text-shadow: 2px 2px 0px #000, 4px 4px 0px #000, 6px 6px 0px #000, 0 0 20px #ff6b35; }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(2deg); }
+}
+
+@keyframes walk {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(10px); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .nav-menu {
+    display: none; /* You might want to add a mobile menu later */
+  }
+  
+  .hero-section {
+    flex-direction: column;
+    text-align: center;
+    padding: 120px 20px 60px;
+  }
+  
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.5rem;
+  }
+  
+  .hero-buttons {
+    justify-content: center;
+  }
+  
+  .project-content,
+  .contact-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .games-grid,
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .forest-scene {
+    width: 250px;
+    height: 250px;
+  }
+  
+  .pixel-button {
+    font-size: 0.7rem;
+    padding: 0.8rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.2rem;
+  }
+  
+  section {
+    padding: 50px 0;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+  }
+  
+  .pixel-button {
+    font-size: 0.6rem;
+    padding: 0.7rem 1.2rem;
+  }
+  
+  .forest-scene {
+    width: 200px;
+    height: 200px;
+  }
+}

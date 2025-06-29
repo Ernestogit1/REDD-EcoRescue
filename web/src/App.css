@@ -1,42 +1,429 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+/* 8-bit Font Import */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Press Start 2P', monospace;
+  background: linear-gradient(135deg, #1a4d2e 0%, #2d5a3d 50%, #1a4d2e 100%);
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+}
+
+.app {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+}
+
+.game-container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+/* Pixel Text Effect */
+.pixel-text {
+  text-shadow: 
+    2px 2px 0px #000,
+    4px 4px 0px #000,
+    6px 6px 0px #000;
+  letter-spacing: 2px;
+  line-height: 1.2;
+}
+
+/* Title Screen */
+.title-screen {
   text-align: center;
+  animation: fadeIn 1s ease-in;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.game-title h1 {
+  font-size: 4rem;
+  color: #ff6b35;
+  margin-bottom: 0.5rem;
+  animation: glow 2s ease-in-out infinite alternate;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.game-title h2 {
+  font-size: 2.5rem;
+  color: #4ecdc4;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: #ffe66d;
+  margin-bottom: 3rem;
+  font-family: 'Courier New', monospace;
+}
+
+/* Menu Buttons */
+.menu-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.pixel-button {
+  background: #2c3e50;
+  border: 4px solid #34495e;
+  color: #ecf0f1;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1rem;
+  padding: 1rem 2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pixel-button:hover:not(:disabled) {
+  background: #34495e;
+  border-color: #3498db;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.pixel-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.pixel-button:disabled {
+  background: #34495e;
+  color: #7f8c8d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.pixel-button.small {
+  font-size: 0.8rem;
+  padding: 0.5rem 1rem;
+}
+
+/* Wildlife Preview */
+.wildlife-preview {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.animal-sprite {
+  font-size: 3rem;
+  animation: bounce 2s infinite;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.animal-1 { animation-delay: 0s; }
+.animal-2 { animation-delay: 0.5s; }
+.animal-3 { animation-delay: 1s; }
+.animal-4 { animation-delay: 1.5s; }
+
+/* Instructions */
+.instructions {
+  font-size: 0.8rem;
+  color: #bdc3c7;
+  line-height: 1.5;
+}
+
+.instructions p {
+  margin-bottom: 0.5rem;
+}
+
+.audio-notice {
+  background: rgba(255, 193, 7, 0.2);
+  border: 2px solid #ffc107;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+  font-size: 0.7rem;
+  color: #ffc107;
+}
+
+.audio-notice p {
+  margin-bottom: 0.3rem;
+}
+
+/* Settings Screen */
+.settings-screen {
+  text-align: center;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 2rem;
+  border: 4px solid #3498db;
+  border-radius: 8px;
+  max-width: 500px;
+}
+
+.settings-screen h2 {
+  margin-bottom: 2rem;
+  color: #3498db;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.setting-item label {
+  font-size: 0.8rem;
+  color: #ecf0f1;
+}
+
+.volume-slider {
+  flex: 1;
+  height: 8px;
+  background: #34495e;
+  border: 2px solid #2c3e50;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.volume-slider:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #3498db;
+  border: 2px solid #2980b9;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.volume-slider:disabled::-webkit-slider-thumb {
+  background: #7f8c8d;
+  border-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+.setting-item span {
+  font-size: 0.8rem;
+  color: #3498db;
+  min-width: 40px;
+}
+
+/* Game Screen */
+.game-screen {
+  text-align: center;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 2rem;
+  border: 4px solid #e74c3c;
+  border-radius: 8px;
+  max-width: 600px;
+}
+
+.game-screen h2 {
+  margin-bottom: 2rem;
+  color: #e74c3c;
+}
+
+.game-preview {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: rgba(26, 77, 46, 0.3);
+  border: 2px solid #27ae60;
+  border-radius: 8px;
+}
+
+.forest-scene {
+  position: relative;
+  height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tree {
+  position: absolute;
+  font-size: 2rem;
+  animation: sway 3s ease-in-out infinite;
+}
+
+.tree-1 { left: 20%; animation-delay: 0s; }
+.tree-2 { left: 40%; animation-delay: 1s; }
+.tree-3 { left: 60%; animation-delay: 2s; }
+
+.player {
+  position: absolute;
+  font-size: 2rem;
+  animation: walk 2s ease-in-out infinite;
+}
+
+.animal {
+  position: absolute;
+  font-size: 2rem;
+  right: 20%;
+  animation: bounce 1.5s ease-in-out infinite;
+}
+
+.game-features {
+  margin: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.feature {
+  background: rgba(39, 174, 96, 0.2);
+  border: 2px solid #27ae60;
+  padding: 0.8rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #2ecc71;
+}
+
+/* Audio Controls */
+.audio-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.audio-toggle {
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid #3498db;
+  color: #ecf0f1;
+  font-size: 1.5rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.audio-toggle:hover:not(:disabled) {
+  background: rgba(52, 152, 219, 0.3);
+  transform: scale(1.1);
+}
+
+.audio-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #7f8c8d;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow {
+  from { text-shadow: 2px 2px 0px #000, 4px 4px 0px #000, 6px 6px 0px #000; }
+  to { text-shadow: 2px 2px 0px #000, 4px 4px 0px #000, 6px 6px 0px #000, 0 0 20px #ff6b35; }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(2deg); }
+}
+
+@keyframes walk {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(10px); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .game-title h1 {
+    font-size: 2.5rem;
   }
-  to {
-    transform: rotate(360deg);
+  
+  .game-title h2 {
+    font-size: 1.8rem;
+  }
+  
+  .subtitle {
+    font-size: 0.8rem;
+  }
+  
+  .pixel-button {
+    font-size: 0.8rem;
+    padding: 0.8rem 1.5rem;
+  }
+  
+  .wildlife-preview {
+    gap: 1rem;
+  }
+  
+  .animal-sprite {
+    font-size: 2rem;
+  }
+  
+  .instructions {
+    font-size: 0.7rem;
+  }
+  
+  .game-features {
+    gap: 0.8rem;
+  }
+  
+  .feature {
+    font-size: 0.7rem;
+    padding: 0.6rem;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+@media (max-width: 480px) {
+  .game-title h1 {
+    font-size: 2rem;
   }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  
+  .game-title h2 {
+    font-size: 1.4rem;
+  }
+  
+  .menu-container {
+    gap: 0.8rem;
+  }
+  
+  .pixel-button {
+    font-size: 0.7rem;
+    padding: 0.6rem 1.2rem;
+  }
+  
+  .wildlife-preview {
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+  
+  .animal-sprite {
+    font-size: 1.5rem;
+  }
+  
+  .game-features {
+    gap: 0.6rem;
+  }
+  
+  .feature {
+    font-size: 0.6rem;
+    padding: 0.5rem;
+  }
 }

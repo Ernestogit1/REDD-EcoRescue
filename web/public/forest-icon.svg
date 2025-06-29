@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="forestGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4ade80;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a4d2e;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Tree trunks -->
+  <rect x="20" y="70" width="8" height="20" fill="#8b4513"/>
+  <rect x="45" y="65" width="10" height="25" fill="#8b4513"/>
+  <rect x="72" y="68" width="8" height="22" fill="#8b4513"/>
+  
+  <!-- Tree foliage -->
+  <circle cx="24" cy="65" r="15" fill="url(#forestGradient)"/>
+  <circle cx="50" cy="55" r="20" fill="url(#forestGradient)"/>
+  <circle cx="76" cy="62" r="16" fill="url(#forestGradient)"/>
+  
+  <!-- Additional foliage for depth -->
+  <circle cx="18" cy="55" r="12" fill="#22c55e" opacity="0.8"/>
+  <circle cx="45" cy="45" r="15" fill="#22c55e" opacity="0.8"/>
+  <circle cx="82" cy="55" r="13" fill="#22c55e" opacity="0.8"/>
+  
+  <!-- Ground -->
+  <ellipse cx="50" cy="90" rx="45" ry="8" fill="#2d5a3d" opacity="0.6"/>
+</svg>
