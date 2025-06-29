@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Howl } from 'howler'
 import './App.css'
 import LandingPage from './components/LandingPage'
+import CarbonCalculator from './components/CarbonCalculator'
 
 function App() {
   const [isPlaying, setIsPlaying] = useState(false)
@@ -114,6 +115,11 @@ function App() {
     }
   }
 
+  const handleCarbonCalculator = () => {
+    playSound(buttonSound)
+    setCurrentScreen('carbon-calculator')
+  }
+
   const renderTitleScreen = () => (
     <div className="title-screen">
       <div className="game-title">
@@ -125,6 +131,9 @@ function App() {
       <div className="menu-container">
         <button className="pixel-button" onClick={handleStartGame}>
           START GAME
+        </button>
+        <button className="pixel-button" onClick={handleCarbonCalculator}>
+          CARBON CALCULATOR
         </button>
         <button className="pixel-button" onClick={handleSettings}>
           SETTINGS
@@ -221,7 +230,10 @@ function App() {
   return (
     <div className="app">
       {currentScreen === 'landing' && (
-        <LandingPage onEnterApp={handleEnterApp} />
+        <LandingPage 
+          onEnterApp={handleEnterApp} 
+          onCarbonCalculator={handleCarbonCalculator}
+        />
       )}
       
       {currentScreen !== 'landing' && (
@@ -229,6 +241,12 @@ function App() {
           {currentScreen === 'title' && renderTitleScreen()}
           {currentScreen === 'settings' && renderSettingsScreen()}
           {currentScreen === 'game' && renderGameScreen()}
+          {currentScreen === 'carbon-calculator' && (
+            <CarbonCalculator 
+              onBack={() => setCurrentScreen('title')} 
+              playSound={() => playSound(buttonSound)}
+            />
+          )}
         </div>
       )}
       

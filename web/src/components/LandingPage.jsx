@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './LandingPage.css';
 
-const LandingPage = ({ onEnterApp }) => {
+const LandingPage = ({ onEnterApp, onCarbonCalculator }) => {
   const [activeSection, setActiveSection] = useState('home');
   const [showPixelEffect, setShowPixelEffect] = useState(false);
 
@@ -211,7 +211,7 @@ const LandingPage = ({ onEnterApp }) => {
               <div className="game-icon">📊</div>
               <h3 className="pixel-text">Carbon Calculator</h3>
               <p>Learn how forests capture carbon and calculate environmental impact of conservation strategies.</p>
-              <button className="pixel-button game-btn">TRY IT</button>
+              <button className="pixel-button game-btn" onClick={onCarbonCalculator}>TRY IT</button>
             </div>
           </div>
         </div>
