@@ -1,6 +1,6 @@
 import React from 'react';
 
-const GameSection = ({ onCarbonCalculator }) => {
+const GameSection = ({ onCarbonCalculator, onPlayGame }) => {
   return (
     <section id="games" className="games-section">
       <div className="container">
@@ -12,7 +12,7 @@ const GameSection = ({ onCarbonCalculator }) => {
             <div className="game-icon">🌲</div>
             <h3 className="pixel-text">Forest Guardian</h3>
             <p>Protect virtual forests from deforestation threats while learning about sustainable management.</p>
-            <button className="pixel-button game-btn">PLAY NOW</button>
+            <button className="pixel-button game-btn" onClick={onPlayGame}>PLAY NOW</button>
           </div>
           
           <div className="game-card">
