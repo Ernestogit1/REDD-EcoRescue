@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAudio } from '../hooks/useAudio.hook';
-import { useCalculator } from '../hooks/calculator.hook';
+import { useAudio } from '../../hooks/useAudio.hook';
+import { useCalculator } from '../../hooks/calculator.hook';
 import { 
   TransportationSection, 
   EnergySection, 
@@ -9,7 +9,7 @@ import {
   LifestyleSection,
   CalculatorForm,
   ResultsDisplay
-} from '../components/carbon.component';
+} from '../../components/carbon.component';
 
 const CarbonCalculatorScreen = () => {
   const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAudio } from '../hooks/useAudio.hook';
+import { useAudio } from '../../hooks/useAudio.hook';
 
 const SettingsScreen = () => {
   const { volume, isPlaying, audioEnabled, handleVolumeChange, toggleMusic, playSound } = useAudio();

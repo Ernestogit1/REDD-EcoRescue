@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import HeroSection from '../layouts/hero/landing.hero';
-import Navbar from '../layouts/navbar/landing.navbar';
-import AboutSection from '../components/landing/aboutUS.landing';
-import ProjectSection from '../components/landing/projectSection.landing';
-import GameSection from '../components/landing/gameSection.landing';
-import ContactSection from '../components/landing/contactSection.landing';
-import Footer from '../layouts/footer/landing.footer';
-import { useScrollSpy } from '../hooks/scrollspy.hook';
-import '../styles/landing.style.css';
+import HeroSection from '../../layouts/hero/landing.hero';
+import Navbar from '../../layouts/navbar/landing.navbar';
+import AboutSection from '../../components/landing/aboutUS.landing';
+import ProjectSection from '../../components/landing/projectSection.landing';
+import GameSection from '../../components/landing/gameSection.landing';
+import ContactSection from '../../components/landing/contactSection.landing';
+import Footer from '../../layouts/footer/landing.footer';
+import { useScrollSpy } from '../../hooks/scrollspy.hook';
+import '../../styles/landing.style.css';
 
 const SECTION_IDS = ['home', 'about', 'project', 'games', 'contact'];
 

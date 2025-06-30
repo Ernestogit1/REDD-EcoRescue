@@ -6,11 +6,11 @@ import './App.css';
 import { AudioProvider } from './hooks/useAudio.hook';
 
 // Screens
-import LandingPage from './screens/landing.screen';
-import TitleScreen from './screens/title.screen';
-import GameScreen from './screens/game.screen';
-import SettingsScreen from './screens/settings.screen';
-import CarbonCalculator from './screens/carbon.screen';
+import LandingPage from './screens/public/landing.screen';
+import TitleScreen from './screens/public/title.screen';
+import GameScreen from './screens/public/game.screen';
+import SettingsScreen from './screens/public/settings.screen';
+import CarbonCalculator from './screens/public/carbon.screen';
 
 // Layout
 import AppLayout from './layouts/app.layout';
