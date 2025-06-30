@@ -8,7 +8,7 @@ import GameSection from '../../components/landing/gameSection.landing';
 import ContactSection from '../../components/landing/contactSection.landing';
 import Footer from '../../layouts/footer/landing.footer';
 import { useScrollSpy } from '../../hooks/scrollspy.hook';
-import '../../styles/landing.style.css';
+import '../../styles/public/landing.style.css';
 
 const SECTION_IDS = ['home', 'about', 'project', 'games', 'contact'];
 
