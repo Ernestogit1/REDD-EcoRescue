@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Howl } from 'howler'
 import './App.css'
-import LandingPage from './components/LandingPage'
+import LandingPage from './screens/landing.screen'
 import CarbonCalculator from './components/CarbonCalculator'
 
 function App() {
