@@ -9,7 +9,7 @@ import RegisterScreen from './src/screens/RegisterScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useEffect } from 'react';
-
+import 'expo-dev-client';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
