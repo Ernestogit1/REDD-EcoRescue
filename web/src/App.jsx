@@ -1,65 +1,151 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { store } from './store/store';
 import './styles/App.css';
 
 // Providers
 import { AudioProvider } from './hooks/useAudio.hook';
 
-// Screens
+// Components
+import ProtectedRoute from './components/common/protectedRoute.component';
+
+// Public screens
 import LandingPage from './screens/public/landing.screen';
 import TitleScreen from './screens/public/title.screen';
 import GameScreen from './screens/public/game.screen';
 import SettingsScreen from './screens/public/settings.screen';
 import CarbonCalculator from './screens/public/carbon.screen';
+
+// Auth screens
 import LoginScreen from './screens/auth/login.screen'; 
 import RegisterScreen from './screens/auth/register.screen';
+
+// App screens
+import MenuScreen from './screens/app/app.screen';
+import ProfileScreen from './screens/app/profile.screen';
 
 // Layout
 import AppLayout from './layouts/app.layout';
 
 function App() {
   return (
-    <AudioProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={
-            <AppLayout showAudioControls={false}>
-              <LandingPage />
-            </AppLayout>
-          } />
-            <Route path="/login" element={
-            <AppLayout showAudioControls={false}>
-              <LoginScreen />
-            </AppLayout>
-          } />
-             <Route path="/register" element={
-            <AppLayout showAudioControls={false}>
-              <RegisterScreen />
-            </AppLayout>
-          } />
-          <Route path="/menu" element={
-            <AppLayout>
-              <TitleScreen />
-            </AppLayout>
-          } />
-          <Route path="/game" element={
-            <AppLayout>
-              <GameScreen />
-            </AppLayout>
-          } />
-          <Route path="/settings" element={
-            <AppLayout>
-              <SettingsScreen />
-            </AppLayout>
-          } />
-          <Route path="/calculator" element={
-            <AppLayout>
-              <CarbonCalculator />
-            </AppLayout>
-          } />
-        </Routes>
-      </Router>
-    </AudioProvider>
+    <Provider store={store}>
+      <AudioProvider>
+        <Router>
+          <Routes>
+            {/* Landing page - always accessible */}
+            <Route 
+              path="/" 
+              element={
+               <ProtectedRoute isPublic={true} redirectTo="/app">
+                <AppLayout showAudioControls={false}>
+                  <LandingPage />
+                </AppLayout>
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* Auth routes - only accessible when NOT authenticated */}
+            <Route 
+              path="/login" 
+              element={
+                <ProtectedRoute isPublic={true} redirectTo="/app">
+                  <AppLayout showAudioControls={false}>
+                    <LoginScreen />
+                  </AppLayout>
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/register" 
+              element={
+                <ProtectedRoute isPublic={true} redirectTo="/app">
+                  <AppLayout showAudioControls={false}>
+                    <RegisterScreen />
+                  </AppLayout>
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* Public game routes - only accessible when NOT authenticated */}
+            <Route 
+              path="/menu" 
+              element={
+                <ProtectedRoute isPublic={true} redirectTo="/app">
+                  <AppLayout>
+                    <TitleScreen />
+                  </AppLayout>
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/game" 
+              element={
+                <ProtectedRoute isPublic={true} redirectTo="/app">
+                  <AppLayout>
+                    <GameScreen />
+                  </AppLayout>
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/settings" 
+              element={
+                <ProtectedRoute isPublic={true} redirectTo="/app">
+                  <AppLayout>
+                    <SettingsScreen />
+                  </AppLayout>
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/calculator" 
+              element={
+                <ProtectedRoute isPublic={true} redirectTo="/app">
+                  <AppLayout>
+                    <CarbonCalculator />
+                  </AppLayout>
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* Protected app routes - only accessible when authenticated */}
+            <Route 
+              path="/app" 
+              element={
+                <ProtectedRoute>
+                  <AppLayout showAudioControls={false}>
+                    <MenuScreen />
+                  </AppLayout>
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <AppLayout showAudioControls={false}>
+                    <ProfileScreen />
+                  </AppLayout>
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* Catch all route - redirect to appropriate page based on auth status */}
+            {/* <Route 
+              path="*" 
+              element={<Navigate to="/" replace />} 
+            /> */}
+          </Routes>
+        </Router>
+      </AudioProvider>
+    </Provider>
   );
 }
 

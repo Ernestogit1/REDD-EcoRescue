@@ -19,15 +19,13 @@ const UserSchema = new mongoose.Schema(
     password: { 
       type: String, 
       required: true, 
-      default: "firebase-manage" 
     }, 
     avatar: {
        type: String, 
        default: '',
-       required: true
        }, 
     rank:{
-       type: string, 
+       type: String, 
        default: 'Novice'
       },
     rescueStars:{

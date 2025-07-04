@@ -7,8 +7,9 @@ dotenv.config();
 connectDB();
 
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5174;
 
 app.listen(PORT, () => {
   console.log(`Ang server ay tumatakbo sa port ${PORT}!!!!`);
+
 });
