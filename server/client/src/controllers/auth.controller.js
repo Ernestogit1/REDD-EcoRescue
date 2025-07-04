@@ -1,6 +1,6 @@
 const admin = require('../../../config/firebase-admin');
-const User = require('../models/user.model');
-const { generateAuthToken } = require('../utils/cookies.util'); // We'll still use the token generation function
+const User = require('../../../database/models/user.model');
+const { generateAuthToken } = require('../utils/cookies.util'); 
 
 const registerUser = async (req, res) => {
   try {
