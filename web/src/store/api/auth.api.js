@@ -31,7 +31,6 @@ export const registerUser = createAsyncThunk(
         return rejectWithValue(data.message || 'Registration failed');
       }
 
-      // Store token in localStorage
       if (data.token) {
         setToken(data.token);
       }
@@ -62,7 +61,6 @@ export const loginUser = createAsyncThunk(
         return rejectWithValue(data.message || 'Login failed');
       }
 
-      // Store token in localStorage
       if (data.token) {
         setToken(data.token);
       }
@@ -95,12 +93,10 @@ export const logoutUser = createAsyncThunk(
         return rejectWithValue(data.message || 'Logout failed');
       }
 
-      // Remove token from localStorage
       removeToken();
 
       return data;
     } catch (error) {
-      // Remove token even if logout request fails
       removeToken();
       return rejectWithValue(error.message || 'Network error');
     }
@@ -128,7 +124,6 @@ export const getCurrentUser = () => {
   }
 };
 
-// Token utilities
 export const tokenUtils = {
   getToken,
   setToken,

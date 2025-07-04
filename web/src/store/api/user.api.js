@@ -28,7 +28,6 @@ export const getUserProfile = createAsyncThunk(
 
       if (!response.ok) {
         if (response.status === 401) {
-          // Token is invalid, remove it
           localStorage.removeItem('authToken');
         }
         return rejectWithValue(data.message || 'Failed to fetch profile');

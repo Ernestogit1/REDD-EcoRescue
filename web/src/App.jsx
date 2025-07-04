@@ -34,7 +34,6 @@ function App() {
       <AudioProvider>
         <Router>
           <Routes>
-            {/* Landing page - always accessible */}
             <Route 
               path="/" 
               element={
@@ -46,7 +45,6 @@ function App() {
               } 
             />
 
-            {/* Auth routes - only accessible when NOT authenticated */}
             <Route 
               path="/login" 
               element={
@@ -69,7 +67,6 @@ function App() {
               } 
             />
 
-            {/* Public game routes - only accessible when NOT authenticated */}
             <Route 
               path="/menu" 
               element={
@@ -114,7 +111,6 @@ function App() {
               } 
             />
 
-            {/* Protected app routes - only accessible when authenticated */}
             <Route 
               path="/app" 
               element={
@@ -137,7 +133,6 @@ function App() {
               } 
             />
 
-            {/* Catch all route - redirect to appropriate page based on auth status */}
             {/* <Route 
               path="*" 
               element={<Navigate to="/" replace />} 

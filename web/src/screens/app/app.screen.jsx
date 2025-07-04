@@ -7,7 +7,6 @@ const AppScreen = () => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   const handleLogout = () => {
-    // This will be implemented later
     console.log('Logout functionality to be implemented');
     navigate('/');
   };

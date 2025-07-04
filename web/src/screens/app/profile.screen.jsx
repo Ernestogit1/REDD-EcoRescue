@@ -10,10 +10,8 @@ const ProfileScreen = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
-  // Get auth state
   const { isAuthenticated } = useSelector((state) => state.auth);
   
-  // Get user profile state
   const { 
     profile, 
     isLoading, 
@@ -28,14 +26,12 @@ const ProfileScreen = () => {
     email: profile?.email || ''
   });
 
-  // Fetch profile data on component mount
   useEffect(() => {
     if (!profile && isAuthenticated) {
       dispatch(getUserProfile());
     }
   }, [dispatch, profile, isAuthenticated]);
 
-  // Update edit data when profile data changes
   useEffect(() => {
     if (profile) {
       setEditData({
@@ -45,7 +41,6 @@ const ProfileScreen = () => {
     }
   }, [profile]);
 
-  // Handle update success
   useEffect(() => {
     if (updateSuccess) {
       setIsEditing(false);
@@ -53,7 +48,6 @@ const ProfileScreen = () => {
     }
   }, [updateSuccess, dispatch]);
 
-  // Clear errors when component unmounts
   useEffect(() => {
     return () => {
       dispatch(clearError());
@@ -81,7 +75,6 @@ const ProfileScreen = () => {
   const handleSave = async () => {
     try {
       await dispatch(updateUserProfile(editData)).unwrap();
-      // Success is handled by useEffect above
     } catch (error) {
       console.error('Profile update failed:', error);
     }
