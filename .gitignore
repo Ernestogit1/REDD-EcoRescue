@@ -3,3 +3,6 @@ node_modules
 serviceAccountKey.json
 config/serviceAccountKey.json
 server/config/serviceAccountKey.json
+server/config/serviceAccountKey.json/
+/server/config/serviceAccountKey.json
+/server/config/serviceAccountKey.json/
