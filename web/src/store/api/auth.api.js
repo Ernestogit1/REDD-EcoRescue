@@ -48,7 +48,7 @@ export const loginUser = createAsyncThunk(
   "auth/login",
   async ({ emailOrUsername, password }, { rejectWithValue }) => {
     try {
-      // Step 1: Ask backend to resolve email from username/email and validate Firebase UID
+      //  Ask backend to resolve email from username/email and validate Firebase UID
       const preLoginRes = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -63,11 +63,11 @@ export const loginUser = createAsyncThunk(
 
       const email = preLoginData.email;
 
-      // Step 2: Sign in with Firebase using real email
+      //  Sign in with Firebase using real email
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const idToken = await userCredential.user.getIdToken();
 
-      // Step 3: Send Firebase ID token to backend again for token + user data
+      //  Send Firebase ID token to backend again for token + user data
       const verifyRes = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -56,7 +56,6 @@ const loginUser = async (req, res) => {
   try {
     const { idToken, emailOrUsername, password } = req.body;
 
-    // 🔁 Mode 1: If idToken is provided (frontend has already logged into Firebase)
     if (idToken) {
       const decodedToken = await admin.auth().verifyIdToken(idToken);
       const firebaseUid = decodedToken.uid;
@@ -84,7 +83,6 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // 🔁 Mode 2: Frontend is asking for user's real email before Firebase login
     if (emailOrUsername && password) {
       const user = await User.findOne({
         $or: [{ email: emailOrUsername }, { username: emailOrUsername }],
@@ -94,7 +92,6 @@ const loginUser = async (req, res) => {
         return res.status(404).json({ success: false, message: "User not found" });
       }
 
-      // Only return email to allow Firebase to handle password validation
       return res.status(200).json({ email: user.email });
     }
 
