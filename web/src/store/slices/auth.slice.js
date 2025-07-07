@@ -85,7 +85,7 @@ const authSlice = createSlice({
         state.success = null;
         state.isAuthenticated = false;
       })
-
+      // Google Auth cases
        .addCase(googleAuth.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -106,7 +106,7 @@ const authSlice = createSlice({
         state.success = null;
         state.isAuthenticated = false;
       })
-      
+
       // Logout cases
       .addCase(logoutUser.pending, (state) => {
         state.isLoading = true;

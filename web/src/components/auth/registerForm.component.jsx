@@ -23,7 +23,6 @@ const RegisterForm = () => {
       ...prev,
       [name]: value
     }));
-    // Clear errors when user starts typing
     if (error || localError) {
       dispatch(clearMessages());
       setLocalError('');
@@ -72,7 +71,6 @@ const RegisterForm = () => {
 
     const result = await dispatch(registerUser(userData));
     
-    // Reset form on successful registration
     if (registerUser.fulfilled.match(result)) {
       setFormData({
         username: '',
@@ -84,11 +82,9 @@ const RegisterForm = () => {
   };
 
   const handleGoogleLogin =  async () => {
-    // Placeholder for Google login - to be implemented later
     await dispatch(googleAuth());
   };
 
-  // Display error from either local validation or API
   const displayError = localError || error;
 
   return (

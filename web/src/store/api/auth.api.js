@@ -105,7 +105,7 @@ export const googleAuth = createAsyncThunk(
       // Extract username from email (before @)
       const username = user.email.split('@')[0];
 
-      // Send to backend - it will handle both login and registration
+      // Send to backend 
       const response = await fetch(`${API_BASE_URL}/auth/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

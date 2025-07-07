@@ -114,7 +114,6 @@ const googleAuth = async (req, res) => {
       });
     }
 
-    // Verify the Firebase ID token
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     
     if (decodedToken.uid !== firebaseUid) {
@@ -124,7 +123,6 @@ const googleAuth = async (req, res) => {
       });
     }
 
-    // Check if user already exists
     let user = await User.findOne({ 
       $or: [
         { email: email },
@@ -135,10 +133,8 @@ const googleAuth = async (req, res) => {
     let isNewUser = false;
 
     if (!user) {
-      // User doesn't exist, create new user (register)
       isNewUser = true;
       
-      // Generate unique username if the suggested one is taken
       let finalUsername = username;
       let counter = 1;
       while (await User.findOne({ username: finalUsername })) {
@@ -146,20 +142,16 @@ const googleAuth = async (req, res) => {
         counter++;
       }
 
-      // Create new user with only essential fields
       user = new User({
         username: finalUsername,
         email: email,
         firebaseUid: firebaseUid,
-        password: "google-auth-managed", // Placeholder since Google manages auth
+        password: "google-auth-managed", 
       });
 
       await user.save();
     }
-    // For existing users, we don't need to update anything since 
-    // avatar, rank, and rescueStars are handled by default values
-
-    // Generate JWT token
+  
     const token = generateAuthToken(user);
 
     res.status(200).json({

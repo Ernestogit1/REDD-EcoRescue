@@ -16,7 +16,6 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState('');
 
-  // Redirect to app screen if login successful
   useEffect(() => {
     if (isAuthenticated && success) {
       navigate('/profile');
@@ -29,7 +28,6 @@ const LoginForm = () => {
       ...prev,
       [name]: value
     }));
-    // Clear errors when user starts typing
     if (error || localError) {
       dispatch(clearMessages());
       setLocalError('');
@@ -60,7 +58,6 @@ const LoginForm = () => {
     await dispatch(googleAuth());
   };
 
-  // Display error from either local validation or API
   const displayError = localError || error;
 
   return (
