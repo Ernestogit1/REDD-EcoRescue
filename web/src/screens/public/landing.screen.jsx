@@ -23,7 +23,7 @@ const LandingPage = () => {
   }, []);
 
   const handleEnterApp = () => {
-    navigate('/menu');
+    navigate('/encourage');
   };
 
   const handleCarbonCalculator = () => {
@@ -31,7 +31,7 @@ const LandingPage = () => {
   };
   
   const handlePlayGame = () => {
-    navigate('/game');
+    navigate('/encourage');
   };
 
   return (

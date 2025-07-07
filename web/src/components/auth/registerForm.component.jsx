@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { registerUser } from '../../store/api/auth.api';
+import { registerUser, googleAuth } from '../../store/api/auth.api';
 import { clearMessages } from '../../store/slices/auth.slice';
 
 const RegisterForm = () => {
@@ -83,9 +83,9 @@ const RegisterForm = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin =  async () => {
     // Placeholder for Google login - to be implemented later
-    console.log('Google login clicked - functionality to be added');
+    await dispatch(googleAuth());
   };
 
   // Display error from either local validation or API

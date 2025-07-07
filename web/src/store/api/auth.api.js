@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword  } from "firebase/auth";
-import { auth } from "../../config/firebase";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup  } from "firebase/auth";
+import { auth, GoogleProvider} from "../../config/firebase";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 
@@ -91,6 +91,50 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+// google login 
+
+export const googleAuth = createAsyncThunk(
+  "auth/googleAuth",
+  async (_, { rejectWithValue }) => {
+    try {
+      // Sign in with Google popup
+      const result = await signInWithPopup(auth, GoogleProvider);
+      const user = result.user;
+      const idToken = await user.getIdToken();
+
+      // Extract username from email (before @)
+      const username = user.email.split('@')[0];
+
+      // Send to backend - it will handle both login and registration
+      const response = await fetch(`${API_BASE_URL}/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          idToken,
+          email: user.email,
+          username: username,
+          firebaseUid: user.uid,
+          displayName: user.displayName,
+          photoURL: user.photoURL
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || "Google authentication failed");
+      }
+
+      setToken(data.token);
+      return data;
+    } catch (error) {
+      if (error.code === 'auth/popup-closed-by-user') {
+        return rejectWithValue('Google login was cancelled');
+      }
+      return rejectWithValue(error.message || "Google authentication failed");
+    }
+  }
+);
 
 
 

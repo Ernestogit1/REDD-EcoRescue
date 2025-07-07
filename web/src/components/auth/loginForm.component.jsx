@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { loginUser } from '../../store/api/auth.api';
+import { loginUser, googleAuth } from '../../store/api/auth.api';
 import { clearMessages } from '../../store/slices/auth.slice';
 
 const LoginForm = () => {
@@ -56,9 +56,8 @@ const LoginForm = () => {
     await dispatch(loginUser(formData));
   };
 
-  const handleGoogleLogin = () => {
-    // Placeholder for Google login - to be implemented later
-    console.log('Google login clicked - functionality to be added');
+  const handleGoogleAuth = async () => {
+    await dispatch(googleAuth());
   };
 
   // Display error from either local validation or API
@@ -131,7 +130,7 @@ const LoginForm = () => {
       <button
         type="button"
         className="pixel-button google-btn"
-        onClick={handleGoogleLogin}
+        onClick={handleGoogleAuth}
         disabled={isLoading}
       >
         🎮 CONTINUE WITH GOOGLE

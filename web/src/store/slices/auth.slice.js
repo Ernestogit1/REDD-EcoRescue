@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { registerUser, loginUser, logoutUser, tokenUtils } from '../api/auth.api';
+import { registerUser, loginUser, logoutUser, tokenUtils, googleAuth } from '../api/auth.api';
 
 const initialState = {
   user: null,
@@ -85,6 +85,28 @@ const authSlice = createSlice({
         state.success = null;
         state.isAuthenticated = false;
       })
+
+       .addCase(googleAuth.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.success = null;
+      })
+      .addCase(googleAuth.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
+        state.isAuthenticated = true;
+        state.success = action.payload.isNewUser 
+          ? 'Google registration successful! Welcome to the game!' 
+          : 'Google login successful! Welcome back, forest guardian!';
+        state.error = null;
+      })
+      .addCase(googleAuth.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || 'Google authentication failed';
+        state.success = null;
+        state.isAuthenticated = false;
+      })
+      
       // Logout cases
       .addCase(logoutUser.pending, (state) => {
         state.isLoading = true;

@@ -103,6 +103,91 @@ const loginUser = async (req, res) => {
 };
 
 
+const googleAuth = async (req, res) => {
+  try {
+    const { idToken, email, username, firebaseUid, displayName, photoURL } = req.body;
+
+    if (!idToken || !email || !firebaseUid) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required Google authentication data",
+      });
+    }
+
+    // Verify the Firebase ID token
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    
+    if (decodedToken.uid !== firebaseUid) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid Firebase token",
+      });
+    }
+
+    // Check if user already exists
+    let user = await User.findOne({ 
+      $or: [
+        { email: email },
+        { firebaseUid: firebaseUid }
+      ]
+    });
+
+    let isNewUser = false;
+
+    if (!user) {
+      // User doesn't exist, create new user (register)
+      isNewUser = true;
+      
+      // Generate unique username if the suggested one is taken
+      let finalUsername = username;
+      let counter = 1;
+      while (await User.findOne({ username: finalUsername })) {
+        finalUsername = `${username}${counter}`;
+        counter++;
+      }
+
+      // Create new user with only essential fields
+      user = new User({
+        username: finalUsername,
+        email: email,
+        firebaseUid: firebaseUid,
+        password: "google-auth-managed", // Placeholder since Google manages auth
+      });
+
+      await user.save();
+    }
+    // For existing users, we don't need to update anything since 
+    // avatar, rank, and rescueStars are handled by default values
+
+    // Generate JWT token
+    const token = generateAuthToken(user);
+
+    res.status(200).json({
+      success: true,
+      message: isNewUser ? "Google registration successful" : "Google login successful",
+      isNewUser: isNewUser,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        firebaseUid: user.firebaseUid,
+        avatar: user.avatar,
+        rank: user.rank,
+        rescueStars: user.rescueStars,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      },
+      token
+    });
+
+  } catch (error) {
+    console.error("Google authentication error:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Google authentication failed" 
+    });
+  }
+};
 
 const logoutUser = async (req, res) => {
   try {
@@ -160,6 +245,7 @@ const getUserProfile = async (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
+  googleAuth,
   logoutUser,
   getUserProfile
 };
