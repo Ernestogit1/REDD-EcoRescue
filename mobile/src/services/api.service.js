@@ -1,13 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+import { API_URL } from '@env';
 
-// Use your computer's actual IP address for mobile testing
 const getBaseURL = () => {
   if (Platform.OS === 'web') {
     return 'http://localhost:5000';
   }
-  // Your computer's IP address - mobile devices need this to connect
-  return 'http://192.168.1.36:5000';
+  return API_URL;
 };
 
 const API_BASE_URL = getBaseURL();

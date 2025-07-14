@@ -7,9 +7,23 @@ const mobileRoutes = require('../mobile/src/routes');
 
 const app = express();
 
+app.use(
+  cors({
+    origin: [
+      'http://localhost:5000',
+      'http://localhost:5173',
+      'http://localhost:19006', // Expo web
+      'http://localhost:19000', // Expo client
+      'http://localhost:8081',  // React Native dev server
+      'exp://*',               // Expo Go app
+      '*'                      // Allow all origins (for development only)
+    ],
+    methods: ['GET', 'POST', 'DELETE', 'PUT'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Expires', 'Pragma'],
+    credentials: true,
+  })
+);
 
-
-app.use(cors());
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
 app.use(cookieParser());

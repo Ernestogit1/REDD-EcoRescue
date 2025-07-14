@@ -4,12 +4,17 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Font from 'expo-font';
 import { useFonts, PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
 import { ActivityIndicator, View } from 'react-native';
-import LoginScreen from './src/screens/LoginScreen';
-import RegisterScreen from './src/screens/RegisterScreen';
-import DashboardScreen from './src/screens/DashboardScreen';
+import MainMenuScreen from './src/screens/Home/MainMenuScreen';
+import AboutUsScreen from './src/screens/Home/AboutUsScreen';
+import OptionsScreen from './src/screens/Home/OptionsScreen';
+import LoginScreen from './src/screens/Home/LoginScreen';
+import RegisterScreen from './src/screens/Home/RegisterScreen';
+import DashboardScreen from './src/screens/Dashboard/DashboardScreen';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useEffect } from 'react';
+import audioService from './src/services/audio.service';
 import 'expo-dev-client';
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -18,7 +23,26 @@ export default function App() {
   });
 
   useEffect(() => {
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+    const initializeApp = async () => {
+      // Lock screen orientation
+      await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+      
+      // Initialize audio service
+      await audioService.initializeAudio();
+      await audioService.loadBackgroundMusic();
+      
+      // Start background music after a short delay
+      setTimeout(() => {
+        audioService.playBackgroundMusic();
+      }, 1000);
+    };
+
+    initializeApp();
+
+    // Cleanup on unmount
+    return () => {
+      audioService.cleanup();
+    };
   }, []);
 
   if (!fontsLoaded) {
@@ -32,9 +56,16 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Login"
-        screenOptions={{ headerShown: false }}
+        initialRouteName="MainMenu"
+        screenOptions={{ 
+          headerShown: false,
+          gestureEnabled: false,
+          animation: 'slide_from_right'
+        }}
       >
+        <Stack.Screen name="MainMenu" component={MainMenuScreen} />
+        <Stack.Screen name="AboutUs" component={AboutUsScreen} />
+        <Stack.Screen name="Options" component={OptionsScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Dashboard" component={DashboardScreen} />

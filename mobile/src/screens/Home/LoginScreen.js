@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Dimensions, Animated, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import ApiService from '../services/api.service';
+import ApiService from '../../services/api.service';
 
 const { height: screenHeight } = Dimensions.get('window');
 
-export default function RegisterScreen() {
+export default function LoginScreen() {
   const navigation = useNavigation();
-  const [credentials, setCredentials] = useState({ username: '', email: '', password: '', confirmPassword: '' });
+  const [credentials, setCredentials] = useState({ emailOrUsername: '', password: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -23,12 +23,12 @@ export default function RegisterScreen() {
       Animated.sequence([
         Animated.timing(floatAnim, {
           toValue: 1,
-          duration: 3500,
+          duration: 3000,
           useNativeDriver: true,
         }),
         Animated.timing(floatAnim, {
           toValue: 0,
-          duration: 3500,
+          duration: 3000,
           useNativeDriver: true,
         }),
       ])
@@ -55,12 +55,8 @@ export default function RegisterScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!credentials.username || !credentials.email || !credentials.password || !credentials.confirmPassword) {
+    if (!credentials.emailOrUsername || !credentials.password) {
       setError('Please fill in all fields');
-      return;
-    }
-    if (credentials.password !== credentials.confirmPassword) {
-      setError('Passwords do not match');
       return;
     }
 
@@ -68,52 +64,37 @@ export default function RegisterScreen() {
     setError('');
 
     try {
-      const response = await ApiService.register({
-        username: credentials.username,
-        email: credentials.email,
-        password: credentials.password,
-        confirmPassword: credentials.confirmPassword
+      const response = await ApiService.login({
+        emailOrUsername: credentials.emailOrUsername,
+        password: credentials.password
       });
 
       if (response.success) {
         Alert.alert(
-          'Registration Successful!',
-          `Welcome to REDD-EcoRescue, ${response.data.user.username}!`,
+          'Login Successful!',
+          `Welcome back, ${response.data.user.username}!`,
           [
             {
               text: 'OK',
               onPress: () => {
-                // Navigate to home/dashboard or back to login
-                navigation.navigate('Login');
+                // Navigate to dashboard
+                navigation.navigate('Dashboard');
               }
             }
           ]
         );
       }
     } catch (error) {
-      console.error('Registration error:', error);
-      setError(error.message || 'Registration failed. Please try again.');
+      console.error('Login error:', error);
+      setError(error.message || 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Test function to check API connectivity
-  const testConnection = async () => {
-    try {
-      console.log('Testing API connection...');
-      const response = await ApiService.healthCheck();
-      console.log('Health check response:', response);
-      Alert.alert('Success!', 'Connected to server successfully!');
-    } catch (error) {
-      console.error('Connection test failed:', error);
-      Alert.alert('Connection Failed', `Error: ${error.message}`);
-    }
-  };
-
   const floatingTransform = floatAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -12],
+    outputRange: [0, -10],
   });
 
   return (
@@ -127,79 +108,46 @@ export default function RegisterScreen() {
           }
         ]}>
           <View style={styles.header}>
-            <Text style={styles.title}>REDD-EcoRescue</Text>
-            <Text style={styles.avatar}>🌳</Text>
-            <Text style={styles.subtitle}>Register</Text>
-          </View>
+            <Text style={styles.avatar}>👤</Text>
+            <Text style={styles.subtitle}>Login</Text>
+          </View>a
           
           {error ? <Text style={styles.error}>{error}</Text> : null}
           
-          <View style={styles.formRow}>
-            <View style={[styles.formGroup, styles.halfWidth]}>
-              <Text style={styles.label}>Username</Text>
-              <TextInput
-                style={styles.input}
-                value={credentials.username}
-                onChangeText={v => handleChange('username', v)}
-                placeholder="Enter username"
-                placeholderTextColor="#888"
-                autoCapitalize="none"
-              />
-            </View>
-            
-            <View style={[styles.formGroup, styles.halfWidth]}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                value={credentials.email}
-                onChangeText={v => handleChange('email', v)}
-                placeholder="Enter email"
-                placeholderTextColor="#888"
-                autoCapitalize="none"
-                keyboardType="email-address"
-              />
-            </View>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Username or Email</Text>
+            <TextInput
+              style={styles.input}
+              value={credentials.emailOrUsername}
+              onChangeText={v => handleChange('emailOrUsername', v)}
+              placeholder="Enter username or email"
+              placeholderTextColor="#888"
+              autoCapitalize="none"
+            />
           </View>
           
-          <View style={styles.formRow}>
-            <View style={[styles.formGroup, styles.halfWidth]}>
-              <Text style={styles.label}>Password</Text>
-              <TextInput
-                style={styles.input}
-                value={credentials.password}
-                onChangeText={v => handleChange('password', v)}
-                placeholder="Enter password"
-                placeholderTextColor="#888"
-                secureTextEntry
-              />
-            </View>
-            
-            <View style={[styles.formGroup, styles.halfWidth]}>
-              <Text style={styles.label}>Confirm Password</Text>
-              <TextInput
-                style={styles.input}
-                value={credentials.confirmPassword}
-                onChangeText={v => handleChange('confirmPassword', v)}
-                placeholder="Confirm password"
-                placeholderTextColor="#888"
-                secureTextEntry
-              />
-            </View>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              style={styles.input}
+              value={credentials.password}
+              onChangeText={v => handleChange('password', v)}
+              placeholder="Enter password"
+              placeholderTextColor="#888"
+              secureTextEntry
+            />
           </View>
+          
+          <TouchableOpacity style={styles.linkContainer} onPress={() => {}}>
+            <Text style={styles.link}>Forgot Password?</Text>
+          </TouchableOpacity>
           
           <TouchableOpacity
             style={[styles.button, styles.primaryButton, isLoading && styles.disabledButton]}
             onPress={handleSubmit}
             disabled={isLoading}
           >
-            <Text style={styles.buttonText}>{isLoading ? 'REGISTERING...' : 'REGISTER'}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, styles.testButton]}
-            onPress={testConnection}
-          >
-            <Text style={styles.buttonText}>TEST CONNECTION</Text>
+            <Text style={styles.buttonText}>{isLoading ? 'LOGGING IN...' : 'LOGIN'}</Text>
           </TouchableOpacity>
           
           <View style={styles.orDivider}>
@@ -208,13 +156,13 @@ export default function RegisterScreen() {
           
           <TouchableOpacity style={[styles.button, styles.googleButton]} onPress={() => {}}>
             <Text style={styles.googleIcon}>G</Text>
-            <Text style={styles.buttonText}>REGISTER WITH GOOGLE</Text>
+            <Text style={styles.buttonText}>LOGIN WITH GOOGLE</Text>
           </TouchableOpacity>
           
           <View style={styles.registerLinkContainer}>
-            <Text style={styles.label}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.link}>Login</Text>
+            <Text style={styles.label}>Don't have an account? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+              <Text style={styles.link}>Register</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -272,7 +220,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#CD853F',
     borderLeftColor: '#CD853F',
     borderRadius: 6,
-    padding: 10,
+    padding: 12,
     shadowColor: '#000',
     shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 0.5,
@@ -282,13 +230,13 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   title: {
     fontFamily: 'PressStart2P_400Regular',
     color: '#FFD700',
     fontSize: 12,
-    marginBottom: 3,
+    marginBottom: 4,
     textShadowColor: '#B8860B',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 0,
@@ -297,37 +245,29 @@ const styles = StyleSheet.create({
     fontFamily: 'PressStart2P_400Regular',
     color: '#4ade80',
     fontSize: 10,
-    marginTop: 3,
+    marginTop: 4,
     textShadowColor: '#22c55e',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 0,
   },
   avatar: {
-    fontSize: 18,
-    marginVertical: 2,
+    fontSize: 20,
+    marginVertical: 3,
   },
   error: {
     color: '#ff4d4f',
     fontFamily: 'PressStart2P_400Regular',
     fontSize: 7,
-    marginBottom: 5,
+    marginBottom: 6,
     textAlign: 'center',
   },
-  formRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 5,
-  },
   formGroup: {
-    marginBottom: 5,
-  },
-  halfWidth: {
-    width: '48%',
+    marginBottom: 8,
   },
   label: {
     color: '#fff',
     fontFamily: 'PressStart2P_400Regular',
-    fontSize: 6,
+    fontSize: 7,
     marginBottom: 2,
     textShadowColor: '#000',
     textShadowOffset: { width: 1, height: 1 },
@@ -335,7 +275,7 @@ const styles = StyleSheet.create({
   },
   input: {
     width: '100%',
-    padding: 6,
+    padding: 8,
     borderWidth: 2,
     borderColor: '#3d2914',
     borderTopColor: '#000',
@@ -344,14 +284,18 @@ const styles = StyleSheet.create({
     borderRightColor: '#CD853F',
     backgroundColor: '#F5F5DC',
     fontFamily: 'PressStart2P_400Regular',
-    fontSize: 8,
+    fontSize: 9,
     color: '#000',
-    height: 28,
+    height: 32,
+  },
+  linkContainer: {
+    alignItems: 'flex-end',
+    marginBottom: 4,
   },
   link: {
     color: '#4ade80',
     fontFamily: 'PressStart2P_400Regular',
-    fontSize: 6,
+    fontSize: 7,
     textDecorationLine: 'underline',
   },
   button: {
@@ -360,29 +304,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     fontFamily: 'PressStart2P_400Regular',
     fontSize: 10,
-    padding: 5,
+    padding: 6,
     borderWidth: 2,
     borderRadius: 4,
-    marginTop: 2,
-    marginBottom: 2,
+    marginTop: 3,
+    marginBottom: 3,
     shadowColor: '#000',
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 0.5,
     shadowRadius: 2,
     elevation: 2,
-    height: 32,
+    height: 36,
   },
   primaryButton: {
     backgroundColor: '#4ade80',
     borderColor: '#16a34a',
     borderTopColor: '#86efac',
     borderLeftColor: '#86efac',
-  },
-  testButton: {
-    backgroundColor: '#f59e0b',
-    borderColor: '#d97706',
-    borderTopColor: '#fbbf24',
-    borderLeftColor: '#fbbf24',
   },
   disabledButton: {
     backgroundColor: '#696969',
@@ -391,7 +329,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontFamily: 'PressStart2P_400Regular',
-    fontSize: 7,
+    fontSize: 8,
     color: '#1a4d2e',
     textAlign: 'center',
     marginLeft: 2,
@@ -403,23 +341,23 @@ const styles = StyleSheet.create({
   googleIcon: {
     fontFamily: 'PressStart2P_400Regular',
     color: '#333',
-    fontSize: 9,
-    marginRight: 3,
+    fontSize: 10,
+    marginRight: 4,
   },
   orDivider: {
     alignItems: 'center',
-    marginVertical: 2,
+    marginVertical: 3,
   },
   orText: {
     fontFamily: 'PressStart2P_400Regular',
     color: '#fff',
-    fontSize: 6,
+    fontSize: 7,
   },
   registerLinkContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 3,
+    marginTop: 4,
     flexWrap: 'wrap',
   },
   // Animated background elements
@@ -428,23 +366,23 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   backgroundEmoji: {
-    fontSize: 16,
+    fontSize: 18,
     opacity: 0.2,
   },
   tree1: {
-    top: '8%',
-    left: '6%',
+    top: '10%',
+    left: '8%',
   },
   tree2: {
-    top: '12%',
-    right: '10%',
+    top: '15%',
+    right: '12%',
   },
   animal1: {
-    bottom: '18%',
-    left: '4%',
+    bottom: '20%',
+    left: '6%',
   },
   animal2: {
-    bottom: '22%',
-    right: '8%',
+    bottom: '25%',
+    right: '10%',
   },
-});
+}); 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import ApiService from '../services/api.service';
+import ApiService from '../../services/api.service';
 
 export default function DashboardScreen() {
   const navigation = useNavigation();
@@ -37,7 +37,7 @@ export default function DashboardScreen() {
           text: 'Logout',
           onPress: async () => {
             await ApiService.logout();
-            navigation.navigate('Login');
+            navigation.navigate('MainMenu');
           },
         },
       ]
