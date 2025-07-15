@@ -31,7 +31,7 @@ class AudioService {
       }
 
       // Load the asset first to get the proper URI
-      const asset = Asset.fromModule(require('../../assets/background-music/chop-suey-8bit.mp3'));
+      const asset = Asset.fromModule(require('../../assets/background-music/pixel-forest-8bit.mp3'));
       await asset.downloadAsync();
 
       this.backgroundMusic = await Audio.Sound.createAsync(

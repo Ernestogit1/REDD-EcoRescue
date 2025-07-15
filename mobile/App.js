@@ -4,18 +4,48 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Font from 'expo-font';
 import { useFonts, PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
 import { ActivityIndicator, View } from 'react-native';
-import MainMenuScreen from './src/screens/Home/MainMenuScreen';
-import AboutUsScreen from './src/screens/Home/AboutUsScreen';
-import OptionsScreen from './src/screens/Home/OptionsScreen';
-import LoginScreen from './src/screens/Home/LoginScreen';
-import RegisterScreen from './src/screens/Home/RegisterScreen';
 import DashboardScreen from './src/screens/Dashboard/DashboardScreen';
+import HomeNavigator from './src/navigators/HomeNavigator';
+import GameNavigator from './src/navigators/GameNavigator';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useEffect } from 'react';
 import audioService from './src/services/audio.service';
 import 'expo-dev-client';
 
 const Stack = createNativeStackNavigator();
+
+const screenOptions = {
+  headerShown: false,
+  gestureEnabled: false,
+  animation: 'fade',
+  animationDuration: 500,
+  presentation: 'card',
+  cardStyleInterpolator: ({ current, layouts }) => ({
+    cardStyle: {
+      opacity: current.progress,
+      transform: [
+        {
+          translateY: current.progress.interpolate({
+            inputRange: [0, 1],
+            outputRange: [50, 0],
+          }),
+        },
+        {
+          scale: current.progress.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0.8, 1],
+          }),
+        },
+      ],
+    },
+    overlayStyle: {
+      opacity: current.progress.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 0.5],
+      }),
+    },
+  }),
+};
 
 export default function App() {
   let [fontsLoaded] = useFonts({
@@ -56,18 +86,11 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="MainMenu"
-        screenOptions={{ 
-          headerShown: false,
-          gestureEnabled: false,
-          animation: 'slide_from_right'
-        }}
+        initialRouteName="Home"
+        screenOptions={screenOptions}
       >
-        <Stack.Screen name="MainMenu" component={MainMenuScreen} />
-        <Stack.Screen name="AboutUs" component={AboutUsScreen} />
-        <Stack.Screen name="Options" component={OptionsScreen} />
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name="Home" component={HomeNavigator} />
+        <Stack.Screen name="GameRoot" component={GameNavigator} />
         <Stack.Screen name="Dashboard" component={DashboardScreen} />
       </Stack.Navigator>
       <StatusBar style="auto" />

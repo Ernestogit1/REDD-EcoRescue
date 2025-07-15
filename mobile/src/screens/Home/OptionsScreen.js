@@ -143,7 +143,7 @@ export default function OptionsScreen() {
             {/* Current Track Display */}
             <View style={styles.settingRow}>
               <Text style={styles.settingLabel}>Now Playing</Text>
-              <Text style={styles.trackName}>Chop Suey! [8-Bit]</Text>
+              <Text style={styles.trackName}>Pixel Forest [8-Bit]</Text>
             </View>
           </View>
 
