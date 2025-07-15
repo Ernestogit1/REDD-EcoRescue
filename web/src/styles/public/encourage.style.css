@@ -1,0 +1,403 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+.encourage-screen {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a4d2e 0%, #2d5a3d 30%, #4a7c59 60%, #1a4d2e 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  position: relative;
+  overflow-y: auto;
+}
+
+.encourage-screen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, #2d5a3d 2px, transparent 2px),
+    radial-gradient(circle at 80% 80%, #1a4d2e 2px, transparent 2px);
+  background-size: 60px 60px;
+  opacity: 0.4;
+  z-index: 1;
+}
+
+.encourage-container {
+  max-width: 1200px;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  border: 4px solid #4a7c59;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.7);
+  position: relative;
+  z-index: 2;
+}
+
+.encourage-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.encourage-header h1 {
+  font-size: 2.5rem;
+  color: #FFD700;
+  margin-bottom: 1rem;
+  text-shadow: 
+    2px 2px 0px #B8860B,
+    4px 4px 0px #000000;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+.encourage-subtitle {
+  font-size: 1.2rem;
+  color: #4ecdc4;
+  margin-bottom: 0.5rem;
+  text-shadow: 2px 2px 0px #000000;
+}
+
+.encourage-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.benefits-section h3,
+.mobile-app-section h3 {
+  font-size: 1.2rem;
+  color: #32CD32;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  text-shadow: 2px 2px 0px #000000;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.benefit-card {
+  background: linear-gradient(180deg, #8B4513 0%, #654321 50%, #3d2914 100%);
+  border: 3px solid #3d2914;
+  border-top-color: #CD853F;
+  border-left-color: #CD853F;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.benefit-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.7);
+}
+
+.benefit-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.benefit-card h4 {
+  font-size: 0.8rem;
+  color: #FFD700;
+  margin-bottom: 0.8rem;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+.benefit-card p {
+  font-size: 0.6rem;
+  color: #FFFFFF;
+  line-height: 1.5;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+.mobile-app-section {
+  background: rgba(26, 77, 46, 0.3);
+  border: 2px solid #4a7c59;
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.app-preview {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.phone-mockup {
+  width: 200px;
+  height: 350px;
+  background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+  border: 4px solid #1a252f;
+  border-radius: 20px;
+  padding: 20px;
+  position: relative;
+  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.6);
+}
+
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, #1a4d2e 0%, #2d5a3d 100%);
+  border-radius: 12px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.app-icon {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.app-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.5rem;
+  color: #FFD700;
+  margin-bottom: 15px;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+.app-features {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feature-item {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.4rem;
+  color: #FFFFFF;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+.app-description {
+  flex: 1;
+  text-align: left;
+}
+
+.app-description p {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.7rem;
+  color: #FFFFFF;
+  margin-bottom: 0.8rem;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center;
+}
+
+.primary-actions {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.secondary-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pixel-button {
+  background: linear-gradient(180deg, #4CAF50 0%, #45a049 50%, #3d8b40 100%);
+  border: 3px solid #2e7d32;
+  border-top-color: #66BB6A;
+  border-left-color: #66BB6A;
+  border-bottom-color: #1B5E20;
+  border-right-color: #1B5E20;
+  color: #FFFFFF;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.7rem;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0px #000000;
+  border-radius: 4px;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.pixel-button:hover:not(:disabled) {
+  background: linear-gradient(180deg, #66BB6A 0%, #4CAF50 50%, #45a049 100%);
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.pixel-button:active:not(:disabled) {
+  transform: translateY(0px);
+}
+
+.pixel-button.large {
+  font-size: 0.8rem;
+  padding: 1.2rem 2rem;
+}
+
+.pixel-button.primary {
+  background: linear-gradient(180deg, #FF6B35 0%, #E55A2B 50%, #CC4125 100%);
+  border-color: #B8371F;
+  border-top-color: #FF8C69;
+  border-left-color: #FF8C69;
+}
+
+.pixel-button.primary:hover {
+  background: linear-gradient(180deg, #FF8C69 0%, #FF6B35 50%, #E55A2B 100%);
+}
+
+.pixel-button.secondary {
+  background: linear-gradient(180deg, #4ECDC4 0%, #45B7AA 50%, #3A9B94 100%);
+  border-color: #2E7D77;
+  border-top-color: #6ED5CA;
+  border-left-color: #6ED5CA;
+}
+
+.pixel-button.secondary:hover {
+  background: linear-gradient(180deg, #6ED5CA 0%, #4ECDC4 50%, #45B7AA 100%);
+}
+
+.pixel-button.download-btn {
+  background: linear-gradient(180deg, #9B59B6 0%, #8E44AD 50%, #7D3C98 100%);
+  border-color: #6C3483;
+  border-top-color: #BB8FCE;
+  border-left-color: #BB8FCE;
+}
+
+.pixel-button.download-btn:hover {
+  background: linear-gradient(180deg, #BB8FCE 0%, #9B59B6 50%, #8E44AD 100%);
+}
+
+.pixel-button.back-btn {
+  background: linear-gradient(180deg, #95A5A6 0%, #7F8C8D 50%, #6C7B7D 100%);
+  border-color: #566A6B;
+  border-top-color: #BDC3C7;
+  border-left-color: #BDC3C7;
+}
+
+.pixel-button.back-btn:hover {
+  background: linear-gradient(180deg, #BDC3C7 0%, #95A5A6 50%, #7F8C8D 100%);
+}
+
+.encourage-footer {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid #4a7c59;
+}
+
+.encourage-footer p {
+  font-size: 0.7rem;
+  color: #FFFFFF;
+  margin-bottom: 1.5rem;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+.stats-preview {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  display: block;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1.2rem;
+  color: #FFD700;
+  text-shadow: 2px 2px 0px #000000;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.6rem;
+  color: #FFFFFF;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+@keyframes glow {
+  0% { text-shadow: 2px 2px 0px #B8860B, 4px 4px 0px #000000; }
+  100% { text-shadow: 2px 2px 0px #B8860B, 4px 4px 0px #000000, 0 0 20px #FFD700; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .encourage-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .encourage-subtitle {
+    font-size: 1rem;
+  }
+  
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .app-preview {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .primary-actions,
+  .secondary-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .pixel-button {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .stats-preview {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .encourage-container {
+    padding: 1.5rem;
+  }
+  
+  .encourage-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .pixel-button {
+    font-size: 0.6rem;
+    padding: 1rem 1.2rem;
+  }
+  
+  .phone-mockup {
+    width: 150px;
+    height: 250px;
+  }
+}

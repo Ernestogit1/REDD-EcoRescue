@@ -4,12 +4,12 @@ const { generateAuthToken } = require('../utils/cookies.util');
 
 const registerUser = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, firebaseUid } = req.body;
 
-    if (!username || !email || !password) {
+    if (!username || !email || !firebaseUid) {
       return res.status(400).json({
         success: false,
-        message: 'Username, email, and password are required'
+        message: "Username, email, and firebaseUid are required",
       });
     }
 
@@ -17,21 +17,15 @@ const registerUser = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'User already exists with this email'
+        message: "User already exists with this email",
       });
     }
-
-    const firebaseUser = await admin.auth().createUser({
-      email,
-      password,
-      displayName: username
-    });
 
     const newUser = new User({
       username,
       email,
-      firebaseUid: firebaseUser.uid,
-      password: 'firebase-manage' 
+      firebaseUid,
+      password: "firebase-manage",
     });
 
     await newUser.save();
@@ -40,105 +34,149 @@ const registerUser = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: "User registered successfully",
       user: {
         id: newUser._id,
         username: newUser.username,
         email: newUser.email,
         firebaseUid: newUser.firebaseUid,
         rank: newUser.rank,
-        rescueStars: newUser.rescueStars
+        rescueStars: newUser.rescueStars,
       },
-      token 
+      token,
     });
-
   } catch (error) {
-    console.error('Registration error:', error);
-    
-    if (error.code === 'auth/email-already-exists') {
-      return res.status(400).json({
-        success: false,
-        message: 'Email is already registered'
-      });
-    }
-    
-    if (error.code === 'auth/weak-password') {
-      return res.status(400).json({
-        success: false,
-        message: 'Password is too weak. Please use at least 6 characters'
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error during registration'
-    });
+    console.error("Registration error:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
+
 const loginUser = async (req, res) => {
   try {
-    const { emailOrUsername, password } = req.body;
+    const { idToken, emailOrUsername, password } = req.body;
 
-    if (!emailOrUsername || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email/username and password are required'
+    if (idToken) {
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      const firebaseUid = decodedToken.uid;
+
+      const user = await User.findOne({ firebaseUid });
+
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found in DB" });
+      }
+
+      const token = generateAuthToken(user);
+
+      return res.status(200).json({
+        success: true,
+        message: "Login successful",
+        token,
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          firebaseUid: user.firebaseUid,
+          rank: user.rank,
+          rescueStars: user.rescueStars,
+        },
       });
     }
 
-    const user = await User.findOne({
+    if (emailOrUsername && password) {
+      const user = await User.findOne({
+        $or: [{ email: emailOrUsername }, { username: emailOrUsername }],
+      });
+
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      return res.status(200).json({ email: user.email });
+    }
+
+    return res.status(400).json({ success: false, message: "Missing login input" });
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ success: false, message: "Login failed" });
+  }
+};
+
+
+const googleAuth = async (req, res) => {
+  try {
+    const { idToken, email, username, firebaseUid, displayName, photoURL } = req.body;
+
+    if (!idToken || !email || !firebaseUid) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required Google authentication data",
+      });
+    }
+
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    
+    if (decodedToken.uid !== firebaseUid) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid Firebase token",
+      });
+    }
+
+    let user = await User.findOne({ 
       $or: [
-        { email: emailOrUsername },
-        { username: emailOrUsername }
+        { email: email },
+        { firebaseUid: firebaseUid }
       ]
     });
 
+    let isNewUser = false;
+
     if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid credentials'
+      isNewUser = true;
+      
+      let finalUsername = username;
+      let counter = 1;
+      while (await User.findOne({ username: finalUsername })) {
+        finalUsername = `${username}${counter}`;
+        counter++;
+      }
+
+      user = new User({
+        username: finalUsername,
+        email: email,
+        firebaseUid: firebaseUid,
+        password: "google-auth-managed", 
       });
+
+      await user.save();
     }
-
-    try {
-      const firebaseUser = await admin.auth().getUserByEmail(user.email);
-      
-
-      const customToken = await admin.auth().createCustomToken(firebaseUser.uid);
-      
-      console.log('Firebase user found:', firebaseUser.uid);
-      
-    } catch (firebaseError) {
-      console.error('Firebase authentication error:', firebaseError);
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid credentials'
-      });
-    }
-
+  
     const token = generateAuthToken(user);
 
     res.status(200).json({
       success: true,
-      message: 'Login successful',
+      message: isNewUser ? "Google registration successful" : "Google login successful",
+      isNewUser: isNewUser,
       user: {
         id: user._id,
         username: user.username,
         email: user.email,
         firebaseUid: user.firebaseUid,
+        avatar: user.avatar,
         rank: user.rank,
-        rescueStars: user.rescueStars
+        rescueStars: user.rescueStars,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
       },
-      token 
+      token
     });
 
   } catch (error) {
-    console.error('Login error:', error);
-    
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error during login'
+    console.error("Google authentication error:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Google authentication failed" 
     });
   }
 };
@@ -199,6 +237,7 @@ const getUserProfile = async (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
+  googleAuth,
   logoutUser,
   getUserProfile
 };

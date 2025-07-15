@@ -16,6 +16,7 @@ import TitleScreen from './screens/public/title.screen';
 import GameScreen from './screens/public/game.screen';
 import SettingsScreen from './screens/public/settings.screen';
 import CarbonCalculator from './screens/public/carbon.screen';
+import EncourageScreen from './screens/public/encourage.screen'; // Changed from encourageScreen to EncourageScreen
 
 // Auth screens
 import LoginScreen from './screens/auth/login.screen'; 
@@ -84,6 +85,16 @@ function App() {
                 <ProtectedRoute isPublic={true} redirectTo="/app">
                   <AppLayout>
                     <GameScreen />
+                  </AppLayout>
+                </ProtectedRoute>
+              } 
+            />
+          <Route 
+              path="/encourage" 
+              element={
+                <ProtectedRoute isPublic={true} redirectTo="/app">
+                  <AppLayout>
+                    <EncourageScreen />
                   </AppLayout>
                 </ProtectedRoute>
               } 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { registerUser } from '../../store/api/auth.api';
+import { registerUser, googleAuth } from '../../store/api/auth.api';
 import { clearMessages } from '../../store/slices/auth.slice';
 
 const RegisterForm = () => {
@@ -23,7 +23,6 @@ const RegisterForm = () => {
       ...prev,
       [name]: value
     }));
-    // Clear errors when user starts typing
     if (error || localError) {
       dispatch(clearMessages());
       setLocalError('');
@@ -72,7 +71,6 @@ const RegisterForm = () => {
 
     const result = await dispatch(registerUser(userData));
     
-    // Reset form on successful registration
     if (registerUser.fulfilled.match(result)) {
       setFormData({
         username: '',
@@ -83,12 +81,10 @@ const RegisterForm = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Placeholder for Google login - to be implemented later
-    console.log('Google login clicked - functionality to be added');
+  const handleGoogleLogin =  async () => {
+    await dispatch(googleAuth());
   };
 
-  // Display error from either local validation or API
   const displayError = localError || error;
 
   return (
