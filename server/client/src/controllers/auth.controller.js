@@ -1,6 +1,6 @@
 const admin = require('../../../config/firebase-admin');
 const User = require('../../../database/models/user.model');
-const { generateAuthToken } = require('../utils/cookies.util'); 
+const { generateAuthToken, setCookieOptions } = require('../utils/cookies.util'); 
 
 const registerUser = async (req, res) => {
   try {
@@ -31,6 +31,11 @@ const registerUser = async (req, res) => {
     await newUser.save();
 
     const token = generateAuthToken(newUser);
+    const cookieOptions = setCookieOptions();
+    console.log('Setting cookie with options:', cookieOptions);
+    console.log('Token generated:', !!token);
+
+    res.cookie('authToken', token, cookieOptions);
 
     res.status(201).json({
       success: true,
@@ -67,6 +72,12 @@ const loginUser = async (req, res) => {
       }
 
       const token = generateAuthToken(user);
+      const cookieOptions = setCookieOptions();
+
+      console.log('Setting cookie with options:', cookieOptions);
+      console.log('Token generated:', !!token);
+      
+      res.cookie('authToken', token, cookieOptions);
 
       return res.status(200).json({
         success: true,
@@ -153,6 +164,12 @@ const googleAuth = async (req, res) => {
     }
   
     const token = generateAuthToken(user);
+    const cookieOptions = setCookieOptions();
+
+    console.log('Setting cookie with options:', cookieOptions);
+    console.log('Token generated:', !!token);
+
+    res.cookie('authToken', token, cookieOptions);
 
     res.status(200).json({
       success: true,
@@ -183,6 +200,13 @@ const googleAuth = async (req, res) => {
 
 const logoutUser = async (req, res) => {
   try {
+    console.log('Clearing cookie...');
+
+    res.clearCookie('authToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
    
     res.status(200).json({
       success: true,
