@@ -4,8 +4,8 @@ import { Box, Grid, Button, Modal, Typography } from "@mui/material";
 import { styled } from "@mui/system";
 import PropTypes from "prop-types";
 import { useSpring, animated } from "@react-spring/web";
-import background from "../assets/images/mode1.gif";
-import bgMusic from "../assets/audio/music-miaw.mp3";
+import background from "../assets/images/animalPLay.gif";
+import bgMusic from "../assets/audio/lost.mp3";
 import axios from "axios";
 import useCardStore from '../store/cardStore';
 
@@ -13,18 +13,18 @@ const defaultDifficulty = "Hard";
 
 // Card Images
 const cardImages = [
-  { id: 1, image: "/images/earth.png" },
-  { id: 2, image: "/images/earth.png" },
-  { id: 3, image: "/images/jupiter.png" },
-  { id: 4, image: "/images/jupiter.png" },
-  { id: 5, image: "/images/mars.png" },
-  { id: 6, image: "/images/mars.png" },
-  { id: 7, image: "/images/mercury.png" },
-  { id: 8, image: "/images/mercury.png" },
-  { id: 9, image: "/images/neptune.png" },
-  { id: 10, image: "/images/neptune.png" },
-  { id: 11, image: "/images/saturn.png" },
-  { id: 12, image: "/images/saturn.png" },
+  { id: 1, image: "/images/leopard.jpg" },
+  { id: 2, image: "/images/leopard.jpg" },
+  { id: 3, image: "/images/blackBear.jpg" },
+  { id: 4, image: "/images/blackBear.jpg" },
+  { id: 5, image: "/images/deer.jpg" },
+  { id: 6, image: "/images/deer.jpg" },
+  { id: 7, image: "/images/wolf.jpg" },
+  { id: 8, image: "/images/wolf.jpg" },
+  { id: 9, image: "/images/squirel.jpg" },
+  { id: 10, image: "/images/squirel.jpg" },
+  { id: 11, image: "/images/fox.jpg" },
+  { id: 12, image: "/images/fox.jpg" },
 ];
 
 // Audio files for matching and final congratulation
@@ -36,7 +36,7 @@ const matchAudioFiles = [
   "/audio/Amazing.mp3",
 ];
 
-const congratsAudio = "/audio/congrats.mp3"; // Final congratulations audio
+const congratsAudio = "/audio/congrats.mp3";
 
 // Shuffle Logic
 const shuffleArray = (array) => {
@@ -48,82 +48,155 @@ const shuffleArray = (array) => {
   return shuffledArray;
 };
 
-// Styled Components
-const StyledGameContainer = styled(Box)(({ theme, mouseDisabled }) => ({
+// FIXED: Main container with proper responsive layout
+const StyledGameContainer = styled(Box)(({ mouseDisabled }) => ({
   minHeight: "100vh",
   width: "100vw",
   display: "flex",
   flexDirection: "column",
-  justifyContent: "center",
-  alignItems: "center",
   backgroundImage: `url(${background})`,
   backgroundSize: "cover",
-  backgroundPosition: "center",
+  backgroundPosition: "center center",
   backgroundRepeat: "no-repeat",
+  backgroundAttachment: "fixed",
   position: "relative",
-  pointerEvents: mouseDisabled ? "none" : "auto", 
-
+  overflow: "auto", // Changed from hidden to auto for better responsiveness
+  pointerEvents: mouseDisabled ? "none" : "auto",
+  margin: 0,
+  padding: "20px",
+  boxSizing: "border-box",
 }));
 
-const PixelButton = styled(Box)(({ theme }) => ({
+// FIXED: Responsive header container
+const HeaderContainer = styled(Box)({
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
+  width: "100%",
+  maxWidth: "1200px",
+  margin: "0 auto",
+  padding: "0 20px",
+  position: "relative",
+  zIndex: 10,
+});
+
+// FIXED: Stats container for Timer and Learning Moments
+const StatsContainer = styled(Box)({
+  display: "flex",
+  flexDirection: "column",
+  gap: "10px",
+  alignItems: "flex-start",
+});
+
+// 8-bit Forest Theme Buttons
+const PixelButton = styled(Box)({
   display: "inline-block",
-  backgroundColor: "#2c2c54",
-  color: "#fff",
+  backgroundColor: "#2d5016",
+  color: "#ffffff",
   fontFamily: '"Press Start 2P", cursive',
   fontSize: "14px",
   padding: "15px 30px",
-  border: "2px solid #00d9ff",
+  border: "3px solid #7fb069",
   borderRadius: "8px",
-  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
+  boxShadow: `
+    0 0 15px rgba(127, 176, 105, 0.4),
+    0 8px 16px rgba(0, 0, 0, 0.6),
+    inset 0 2px 0 rgba(255, 255, 255, 0.1)
+  `,
   cursor: "pointer",
   textAlign: "center",
-  transition: "transform 0.2s, background-color 0.2s, box-shadow 0.2s",
+  textTransform: "uppercase",
+  letterSpacing: "1px",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  position: "relative",
+  "&::before": {
+    content: '""',
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: "linear-gradient(135deg, transparent, rgba(167, 201, 87, 0.1), transparent)",
+    borderRadius: "5px",
+    opacity: 0,
+    transition: "opacity 0.3s ease",
+  },
   "&:hover": {
-    backgroundColor: "#40407a",
-    borderColor: "#00aaff",
-    boxShadow: "0 6px 12px rgba(0, 0, 0, 0.4)",
+    backgroundColor: "#4a7c59",
+    borderColor: "#a7c957",
+    boxShadow: `
+      0 0 25px rgba(167, 201, 87, 0.6),
+      0 12px 24px rgba(0, 0, 0, 0.7),
+      inset 0 2px 0 rgba(255, 255, 255, 0.2)
+    `,
+    transform: "translateY(-2px) scale(1.02)",
+    "&::before": {
+      opacity: 1,
+    },
   },
   "&:active": {
-    transform: "scale(0.95)",
+    transform: "translateY(0) scale(0.98)",
   },
-}));
+});
 
-const PixelBox = styled(Box)(({ theme }) => ({
-  position: "absolute",
-  bottom: "10%",
-  left: "1%",
-  backgroundColor: "#ff4d4f",
-  color: "#fff",
-  padding: "10px 20px",
-  border: "2px solid #00d9ff",
-  borderRadius: "8px",
-  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+// FIXED: Info boxes - now as regular components instead of absolutely positioned
+const PixelBox = styled(Box)({
+  backgroundColor: "rgba(74, 124, 89, 0.95)", // More opaque for better visibility
+  color: "#ffffff",
+  padding: "12px 24px",
+  border: "3px solid #a7c957",
+  borderRadius: "10px",
+  boxShadow: `
+    0 0 20px rgba(167, 201, 87, 0.5),
+    0 8px 16px rgba(0, 0, 0, 0.6)
+  `,
   fontFamily: '"Press Start 2P", cursive',
   fontSize: "12px",
   textAlign: "center",
-  marginBottom: "10px",
-}));
+  textShadow: "2px 2px 0 #2d5016",
+  backdropFilter: "blur(5px)",
+  minWidth: "150px",
+});
 
-const PixelTimerBox = styled(Box)(({ theme }) => ({
-  position: "absolute",
-  bottom: "5%",
-  left: "1%",
-  backgroundColor: "#2c2c54",
-  color: "#fff",
-  padding: "10px 20px",
-  border: "2px solid #00d9ff",
-  borderRadius: "8px",
-  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+const PixelTimerBox = styled(Box)({
+  backgroundColor: "rgba(45, 80, 22, 0.95)", // More opaque for better visibility
+  color: "#ffffff",
+  padding: "12px 24px",
+  border: "3px solid #7fb069",
+  borderRadius: "10px",
+  boxShadow: `
+    0 0 20px rgba(127, 176, 105, 0.4),
+    0 8px 16px rgba(0, 0, 0, 0.6)
+  `,
   fontFamily: '"Press Start 2P", cursive',
   fontSize: "12px",
   textAlign: "center",
-}));
+  textShadow: "2px 2px 0 #1a3409",
+  backdropFilter: "blur(5px)",
+  minWidth: "150px",
+});
 
+// FIXED: Game content container with better centering
+const GameContentContainer = styled(Box)({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  flex: 1,
+  width: "100%",
+  maxWidth: "1200px",
+  margin: "0 auto",
+  padding: "20px 0",
+});
+
+// Enhanced Card Components with 8-bit Forest Theme
 const CardContainer = styled(Box)({
   perspective: "1000px",
   cursor: "pointer",
-  width: "120px",
-  height: "120px",
+  width: "140px",
+  height: "140px",
+  margin: "8px",
+  filter: "drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4))",
 });
 
 const CardInner = styled(animated.div)({
@@ -144,11 +217,28 @@ const CardFront = styled(Box)({
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  // backgroundColor: "#1b1f34",
-  // border: "2px solid #4c5c77",
-  borderRadius: "8px",
+  background: "linear-gradient(135deg, #4a7c59, #2d5016)",
+  border: "4px solid #a7c957",
+  borderRadius: "12px",
   transform: "rotateY(180deg)",
-  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.5)",
+  boxShadow: `
+    0 0 20px rgba(167, 201, 87, 0.6),
+    0 8px 16px rgba(0, 0, 0, 0.7),
+    inset 0 2px 0 rgba(255, 255, 255, 0.1)
+  `,
+  overflow: "hidden",
+  "&::before": {
+    content: '""',
+    position: "absolute",
+    top: "-2px",
+    left: "-2px",
+    right: "-2px",
+    bottom: "-2px",
+    background: "linear-gradient(45deg, #7fb069, #a7c957, #d4e09b, #7fb069)",
+    borderRadius: "14px",
+    zIndex: -1,
+    filter: "blur(1px)",
+  },
 });
 
 const CardBack = styled(Box)({
@@ -161,61 +251,95 @@ const CardBack = styled(Box)({
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  backgroundColor: "#2c2c54",
-  border: "2px solid #00aaff",
-  borderRadius: "8px",
+  background: "linear-gradient(135deg, #2d5016, #4a7c59, #1a3409)",
+  border: "4px solid #7fb069",
+  borderRadius: "12px",
   transform: "rotateY(0deg)",
-  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.5)",
+  boxShadow: `
+    0 0 15px rgba(127, 176, 105, 0.4),
+    0 8px 16px rgba(0, 0, 0, 0.6),
+    inset 0 2px 0 rgba(255, 255, 255, 0.05)
+  `,
+  overflow: "hidden",
+  "&::before": {
+    content: '""',
+    position: "absolute",
+    top: "-2px",
+    left: "-2px",
+    right: "-2px",
+    bottom: "-2px",
+    background: "linear-gradient(45deg, #4a7c59, #7fb069, #5d8a3a, #4a7c59)",
+    borderRadius: "14px",
+    zIndex: -1,
+    filter: "blur(1px)",
+  },
 });
 
+// Forest-themed Modal
 const modalStyle = {
   position: 'absolute',
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  backgroundColor: '#2c2c54',  // Matching the game's background color
-  border: '2px solid #00d9ff', // Matching the pixel border
-  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.5)", // Subtle shadow for pixel look
-  padding: '20px',
+  background: 'linear-gradient(135deg, rgba(45, 80, 22, 0.95), rgba(74, 124, 89, 0.95))',
+  border: '3px solid #a7c957',
+  boxShadow: `
+    0 0 30px rgba(167, 201, 87, 0.6),
+    0 16px 32px rgba(0, 0, 0, 0.8)
+  `,
+  padding: '30px',
   textAlign: 'center',
-  borderRadius: '10px', // Pixel rounded corners
+  borderRadius: '15px',
+  backdropFilter: 'blur(10px)',
+  minWidth: '400px',
 };
 
-const PixelTypography = styled(Typography)(({ theme }) => ({
-  fontFamily: '"Press Start 2P", cursive', // Pixelated font style
-  fontSize: '24px',
-  color: '#fff',  // White text to stand out on the background
+const PixelTypography = styled(Typography)({
+  fontFamily: '"Press Start 2P", cursive',
+  fontSize: '16px',
+  color: '#ffffff',
   letterSpacing: '1px',
+  lineHeight: '1.5',
   textShadow: `
-    -1px -1px 0 #ff0000,  
-    1px -1px 0 #ff7f00, 
-    1px 1px 0 #ffd700, 
-    -1px 1px 0 #ff4500`,  // Pixelated text shadow
-}));
+    2px 2px 0 #2d5016,
+    0 0 10px rgba(167, 201, 87, 0.8)
+  `,
+  marginBottom: '20px',
+});
 
-const PixelButtonModal = styled(Button)(({ theme }) => ({
-  backgroundColor: "#2c2c54",
-  color: "#fff",
-  fontFamily: '"Press Start 2P", cursive', // Pixelated font style
-  fontSize: "14px",
-  padding: "15px 30px",
-  border: "2px solid #00d9ff",
+const PixelButtonModal = styled(Button)({
+  backgroundColor: "#2d5016",
+  color: "#ffffff",
+  fontFamily: '"Press Start 2P", cursive',
+  fontSize: "12px",
+  padding: "12px 24px",
+  border: "3px solid #7fb069",
   borderRadius: "8px",
-  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
+  boxShadow: `
+    0 0 15px rgba(127, 176, 105, 0.4),
+    0 8px 16px rgba(0, 0, 0, 0.6)
+  `,
   cursor: "pointer",
   textAlign: "center",
-  transition: "transform 0.2s, background-color 0.2s, box-shadow 0.2s",
+  textTransform: "uppercase",
+  letterSpacing: "1px",
+  margin: "0 8px",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
   "&:hover": {
-    backgroundColor: "#40407a",
-    borderColor: "#00aaff",
-    boxShadow: "0 6px 12px rgba(0, 0, 0, 0.4)",
+    backgroundColor: "#4a7c59",
+    borderColor: "#a7c957",
+    boxShadow: `
+      0 0 25px rgba(167, 201, 87, 0.6),
+      0 12px 24px rgba(0, 0, 0, 0.7)
+    `,
+    transform: "translateY(-2px) scale(1.05)",
   },
   "&:active": {
-    transform: "scale(0.95)",
+    transform: "translateY(0) scale(0.98)",
   },
-}));
+});
 
-// Card Component
+// Card Component with enhanced forest styling
 const Card = ({ card, handleClick, flipped, matched }) => {
   const { transform } = useSpring({
     transform: flipped || matched ? "rotateY(180deg)" : "rotateY(0deg)",
@@ -226,10 +350,30 @@ const Card = ({ card, handleClick, flipped, matched }) => {
     <CardContainer onClick={handleClick}>
       <CardInner style={{ transform }}>
         <CardFront>
-          <img src={card.image} alt="Card front" style={{ width: "140%", height: "140%" }} />
+          <img 
+            src={card.image} 
+            alt="Card front" 
+            style={{ 
+              width: "120%", 
+              height: "120%", 
+              objectFit: "cover",
+              borderRadius: "8px",
+              filter: "contrast(1.1) saturate(1.2)",
+            }} 
+          />
         </CardFront>
         <CardBack>
-          <img src="/images/Back2.png" alt="Card back" style={{ width: "140%", height: "140%" }} />
+          <img 
+            src="/images/backshot.jpg" 
+            alt="Card back" 
+            style={{ 
+              width: "120%", 
+              height: "120%", 
+              objectFit: "cover",
+              borderRadius: "8px",
+              filter: "sepia(0.3) hue-rotate(90deg) saturate(1.4)",
+            }} 
+          />
         </CardBack>
       </CardInner>
     </CardContainer>
@@ -274,6 +418,7 @@ const MemoryCardGame = () => {
     };
     console.log("Starting new game with previous stats:", gameData);
   };
+
   const handleNewGame = () => {  
     setCards(shuffleArray(cardImages));
     setMatchedCards([]);
@@ -282,34 +427,32 @@ const MemoryCardGame = () => {
     setTimer(0);
     setTimerActive(false);
     setInitialReveal(true);
-    setAudioIndex(0); // Reset audio index
-
+    setAudioIndex(0);
     
     const mouseDisableDuration = 2000;
     setMouseDisabled(true);
     setTimeout(() => {
-      setMouseDisabled(false);  // Re-enable mouse events after mouseDisableDuration
+      setMouseDisabled(false);
     }, mouseDisableDuration);
 
-  
     setTimeout(() => {
       setInitialReveal(false);
       setTimerActive(true);
-   
     }, 1500);
   };
+
   const handleBackButton = () => {
-    setOpenModal(true); // Show the confirmation modal
+    setOpenModal(true);
   };
 
   const handleModalYes = () => {
     setOpenModal(false);
-    localStorage.removeItem("gameCompleted"); // Remove game completion flag
-    navigate("/play"); // Navigate to play
+    localStorage.removeItem("gameCompleted");
+    navigate("/play");
   };
 
   const handleModalNo = () => {
-    setOpenModal(false); // Close the modal and resume game
+    setOpenModal(false);
   };
    
   useEffect(() => {
@@ -341,11 +484,10 @@ const MemoryCardGame = () => {
         if (card1.image === card2.image) {
           setMatchedCards((prev) => [...prev, card1.id, card2.id]);
           if (audioIndex < matchAudioFiles.length) {
-            // Play the next audio in order
             const nextAudio = new Audio(matchAudioFiles[audioIndex]);
-            nextAudio.volume = sfxVolume / 100; // Set the volume for sound effects
+            nextAudio.volume = sfxVolume / 100;
             nextAudio.play();
-            setAudioIndex(audioIndex + 1); // Move to the next audio
+            setAudioIndex(audioIndex + 1);
           }
         } else {
           setFailedAttempts((prev) => prev + 1);
@@ -357,15 +499,12 @@ const MemoryCardGame = () => {
   
   useEffect(() => {
     if (matchedCards.length === cards.length && cards.length > 0) {
-        // Play the congratulations audio
         const congrats = new Audio(congratsAudio);
         congrats.volume = sfxVolume / 100;
         congrats.play();
 
-        // Stop the timer before saving the game data
         setTimerActive(false);
 
-        // Ensure the game data is saved only once
         const saveData = async () => {
             try {
                 await saveGameData({
@@ -395,54 +534,90 @@ const MemoryCardGame = () => {
   return (
     <StyledGameContainer mouseDisabled={mouseDisabled}>
       <audio ref={audioRef} src={bgMusic} loop />
-      <PixelButton onClick={handleBackButton} sx={{ alignSelf: "flex-start", margin: 2 }}>
-        Back
-      </PixelButton>
-      <PixelTimerBox>Timer: {timer}s</PixelTimerBox>
-      <PixelBox>Learning Moments: {failedAttempts}</PixelBox>
-      <Grid container spacing={8} justifyContent="center" sx={{ maxWidth: 700, marginTop: "-120px" }}>
-        {cards.map((card) => (
-          <Grid item xs={3} key={card.id}>
-            <Card
-              card={card}
-              handleClick={() => handleCardClick(card)}
-              flipped={
-                initialReveal ||
-                flippedCards.some((c) => c.id === card.id) ||
-                matchedCards.includes(card.id)
-              }
-              matched={matchedCards.includes(card.id)}
-            />
-          </Grid>
-        ))}
-      </Grid>
-      <Box sx={{ mt: 2, textAlign: "center" }}>
-     
-<PixelButton onClick={() => { handleSaveNewGame(); handleNewGame(); }} sx={{ mt: 2 }}>
-          New Game
+      
+      {/* FIXED: New header layout with proper positioning */}
+      <HeaderContainer>
+        <PixelButton 
+          onClick={handleBackButton}
+          sx={{ alignSelf: "flex-start" }}
+        >
+          Back
         </PixelButton>
-      </Box>
+        
+        <StatsContainer>
+          <PixelTimerBox>Timer: {timer}s</PixelTimerBox>
+          <PixelBox>Failed Attempts: {failedAttempts}</PixelBox>
+        </StatsContainer>
+      </HeaderContainer>
 
+      {/* FIXED: Main game content with better structure */}
+      <GameContentContainer>
+        {/* FIXED: Card grid with solid background */}
+        <Grid 
+          container 
+          spacing={2} 
+          justifyContent="center" 
+          sx={{ 
+            maxWidth: 800, 
+            margin: "20px auto",
+            padding: "30px",
+            // FIXED: Solid background instead of transparent
+            background: "rgba(45, 80, 22, 0.9)", // Much more opaque
+            borderRadius: "20px",
+            border: "3px solid #a7c957", // Thicker border
+            backdropFilter: "blur(10px)",
+            boxShadow: `
+              0 0 30px rgba(167, 201, 87, 0.6),
+              0 16px 32px rgba(0, 0, 0, 0.8),
+              inset 0 2px 0 rgba(255, 255, 255, 0.1)
+            `,
+          }}
+        >
+          {cards.map((card) => (
+            <Grid item xs={6} sm={4} md={3} key={card.id}>
+              <Card
+                card={card}
+                handleClick={() => handleCardClick(card)}
+                flipped={
+                  initialReveal ||
+                  flippedCards.some((c) => c.id === card.id) ||
+                  matchedCards.includes(card.id)
+                }
+                matched={matchedCards.includes(card.id)}
+              />
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* FIXED: Better positioned New Game button */}
+        <Box sx={{ 
+          textAlign: "center", 
+          marginTop: "20px",
+          marginBottom: "20px" 
+        }}>
+          <PixelButton onClick={() => { handleSaveNewGame(); handleNewGame(); }}>
+            New Game
+          </PixelButton>
+        </Box>
+      </GameContentContainer>
 
       <Modal open={openModal} onClose={handleModalNo}>
-  <Box sx={modalStyle}>
-    <PixelTypography variant="h6">
-      Are you sure you want to go back to the play page?
-    </PixelTypography>
-    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, marginTop: 2 }}>
-      <PixelButtonModal onClick={() => { handleSaveNewGame(); handleModalYes(); }} variant="contained" color="primary">
-        Yes
-      </PixelButtonModal>
-      <PixelButtonModal onClick={handleModalNo} variant="contained" color="secondary">
-        No
-      </PixelButtonModal>
-    </Box>
-  </Box>
-</Modal>
+        <Box sx={modalStyle}>
+          <PixelTypography variant="h6">
+            Are you sure you want to go back to the play page?
+          </PixelTypography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, marginTop: 2 }}>
+            <PixelButtonModal onClick={() => { handleSaveNewGame(); handleModalYes(); }} variant="contained">
+              Yes
+            </PixelButtonModal>
+            <PixelButtonModal onClick={handleModalNo} variant="contained">
+              No
+            </PixelButtonModal>
+          </Box>
+        </Box>
+      </Modal>
     </StyledGameContainer>
   );
 };
-
-
 
 export default MemoryCardGame;

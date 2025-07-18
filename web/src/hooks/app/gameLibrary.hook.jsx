@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 
-
 // Mock game data - you can replace this with API calls later
 const MOCK_GAMES = [
   {
@@ -25,10 +24,10 @@ const MOCK_GAMES = [
       'Progress tracking',
       'Calm mode option'
     ],
-    route: 'http://localhost:5177', // This will be used as the external URL
+    route: 'http://localhost:5177', // Memory card game port
     isExternal: true // Flag to indicate this is an external game
   },
-   {
+  {
     // use this to connect the wonder puzz game
     id: 2,
     title: 'Forest Puzzle Game',
@@ -54,46 +53,54 @@ const MOCK_GAMES = [
     isExternal: true // Flag to indicate this is an external game
   },
   {
+    // use this for the matching card game
     id: 3,
-    title: 'Ecosystem Builder',
-    description: 'Create and maintain balanced forest ecosystems',
-    fullDescription: 'Become an ecosystem architect! Design balanced forest environments by understanding species relationships, food chains, and habitat requirements. Watch your ecosystem thrive or struggle based on your decisions.',
-    genre: 'Simulation',
-    status: 'coming-soon',
-    progress: 0,
-    difficulty: 'Advanced',
-    duration: '60 min',
-    ageRange: '12-18 years',
-    image: '/games/ecosystem-builder.jpg',
-    banner: '/games/ecosystem-builder-banner.jpg',
+    title: 'Forest Match Game',
+    description: 'Test your knowledge by matching forest animals and their sounds',
+    fullDescription: 'Challenge your wildlife knowledge with our Forest Match Game! Listen to animal sounds and match them with the correct forest animals. Learn about different species, their habitats, and the sounds they make in the wild. Perfect for developing auditory recognition skills while learning about forest ecosystems.',
+    genre: 'Educational & Audio',
+    status: 'available',
+    progress: 50,
+    difficulty: 'Intermediate',
+    duration: '15-25 min',
+    ageRange: '8-16 years',
+    image: '/games/forest-match-game.jpg',
+    banner: '/games/forest-match-banner.jpg',
     features: [
-      'Complex ecosystem simulation',
-      'Species interaction modeling',
-      'Biodiversity challenges',
-      'Research-based gameplay'
+      'Audio-based learning',
+      'Animal sound recognition',
+      'Wildlife education',
+      'Multiple difficulty levels',
+      'Progress tracking',
+      'Interactive gameplay'
     ],
-    route: '/game/ecosystem-builder'
+    route: 'http://localhost:5175', // Match game port
+    isExternal: true // Flag to indicate this is an external game
   },
   {
+    // use this for the color game
     id: 4,
-    title: 'Wildlife Rescue',
-    description: 'Save endangered animals and learn about conservation',
-    fullDescription: 'Join the wildlife rescue team! Learn about endangered species, their habitats, and conservation efforts. Complete rescue missions and contribute to real-world conservation knowledge.',
-    genre: 'Adventure',
-    status: 'locked',
-    progress: 0,
+    title: 'Forest Color Game',
+    description: 'Learn about forest wildlife through interactive coloring and educational activities',
+    fullDescription: 'Discover the vibrant world of forest wildlife with our interactive coloring game! Color beautiful forest animals and plants while learning about their characteristics, habitats, and conservation status. Each coloring session includes fun facts and educational content about forest ecosystems.',
+    genre: 'Creative & Educational',
+    status: 'available',
+    progress: 25,
     difficulty: 'Beginner',
-    duration: '40 min',
-    ageRange: '6-12 years',
-    image: '/games/wildlife-rescue.jpg',
-    banner: '/games/wildlife-rescue-banner.jpg',
+    duration: '20-35 min',
+    ageRange: '6-14 years',
+    image: '/games/forest-color-game.jpg',
+    banner: '/games/forest-color-banner.jpg',
     features: [
-      'Endangered species education',
-      'Rescue mission gameplay',
-      'Conservation awareness',
-      'Mini-game collection'
+      'Interactive coloring',
+      'Wildlife education',
+      'Creative expression',
+      'Fun facts learning',
+      'Progress saving',
+      'Relaxing gameplay'
     ],
-    route: '/game/wildlife-rescue'
+    route: 'http://localhost:5174', // Color game port
+    isExternal: true // Flag to indicate this is an external game
   },
   {
     id: 5,
@@ -217,7 +224,7 @@ export const useGameLibrary = () => {
   const handlePlayGame = (game) => {
     console.log('Playing game:', game.title);
     
-    // Handle external games (like memory card game)
+    // Handle external games (memory card, puzzle, match, and color games)
     if (game.isExternal && game.route) {
       console.log('Opening external game:', game.route);
       
