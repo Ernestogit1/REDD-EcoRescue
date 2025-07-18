@@ -6,6 +6,12 @@ import DifficultyScreen from '../screens/Levels/DifficultyScreen';
 import EasyMapScreen from '../screens/Levels/Map/EasyMapScreen';
 import MediumMapScreen from '../screens/Levels/Map/MediumMapScreen';
 import HardMapScreen from '../screens/Levels/Map/HardMapScreen';
+import LevelDetailsScreen from '../screens/Levels/Map/LevelDetailsScreen';
+// Import level screens
+import Level1Screen from '../screens/Levels/Map/Level1-5/Level1Screen';
+import Level2Screen from '../screens/Levels/Map/Level1-5/Level2Screen';
+import Level3Screen from '../screens/Levels/Map/Level1-5/Level3Screen';
+import Level4Screen from '../screens/Levels/Map/Level1-5/Level4Screen';
 
 const Stack = createStackNavigator();
 
@@ -57,14 +63,39 @@ export default function GameNavigator() {
         }}
       </Stack.Screen>
       
-      {/* This screen will be implemented later for actual gameplay */}
       <Stack.Screen 
-        name="Play" 
-        component={DifficultyScreen} // Placeholder until actual game screen is created
+        name="LevelDetails" 
+        component={LevelDetailsScreen}
         options={({ route }) => ({ 
           title: `Level ${route.params?.level || 1} - ${route.params?.difficulty || 'Easy'}` 
         })}
       />
+      
+      <Stack.Screen 
+        name="Play" 
+        options={({ route }) => ({ 
+          title: `Level ${route.params?.level || 1} - ${route.params?.difficulty || 'Easy'}` 
+        })}
+      >
+        {({ route }) => {
+          // Determine which level screen to show based on level number
+          const { level } = route.params || {};
+          
+          switch (parseInt(level)) {
+            case 1:
+              return <Level1Screen />;
+            case 2:
+              return <Level2Screen />;
+            case 3:
+              return <Level3Screen />;
+            case 4:
+              return <Level4Screen />;
+            // Add more level screens as you create them
+            default:
+              return <DifficultyScreen />;
+          }
+        }}
+      </Stack.Screen>
     </Stack.Navigator>
   );
 }

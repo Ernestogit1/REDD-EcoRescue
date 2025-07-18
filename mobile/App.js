@@ -11,6 +11,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { useEffect } from 'react';
 import audioService from './src/services/audio.service';
 import 'expo-dev-client';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator();
 
@@ -84,16 +85,18 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Home"
-        screenOptions={screenOptions}
-      >
-        <Stack.Screen name="Home" component={HomeNavigator} />
-        <Stack.Screen name="GameRoot" component={GameNavigator} />
-        <Stack.Screen name="Dashboard" component={DashboardScreen} />
-      </Stack.Navigator>
-      <StatusBar style="auto" />
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Home"
+          screenOptions={screenOptions}
+        >
+          <Stack.Screen name="Home" component={HomeNavigator} />
+          <Stack.Screen name="GameRoot" component={GameNavigator} />
+          <Stack.Screen name="Dashboard" component={DashboardScreen} />
+        </Stack.Navigator>
+        <StatusBar hidden={true} />
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }

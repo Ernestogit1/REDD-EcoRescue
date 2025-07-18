@@ -20,26 +20,26 @@ export default function EasyMapScreen() {
         {
             id: 1,
             name: 'Level 1',
-            stars: 0, // 0 means not completed yet
+            stars: 1, // 0 means not completed yet
             unlocked: true,
         },
         {
             id: 2,
             name: 'Level 2',
             stars: 0,
-            unlocked: false,
+            unlocked: true,
         },
         {
             id: 3,
             name: 'Level 3',
             stars: 0,
-            unlocked: false,
+            unlocked: true,
         },
         {
             id: 4,
             name: 'Level 4',
             stars: 0,
-            unlocked: false,
+            unlocked: true,
         },
         {
             id: 5,
@@ -84,9 +84,9 @@ export default function EasyMapScreen() {
         setSelectedLevel(level.id);
         // Add a small delay for the selection animation
         setTimeout(() => {
-            // Navigate to the actual game level
-            navigation.navigate('Play', { 
-                difficulty: 'easy', 
+            // Navigate to the level details screen
+            navigation.navigate('LevelDetails', { 
+                difficulty: 'Easy', 
                 level: level.id 
             });
         }, 300);

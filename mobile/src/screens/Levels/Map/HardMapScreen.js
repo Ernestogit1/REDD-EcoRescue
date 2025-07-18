@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-export default function EasyMapScreen() {
+export default function HardMapScreen() {
     const navigation = useNavigation();
     const [selectedLevel, setSelectedLevel] = useState(null);
     const [unlockedLevels, setUnlockedLevels] = useState(1); // Only first level unlocked initially
@@ -84,9 +84,9 @@ export default function EasyMapScreen() {
         setSelectedLevel(level.id);
         // Add a small delay for the selection animation
         setTimeout(() => {
-            // Navigate to the actual game level
-            navigation.navigate('Play', { 
-                difficulty: 'easy', 
+            // Navigate to the level details screen
+            navigation.navigate('LevelDetails', { 
+                difficulty: 'Hard', 
                 level: level.id 
             });
         }, 300);
