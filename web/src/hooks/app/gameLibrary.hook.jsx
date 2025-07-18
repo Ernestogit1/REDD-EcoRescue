@@ -28,26 +28,30 @@ const MOCK_GAMES = [
     route: 'http://localhost:5177', // This will be used as the external URL
     isExternal: true // Flag to indicate this is an external game
   },
-  {
+   {
+    // use this to connect the wonder puzz game
     id: 2,
-    title: 'Carbon Calculator',
-    description: 'Learn how forests capture carbon and calculate environmental impact',
-    fullDescription: 'Dive deep into the science of carbon sequestration! Use real-world data to understand how forests capture CO2 and contribute to fighting climate change. Build your own carbon calculation models.',
-    genre: 'Educational',
+    title: 'Forest Puzzle Game',
+    description: 'Solve forest-themed jigsaw puzzles and learn about wildlife conservation',
+    fullDescription: 'Challenge your problem-solving skills with our Forest Puzzle Game! Complete beautiful jigsaw puzzles featuring forest wildlife and landscapes. Choose from three difficulty levels: Easy (2x2), Medium (3x3), and Hard (4x2). Each completed puzzle teaches you about forest ecosystems and wildlife conservation.',
+    genre: 'Puzzle & Educational',
     status: 'available',
     progress: 100,
     difficulty: 'Intermediate',
-    duration: '30 min',
-    ageRange: '10-16 years',
-    image: '/games/carbon-calculator.jpg',
-    banner: '/games/carbon-calculator-banner.jpg',
+    duration: '20-45 min',
+    ageRange: '8-16 years',
+    image: '/games/forest-puzzle-game.jpg',
+    banner: '/games/forest-puzzle-banner.jpg',
     features: [
-      'Real scientific data',
-      'Interactive calculations',
-      'Visual carbon modeling',
-      'Progress tracking'
+      'Multiple difficulty levels',
+      'Beautiful forest imagery',
+      'Wildlife education',
+      'Timer challenges',
+      'Progress tracking',
+      'Relaxing gameplay'
     ],
-    route: '/calculator'
+    route: 'http://localhost:5176', // Puzzle game port
+    isExternal: true // Flag to indicate this is an external game
   },
   {
     id: 3,

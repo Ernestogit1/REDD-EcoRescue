@@ -1,4 +1,4 @@
-const Save = require('../../../database/models/card.model.js');
+const Save = require('../../../database/models/card.model');
 
 const saveGameData = async (req, res) => {
     const { gameDate, failed, difficulty, completed, timeTaken } = req.body;
