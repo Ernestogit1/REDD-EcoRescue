@@ -39,7 +39,8 @@ const createAdminUser = async () => {
       rank:'admin', //                     ||======> storein MongoDB   
       rescueStars: "69", //                   ||   
       avatar: "default-avatar.png", //              ||   
-      pushToken: "", //                            ||
+      pushToken: "",
+      isAdmin: true//                            ||
      //===============================||
     });
 

@@ -16,6 +16,7 @@ app.use(
     origin: [
       'http://localhost:5000', // Backend API
       'http://localhost:5173', // Web API
+      'http//localhost:5178', // Admin API
 
       //games
       'http://localhost:5177', // Card API
