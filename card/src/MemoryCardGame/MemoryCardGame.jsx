@@ -9,7 +9,7 @@ import bgMusic from "../assets/audio/lost.mp3";
 import axios from "axios";
 import useCardStore from '../store/cardStore';
 
-const defaultDifficulty = "Hard";
+const defaultDifficulty = "Hard"; 
 
 // Card Images
 const cardImages = [
