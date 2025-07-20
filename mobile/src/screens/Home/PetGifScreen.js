@@ -25,7 +25,7 @@ const PET_VIDEOS = {
 const ANIMAL_NAMES = {
   1: 'Rabbit', 2: 'Squirrel', 3: 'Duck', 4: 'Butterfly', 5: 'Frog',
   6: 'Red Fox', 7: 'Raccoon', 8: 'Owl', 9: 'Beaver', 10: 'Turtle',
-  11: 'Snow Leopard', 12: 'Orangutan', 13: 'Sea Turtle', 14: 'Bald Eagle', 15: 'Poison Dart Frog',
+  11: 'Snow Leopard', 12: 'Orangutan', 13: 'Sea Turtle', 14: 'Bald Eagle', 15: 'Poison Dart',
 };
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
