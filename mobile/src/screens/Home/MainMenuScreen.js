@@ -200,6 +200,11 @@ export default function MainMenuScreen() {
     }
   };
 
+  // Navigate to shop
+  const handleShopNavigation = () => {
+    navigation.navigate('Shop');
+  };
+
   // Add avatar button if user is logged in
   const renderAvatarButton = () => {
     console.log(user);
@@ -332,6 +337,14 @@ export default function MainMenuScreen() {
           onPress={toggleBackgroundSelector}
         >
           <Text style={styles.bgSelectorButtonText}>🖼️</Text>
+        </TouchableOpacity>
+
+        {/* Shop button */}
+        <TouchableOpacity 
+          style={styles.shopButton}
+          onPress={handleShopNavigation}
+        >
+          <Text style={styles.shopButtonText}>🛒</Text>
         </TouchableOpacity>
 
         {/* Background selector container (not modal) */}
@@ -555,6 +568,24 @@ const styles = StyleSheet.create({
     borderColor: '#FFD700',
   },
   bgSelectorButtonText: {
+    fontSize: 18,
+  },
+  // Shop button
+  shopButton: {
+    position: 'absolute',
+    top: 70,
+    right: 20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    borderWidth: 2,
+    borderColor: '#4ade80',
+  },
+  shopButtonText: {
     fontSize: 18,
   },
   // Modal styles
