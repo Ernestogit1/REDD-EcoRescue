@@ -641,7 +641,6 @@ export default function Level2Screen() {
     setTimeout(async () => {
       try {
         await ApiService.markLevelComplete(2);
-        await ApiService.awardCollectibleCard({ level: 2 });
         setShowCardModal(true);
         Animated.sequence([
           Animated.timing(cardAnim, {
@@ -869,7 +868,7 @@ export default function Level2Screen() {
                 style={{ width: 120, height: 120, marginBottom: 16 }}
                 resizeMode="contain"
               />
-              <Text style={styles.modalMessage}>Squirrel Card\nCongratulations! You collected a new card for Level 2.</Text>
+              <Text style={styles.modalMessage}>Congratulations! You collected a new card for Level 2.</Text>
               <TouchableOpacity 
                 style={styles.modalButton}
                 onPress={() => {
