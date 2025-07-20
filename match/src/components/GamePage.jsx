@@ -161,7 +161,7 @@ const GamePage = () => {
     <Box sx={{
       position: 'relative',
       minHeight: '100vh',
-      backgroundImage: 'url(/assets/game_images/matchgamebg.png)',
+      backgroundImage: 'url(/assets/game_images/sunset.gif)',
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat'
