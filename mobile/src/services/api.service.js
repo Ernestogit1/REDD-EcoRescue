@@ -276,6 +276,26 @@ class ApiService {
   async getUserCollectedCards() {
     return await this.makeNonMobileRequest('/api/collected-cards/user');
   }
+
+  // Add a collected card for the user
+  async collectCard({ levelId, name, image, description }) {
+    const token = await this.getAuthToken();
+    if (!token) throw new Error('Not authenticated');
+    const url = `${API_BASE_URL}/api/collected-cards`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ levelId, name, image, description }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.message || 'Failed to collect card');
+    }
+    return response.json();
+  }
 }
 
 export default new ApiService();

@@ -25,7 +25,8 @@ const UserSchema = new mongoose.Schema(
        default: '',
        }, 
     rank:{
-       type: String, 
+       type: String,
+        
        default: 'Novice'
       },
     rescueStars:{

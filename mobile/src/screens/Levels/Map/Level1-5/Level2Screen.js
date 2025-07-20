@@ -623,6 +623,7 @@ export default function Level2Screen() {
     ApiService.addPoints(finalScore).catch((err) => {
       console.error('Failed to add points:', err);
     });
+    // No collectCard call here
 
     if (isWin) {
       playSoundEffect('win');

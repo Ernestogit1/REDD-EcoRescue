@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Modal, Animated, useWindowDimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import ApiService from '../../../../services/api.service';
 
 // 8-bit pattern puzzle game for rescuing a baby Owl
 const PATTERN_SIZE = 4; // 4x4 grid for Grade 3-4
@@ -43,6 +44,20 @@ export default function Level8Screen() {
   const [modalMessage, setModalMessage] = useState('');
   const [modalType, setModalType] = useState(''); // 'success' or 'failure'
   const [modalAnim] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    if (showModal && modalType === 'success') {
+      (async () => {
+        try {
+          await ApiService.addPoints(score);
+          await ApiService.markLevelComplete(8);
+          // Removed collectCard call
+        } catch (err) {
+          console.error('Failed to update backend:', err);
+        }
+      })();
+    }
+  }, [showModal, modalType]);
 
   // Toggle cell state
   const toggleCell = (row, col) => {

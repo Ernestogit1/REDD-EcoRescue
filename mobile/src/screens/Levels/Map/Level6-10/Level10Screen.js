@@ -7,6 +7,7 @@ import marioImg from '../../../../../assets/images/levels/level10/mario.png';
 import turtleImg from '../../../../../assets/images/levels/level10/turtle.png';
 import stoneImg from '../../../../../assets/images/levels/level10/stone.png';
 import bombImg from '../../../../../assets/images/levels/level10/bomb.png';
+import ApiService from '../../../../services/api.service';
 
 
 const { width, height } = Dimensions.get('window');
@@ -260,6 +261,20 @@ export default function Level10Screen() {
   // Camera logic: center the turtle, don't limit camera movement
   const CAMERA_WIDTH = width - 220; // game area width
   let cameraOffset = Math.max(0, turtleX - CAMERA_WIDTH / 2);
+
+  useEffect(() => {
+    if (win) {
+      (async () => {
+        try {
+          await ApiService.addPoints(score);
+          await ApiService.markLevelComplete(10);
+          // Removed collectCard call
+        } catch (err) {
+          console.error('Failed to update backend:', err);
+        }
+      })();
+    }
+  }, [win]);
 
   return (
     <View style={styles.landscapeContainer}>

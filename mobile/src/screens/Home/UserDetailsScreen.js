@@ -110,7 +110,7 @@ export default function UserDetailsScreen({ navigation }) {
             <Text style={styles.label}><Text style={styles.labelHighlight}>Username:</Text> {user.username}</Text>
             <Text style={styles.label}><Text style={styles.labelHighlight}>Email:</Text> {user.email}</Text>
             <Text style={styles.label}><Text style={styles.labelHighlight}>Rank:</Text> {user.rank}</Text>
-            <Text style={styles.label}><Text style={styles.labelHighlight}>Rescue Stars:</Text> {user.rescueStars}</Text>
+            {/* <Text style={styles.label}><Text style={styles.labelHighlight}>Rescue Stars:</Text> {user.rescueStars}</Text> */}
             <Text style={styles.label}><Text style={styles.labelHighlight}>Points:</Text> {user.points}</Text>
           </View>
         );

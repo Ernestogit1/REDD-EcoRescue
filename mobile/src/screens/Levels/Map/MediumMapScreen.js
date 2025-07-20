@@ -11,11 +11,11 @@ export default function MediumMapScreen() {
     const navigation = useNavigation();
     const [selectedLevel, setSelectedLevel] = useState(null);
     const [levels, setLevels] = useState([
-        { id: 6, name: 'Level 6', stars: 0, unlocked: false },
-        { id: 7, name: 'Level 7', stars: 0, unlocked: false },
-        { id: 8, name: 'Level 8', stars: 0, unlocked: false },
-        { id: 9, name: 'Level 9', stars: 0, unlocked: false },
-        { id: 10, name: 'Level 10', stars: 0, unlocked: false },
+        { id: 6, name: 'Level 6', stars: 0, unlocked: true },
+        { id: 7, name: 'Level 7', stars: 0, unlocked: true },
+        { id: 8, name: 'Level 8', stars: 0, unlocked: true },
+        { id: 9, name: 'Level 9', stars: 0, unlocked: true },
+        { id: 10, name: 'Level 10', stars: 0, unlocked: true },
     ]);
     const [userId, setUserId] = useState(null);
     

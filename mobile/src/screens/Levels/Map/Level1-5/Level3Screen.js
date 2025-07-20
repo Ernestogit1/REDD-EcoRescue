@@ -71,16 +71,18 @@ export default function Level3Screen() {
     ]);
 
     Animated.parallel([fadeAnimation, rotateAnimation]).start(() => {
-      setActiveHoles(prev => {
-        const updatedHoles = [...prev];
-        updatedHoles[randomIndex] = false;
-        return updatedHoles;
-      });
-      setBugTypes(prev => {
-        const updatedTypes = [...prev];
-        updatedTypes[randomIndex] = null;
-        return updatedTypes;
-      });
+      setTimeout(() => {
+        setActiveHoles(prev => {
+          const updatedHoles = [...prev];
+          updatedHoles[randomIndex] = false;
+          return updatedHoles;
+        });
+        setBugTypes(prev => {
+          const updatedTypes = [...prev];
+          updatedTypes[randomIndex] = null;
+          return updatedTypes;
+        });
+      }, 0);
     });
 
     return () => {
@@ -155,6 +157,7 @@ export default function Level3Screen() {
       ApiService.addPoints(score).catch((err) => {
         console.error('Failed to add points:', err);
       });
+      // No collectCard call here
       Alert.alert(
         "Level Complete!",
         `Great job! You scored ${score} points!`,

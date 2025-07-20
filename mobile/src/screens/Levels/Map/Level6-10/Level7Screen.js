@@ -3,6 +3,7 @@ import { View, StyleSheet, Dimensions, TouchableOpacity, Text, Modal, Animated }
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import ApiService from '../../../../services/api.service';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const GRID_SIZE = 10; // Reduced from 15 to 10 for better mobile view
@@ -104,6 +105,20 @@ export default function Level7Screen() {
 
     return () => clearInterval(moveInterval);
   }, [gameStarted, gameOver, raccoonPos]);
+
+  useEffect(() => {
+    if (gameOver && modalType === 'success') {
+      (async () => {
+        try {
+          await ApiService.addPoints(score);
+          await ApiService.markLevelComplete(7);
+          // Removed collectCard call
+        } catch (err) {
+          console.error('Failed to update backend:', err);
+        }
+      })();
+    }
+  }, [gameOver, modalType]);
 
   const resetGame = () => {
     setMaze(initialMaze);

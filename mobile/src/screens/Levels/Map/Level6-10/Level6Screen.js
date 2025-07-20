@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Alert, Image, Platform, Modal } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import ApiService from '../../../../services/api.service';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -119,9 +120,17 @@ export default function Level6Screen() {
       setPlayer({ row: newRow, col: newCol });
       if (newRow === FOX_POS.row && newCol === FOX_POS.col) {
         setGameWon(true);
-        setTimeout(() => {
-          setShowWinModal(true);
-        }, 300);
+        (async () => {
+          try {
+            await ApiService.addPoints(score);
+            await ApiService.markLevelComplete(6);
+          } catch (err) {
+            console.error('Failed to update backend:', err);
+          }
+          setTimeout(() => {
+            setShowWinModal(true);
+          }, 300);
+        })();
       }
     }
   };

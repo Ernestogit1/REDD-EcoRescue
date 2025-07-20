@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import ApiService from '../../../../services/api.service';
 
 // Beaver Trail Puzzle - Level 9
 const GRID_SIZE = 4; // 4x4 grid for easier gameplay
@@ -48,6 +49,20 @@ const Level9Screen = () => {
   const [showGameOverModal, setShowGameOverModal] = useState(false);
   const [showWinModal, setShowWinModal] = useState(false);
   const [showVisualHint, setShowVisualHint] = useState(false);
+
+  React.useEffect(() => {
+    if (showWinModal) {
+      (async () => {
+        try {
+          await ApiService.addPoints(score);
+          await ApiService.markLevelComplete(9);
+          // Removed collectCard call
+        } catch (err) {
+          console.error('Failed to update backend:', err);
+        }
+      })();
+    }
+  }, [showWinModal]);
 
   // Find the start block coordinates
   const startRow = trail[0][0];
