@@ -77,8 +77,11 @@ export default function LoginScreen() {
             {
               text: 'OK',
               onPress: () => {
-                // Navigate to dashboard
-                navigation.navigate('Dashboard');
+                if (response.data.user.isAdmin) {
+                  navigation.navigate('Dashboard');
+                } else {
+                  navigation.navigate('MainMenu');
+                }
               }
             }
           ]
@@ -110,7 +113,7 @@ export default function LoginScreen() {
           <View style={styles.header}>
             <Text style={styles.avatar}>👤</Text>
             <Text style={styles.subtitle}>Login</Text>
-          </View>a
+          </View>
           
           {error ? <Text style={styles.error}>{error}</Text> : null}
           
