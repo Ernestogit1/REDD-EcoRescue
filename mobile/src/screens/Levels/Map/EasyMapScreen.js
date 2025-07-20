@@ -14,6 +14,7 @@ export default function EasyMapScreen() {
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const mapAnim = useRef(new Animated.Value(0)).current;
     const levelAnims = useRef([...Array(5)].map(() => new Animated.Value(0))).current;
+    const backButtonAnim = useRef(new Animated.Value(0)).current;
 
     // Level data
     const levels = [
@@ -61,6 +62,11 @@ export default function EasyMapScreen() {
                 toValue: 1,
                 tension: 50,
                 friction: 7,
+                useNativeDriver: true,
+            }),
+            Animated.timing(backButtonAnim, {
+                toValue: 1,
+                duration: 600,
                 useNativeDriver: true,
             }),
         ]).start();
@@ -119,6 +125,29 @@ export default function EasyMapScreen() {
                 {/* Title overlay */}
                 <Animated.View style={[styles.titleOverlay, { opacity: fadeAnim }]}>
                     <Text style={styles.title}>EASY MODE</Text>
+                </Animated.View>
+                
+                {/* Back Button - 8-bit style */}
+                <Animated.View 
+                    style={[
+                        styles.backButtonContainer,
+                        {
+                            opacity: backButtonAnim,
+                            transform: [
+                                { translateX: backButtonAnim.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [-50, 0]
+                                })}
+                            ]
+                        }
+                    ]}
+                >
+                    <TouchableOpacity 
+                        style={styles.backButton}
+                        onPress={handleGoBack}
+                    >
+                        <Text style={styles.backButtonText}>RETURN</Text>
+                    </TouchableOpacity>
                 </Animated.View>
                 
                 {/* Level 1 */}
@@ -448,5 +477,34 @@ const styles = StyleSheet.create({
     },
     unearnedStar: {
         tintColor: '#555',
+    },
+    backButtonContainer: {
+        position: 'absolute',
+        top: 20,
+        left: 20,
+        zIndex: 10,
+    },
+    backButton: {
+        backgroundColor: '#8B4513',
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        borderWidth: 3,
+        borderColor: '#FFD700',
+        // 8-bit style with sharp edges
+        borderRadius: 0,
+        // Pixelated shadow effect
+        shadowColor: '#000',
+        shadowOffset: { width: 4, height: 4 },
+        shadowOpacity: 1,
+        shadowRadius: 0,
+        elevation: 5,
+    },
+    backButtonText: {
+        fontFamily: 'PressStart2P_400Regular',
+        color: '#FFF',
+        fontSize: 12,
+        textShadowColor: '#000',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 0,
     },
 });

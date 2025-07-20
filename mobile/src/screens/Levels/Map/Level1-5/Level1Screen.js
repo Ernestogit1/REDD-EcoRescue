@@ -28,12 +28,16 @@ export default function Level1Screen() {
   const [score, setScore] = useState(0);
   const [timer, setTimer] = useState(60); // 60 seconds game time
   const [isPreviewPhase, setIsPreviewPhase] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupType, setPopupType] = useState(''); // 'win' or 'lose'
+  const [popupMessage, setPopupMessage] = useState({title: '', message: ''});
   const timerRef = useRef(null);
   const previewTimerRef = useRef(null);
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const bounceAnim = useRef(new Animated.Value(0)).current;
+  const popupAnim = useRef(new Animated.Value(0)).current;
   
   // Sound effects
   const playSoundEffect = (type) => {
@@ -112,6 +116,27 @@ export default function Level1Screen() {
       handleGameOver(true);
     }
   }, [matched]);
+
+  // Animate popup when it appears
+  useEffect(() => {
+    if (showPopup) {
+      Animated.sequence([
+        Animated.timing(popupAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.spring(popupAnim, {
+          toValue: 1,
+          friction: 5,
+          tension: 40,
+          useNativeDriver: true,
+        })
+      ]).start();
+    } else {
+      popupAnim.setValue(0);
+    }
+  }, [showPopup]);
   
   const startGame = () => {
     // Create card deck with pairs
@@ -126,6 +151,7 @@ export default function Level1Screen() {
     setGameComplete(false);
     setTimer(60);
     setScore(0);
+    setShowPopup(false);
     
     if (timerRef.current) clearInterval(timerRef.current);
     
@@ -173,32 +199,37 @@ export default function Level1Screen() {
         console.error('Failed to add points:', err);
       });
       
-      setTimeout(() => {
-        Alert.alert(
-          "Level Complete!",
-          `You matched all the cards!\nScore: ${finalScore}\nTime left: ${timer}s\nMoves: ${moves}`,
-          [
-            { text: "Continue", onPress: () => navigation.goBack() }
-          ]
-        );
-      }, 1000);
+      // Show 8-bit style win popup
+      setPopupType('win');
+      setPopupMessage({
+        title: "LEVEL COMPLETE!",
+        message: `YOU MATCHED ALL CARDS!\n\nSCORE: ${finalScore}\nTIME LEFT: ${timer}s\nMOVES: ${moves}`
+      });
+      setShowPopup(true);
     } else {
       playSoundEffect('lose');
-      setTimeout(() => {
-        Alert.alert(
-          "Time's Up!",
-          "You ran out of time. Try again?",
-          [
-            { text: "Retry", onPress: () => startGame() },
-            { text: "Exit", onPress: () => navigation.goBack() }
-          ]
-        );
-      }, 1000);
+      // Show 8-bit style lose popup
+      setPopupType('lose');
+      setPopupMessage({
+        title: "TIME'S UP!",
+        message: "YOU RAN OUT OF TIME.\nTRY AGAIN?"
+      });
+      setShowPopup(true);
     }
   };
   
   const handleGoBack = () => {
     navigation.goBack();
+  };
+
+  const handlePopupAction = (action) => {
+    setShowPopup(false);
+    
+    if (action === 'retry' || action === 'playAgain') {
+      startGame();
+    } else if (action === 'continue' || action === 'exit') {
+      navigation.goBack();
+    }
   };
   
   const renderCard = (index) => {
@@ -223,6 +254,90 @@ export default function Level1Screen() {
           </View>
         )}
       </TouchableOpacity>
+    );
+  };
+
+  // 8-bit style popup component
+  const renderPopup = () => {
+    if (!showPopup) return null;
+
+    return (
+      <View style={styles.popupOverlay}>
+        <Animated.View 
+          style={[
+            styles.popupContainer,
+            {
+              transform: [
+                { scale: popupAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.5, 1]
+                })},
+                { translateY: popupAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [50, 0]
+                })}
+              ]
+            }
+          ]}
+        >
+          <LinearGradient
+            colors={popupType === 'win' ? ['#52B69A', '#1A759F'] : ['#D62828', '#9E2A2B']}
+            style={styles.popupGradient}
+          >
+            <View style={styles.popupHeader}>
+              <Text style={styles.popupTitle}>{popupMessage.title}</Text>
+            </View>
+            
+            <View style={styles.popupBody}>
+              <Text style={styles.popupText}>{popupMessage.message}</Text>
+            </View>
+            
+            <View style={styles.popupButtons}>
+              {popupType === 'lose' && (
+                <TouchableOpacity 
+                  style={styles.popupButton}
+                  onPress={() => handlePopupAction('retry')}
+                >
+                  <LinearGradient
+                    colors={['#52B69A', '#1A759F']}
+                    style={styles.popupButtonGradient}
+                  >
+                    <Text style={styles.popupButtonText}>RETRY</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              )}
+              
+              {popupType === 'win' && (
+                <TouchableOpacity 
+                  style={styles.popupButton}
+                  onPress={() => handlePopupAction('playAgain')}
+                >
+                  <LinearGradient
+                    colors={['#52B69A', '#1A759F']}
+                    style={styles.popupButtonGradient}
+                  >
+                    <Text style={styles.popupButtonText}>PLAY AGAIN</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              )}
+              
+              <TouchableOpacity 
+                style={styles.popupButton}
+                onPress={() => handlePopupAction(popupType === 'win' ? 'continue' : 'exit')}
+              >
+                <LinearGradient
+                  colors={['#1A3C40', '#0D1B1E']}
+                  style={styles.popupButtonGradient}
+                >
+                  <Text style={styles.popupButtonText}>
+                    {popupType === 'win' ? 'EXIT' : 'EXIT'}
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </LinearGradient>
+        </Animated.View>
+      </View>
     );
   };
   
@@ -317,6 +432,9 @@ export default function Level1Screen() {
             <Text style={styles.previewText}>MEMORIZE!</Text>
           </View>
         )}
+
+        {/* 8-bit Popup Message */}
+        {renderPopup()}
       </LinearGradient>
     </View>
   );
@@ -463,5 +581,85 @@ const styles = StyleSheet.create({
     fontFamily: 'PressStart2P_400Regular',
     color: '#FFD700',
     fontSize: 18,
+  },
+  // 8-bit popup styles
+  popupOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  popupContainer: {
+    width: '80%',
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 4,
+    borderColor: '#FFD700',
+    // 8-bit style shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 10,
+  },
+  popupGradient: {
+    width: '100%',
+    padding: 4,
+  },
+  popupHeader: {
+    padding: 12,
+    alignItems: 'center',
+    borderBottomWidth: 4,
+    borderBottomColor: '#FFD700',
+  },
+  popupTitle: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 16,
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 0,
+  },
+  popupBody: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  popupText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  popupButtons: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    padding: 15,
+    borderTopWidth: 4,
+    borderTopColor: '#FFD700',
+  },
+  popupButton: {
+    marginHorizontal: 10,
+    borderRadius: 4,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#FFD700',
+  },
+  popupButtonGradient: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  popupButtonText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
   }
 });
