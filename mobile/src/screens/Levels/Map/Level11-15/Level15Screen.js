@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { PixelRatio } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import ApiService from '../../../../services/api.service';
 
 // Get window dimensions
 const { width, height } = Dimensions.get('window');
@@ -99,7 +100,7 @@ const Level15Screen = () => {
   }, []);
 
   // End game function (moved before useEffect)
-  const endGame = useCallback((finalScore) => {
+  const endGame = useCallback(async (finalScore) => {
     if (gameState.gameOver || endGameRef.current) return;
     endGameRef.current = true;
 
@@ -110,6 +111,23 @@ const Level15Screen = () => {
 
     if (gameLoopRef.current) clearInterval(gameLoopRef.current);
     clearAllSinkTimers();
+
+    // Mark level as completed on backend
+    try {
+      const token = await ApiService.getAuthToken();
+      if (token) {
+        await fetch('http://192.168.1.19:5000/api/levels/complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ levelId: '15' }),
+        });
+      }
+    } catch (err) {
+      console.error('Failed to mark level 15 as completed:', err);
+    }
 
     const funFacts = [
       "Frogs absorb water through their skin, making them sensitive to pollution",

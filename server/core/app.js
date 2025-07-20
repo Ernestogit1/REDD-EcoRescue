@@ -7,6 +7,8 @@ const cardRoutes = require("../client/src/routes/card.route");
 const puzRoutes = require("../client/src/routes/puz.route");
 const matchRoutes = require("../client/src/routes/match.route");
 const colorRoutes = require("../client/src/routes/color.route");
+const collectedCardRoutes = require("../client/src/routes/collectedCard.route");
+const levelCompletionRoutes = require("../client/src/routes/levelCompletion.route");
 
 
 const app = express();
@@ -48,6 +50,8 @@ app.use('/api/card', cardRoutes);
 app.use('/api/puz', puzRoutes);
 app.use('/api/match', matchRoutes);
 app.use('/api/color', colorRoutes);
+app.use('/api/collected-cards', collectedCardRoutes);
+app.use('/api/levels', levelCompletionRoutes);
 
 
 module.exports = app;

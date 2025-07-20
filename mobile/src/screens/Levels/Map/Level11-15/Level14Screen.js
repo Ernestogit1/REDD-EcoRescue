@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { PixelRatio } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import ApiService from '../../../../services/api.service';
 
 // Get window dimensions
 const { width, height } = Dimensions.get('window');
@@ -199,48 +200,38 @@ const Level14Screen = () => {
   );
 
   // End game function
-  const endGame = useCallback((finalScore) => {
-    if (gameState.gameOver || endGameRef.current) return;
-    endGameRef.current = true;
+  const endGame = async (finalScore) => {
+    setGameState((prev) => ({ ...prev, gameOver: true, gameStarted: false }));
 
-    setGameState((prev) => {
-      if (showDebug) console.log(`Game ended, final score: ${finalScore}`);
-      return { ...prev, gameOver: true, gameStarted: false };
-    });
-
-    const funFacts = [
-      "Coral reefs support 25% of marine life but are threatened by pollution",
-      "Oceans absorb 30% of global CO2 emissions",
-      "Over 8 million tons of plastic enter the oceans annually",
-    ];
-    const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
-
-    let message = `Game Over!\nScore: ${finalScore}\nFun Fact: ${randomFact}`;
-    if (finalScore >= 910) { // 81 correct placements (810) + 100 bonus
-      message += '\n🌊 Victory! You solved the puzzle!\nProtect oceans: Reduce plastic pollution!';
-    } else {
-      message += '\n🐠 Try again to solve the puzzle!\nProtect oceans: Reduce plastic pollution!';
+    // Mark level as completed on backend
+    try {
+      const token = await ApiService.getAuthToken();
+      if (token) {
+        await fetch('http://192.168.1.19:5000/api/levels/complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ levelId: '14' }),
+        });
+      }
+    } catch (err) {
+      console.error('Failed to mark level 14 as completed:', err);
     }
 
-    Alert.alert(
-      'Level 14: Ocean Sudoku',
-      message,
-      [
-        {
-          text: 'Play Again',
-          onPress: () => {
-            initializeGame();
-            setGameState((prev) => ({ ...prev, gameStarted: true, gameOver: false, selectedCell: { x: 0, y: 0 } }));
-          },
-        },
-        {
-          text: 'Main Menu',
-          onPress: () => navigation.goBack(),
-        },
-      ],
-      { cancelable: false }
-    );
-  }, [initializeGame, navigation]);
+    let message = `Game Over!\nScore: ${finalScore}`;
+    if (finalScore >= 100) {
+      message += '\n🌟 Victory! You won!';
+    } else {
+      message += '\n💪 Try again to reach 100 points!';
+    }
+
+    Alert.alert('Level 14 Complete', message, [
+      { text: 'Play Again', onPress: initializeGame },
+      { text: 'Main Menu', onPress: () => navigation.goBack() },
+    ]);
+  };
 
   // Start game
   const startGame = useCallback(() => {
