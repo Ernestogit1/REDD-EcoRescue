@@ -11,8 +11,8 @@ export default function HardMapScreen() {
     const navigation = useNavigation();
     const [selectedLevel, setSelectedLevel] = useState(null);
     const [levels, setLevels] = useState([
-        { id: 11, name: 'Level 11', stars: 0, unlocked: false },
-        { id: 12, name: 'Level 12', stars: 0, unlocked: false },
+        { id: 11, name: 'Level 11', stars: 0, unlocked: true },
+        { id: 12, name: 'Level 12', stars: 0, unlocked: true },
         { id: 13, name: 'Level 13', stars: 0, unlocked: true },
         { id: 14, name: 'Level 14', stars: 0, unlocked: true },
         { id: 15, name: 'Level 15', stars: 0, unlocked: true },

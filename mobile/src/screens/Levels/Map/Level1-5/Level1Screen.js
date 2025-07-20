@@ -286,80 +286,76 @@ export default function Level1Screen({ route }) {
     if (!showPopup) return null;
 
     return (
-      <View style={styles.popupOverlay}>
+      <View style={styles.modalOverlay}>
         <Animated.View 
           style={[
-            styles.popupContainer,
+            styles.modalContent,
             {
               transform: [
                 { scale: popupAnim.interpolate({
                   inputRange: [0, 1],
                   outputRange: [0.5, 1]
-                })},
-                { translateY: popupAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [50, 0]
                 })}
               ]
             }
           ]}
         >
           <LinearGradient
-            colors={popupType === 'win' ? ['#52B69A', '#1A759F'] : ['#D62828', '#9E2A2B']}
-            style={styles.popupGradient}
+            colors={popupType === 'win' ? ['#76C893', '#52B69A'] : ['#E63946', '#D00000']}
+            style={styles.modalHeader}
           >
-            <View style={styles.popupHeader}>
-              <Text style={styles.popupTitle}>{popupMessage.title}</Text>
-            </View>
+            <Text style={styles.modalHeaderText}>
+              {popupType === 'win' ? '★ VICTORY! ★' : '× TIME\'S UP ×'}
+            </Text>
+          </LinearGradient>
+          
+          <View style={styles.modalBody}>
+            <Text style={styles.modalMessage}>{popupMessage.message}</Text>
             
-            <View style={styles.popupBody}>
-              <Text style={styles.popupText}>{popupMessage.message}</Text>
-            </View>
-            
-            <View style={styles.popupButtons}>
-              {popupType === 'lose' && (
+            <View style={styles.modalButtonsContainer}>
+              {popupType === 'win' && (
                 <TouchableOpacity 
-                  style={styles.popupButton}
-                  onPress={() => handlePopupAction('retry')}
+                  style={styles.modalButton}
+                  onPress={() => handlePopupAction('playAgain')}
                 >
                   <LinearGradient
-                    colors={['#52B69A', '#1A759F']}
-                    style={styles.popupButtonGradient}
+                    colors={['#FFB703', '#FB8500']}
+                    style={styles.modalButtonGradient}
                   >
-                    <Text style={styles.popupButtonText}>RETRY</Text>
+                    <Text style={styles.modalButtonText}>PLAY AGAIN</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               )}
               
-              {popupType === 'win' && (
+              {popupType === 'lose' && (
                 <TouchableOpacity 
-                  style={styles.popupButton}
-                  onPress={() => handlePopupAction('playAgain')}
+                  style={styles.modalButton}
+                  onPress={() => handlePopupAction('retry')}
                 >
                   <LinearGradient
-                    colors={['#52B69A', '#1A759F']}
-                    style={styles.popupButtonGradient}
+                    colors={['#FFB703', '#FB8500']}
+                    style={styles.modalButtonGradient}
                   >
-                    <Text style={styles.popupButtonText}>PLAY AGAIN</Text>
+                    <Text style={styles.modalButtonText}>TRY AGAIN</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               )}
               
               <TouchableOpacity 
-                style={styles.popupButton}
+                style={styles.modalButton}
                 onPress={() => handlePopupAction(popupType === 'win' ? 'continue' : 'exit')}
               >
                 <LinearGradient
                   colors={['#1A3C40', '#0D1B1E']}
-                  style={styles.popupButtonGradient}
+                  style={styles.modalButtonGradient}
                 >
-                  <Text style={styles.popupButtonText}>
+                  <Text style={styles.modalButtonText}>
                     {popupType === 'win' ? 'EXIT' : 'EXIT'}
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
-          </LinearGradient>
+          </View>
         </Animated.View>
       </View>
     );
@@ -660,7 +656,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   // 8-bit popup styles
-  popupOverlay: {
+  modalOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -671,12 +667,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 10,
   },
-  popupContainer: {
+  modalContent: {
     width: '80%',
-    borderRadius: 8,
-    overflow: 'hidden',
+    maxWidth: 300,
+    backgroundColor: '#2A2B2A',
     borderWidth: 4,
     borderColor: '#FFD700',
+    borderRadius: 10,
+    overflow: 'hidden',
     // 8-bit style shadow
     shadowColor: '#000',
     shadowOffset: { width: 6, height: 6 },
@@ -684,17 +682,13 @@ const styles = StyleSheet.create({
     shadowRadius: 0,
     elevation: 10,
   },
-  popupGradient: {
-    width: '100%',
-    padding: 4,
-  },
-  popupHeader: {
-    padding: 12,
+  modalHeader: {
+    padding: 15,
     alignItems: 'center',
-    borderBottomWidth: 4,
+    borderBottomWidth: 2,
     borderBottomColor: '#FFD700',
   },
-  popupTitle: {
+  modalHeaderText: {
     fontFamily: 'PressStart2P_400Regular',
     color: '#FFF',
     fontSize: 16,
@@ -703,36 +697,38 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 0,
   },
-  popupBody: {
+  modalBody: {
     padding: 20,
     alignItems: 'center',
+    backgroundColor: '#1A3C40',
   },
-  popupText: {
+  modalMessage: {
     fontFamily: 'PressStart2P_400Regular',
     color: '#FFF',
     fontSize: 12,
     textAlign: 'center',
     lineHeight: 20,
+    marginBottom: 20,
   },
-  popupButtons: {
+  modalButtonsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     padding: 15,
-    borderTopWidth: 4,
-    borderTopColor: '#FFD700',
   },
-  popupButton: {
+  modalButton: {
     marginHorizontal: 10,
-    borderRadius: 4,
+    width: 120,
+    height: 44,
+    borderRadius: 8,
     overflow: 'hidden',
     borderWidth: 2,
     borderColor: '#FFD700',
   },
-  popupButtonGradient: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    alignItems: 'center',
+  modalButtonGradient: {
+    flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 10,
   },
   popupButtonText: {
     fontFamily: 'PressStart2P_400Regular',
@@ -803,5 +799,6 @@ const styles = StyleSheet.create({
     fontFamily: 'PressStart2P_400Regular',
     color: '#FFF',
     fontSize: 12,
+    textAlign: 'center',
   }
 });
