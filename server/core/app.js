@@ -7,6 +7,7 @@ const cardRoutes = require("../client/src/routes/card.route");
 const puzRoutes = require("../client/src/routes/puz.route");
 const matchRoutes = require("../client/src/routes/match.route");
 const colorRoutes = require("../client/src/routes/color.route");
+const authAdmin = require('../admin/src/routes/auth.route');
 
 
 const app = express();
@@ -16,7 +17,7 @@ app.use(
     origin: [
       'http://localhost:5000', // Backend API
       'http://localhost:5173', // Web API
-      'http//localhost:5178', // Admin API
+      'http://localhost:5178', // Admin API
 
       //games
       'http://localhost:5177', // Card API
@@ -43,6 +44,9 @@ app.use(cookieParser());
 
 // Routes
 app.use('/api/auth',  authClient);
+app.use('/api/admin/auth', authAdmin);
+
+// game route
 app.use('/api/mobile', mobileRoutes);
 app.use('/api/card', cardRoutes);
 app.use('/api/puz', puzRoutes);
