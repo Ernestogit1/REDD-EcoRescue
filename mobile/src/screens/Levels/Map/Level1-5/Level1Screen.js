@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Animated, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Animated, Alert, Modal } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,6 +31,8 @@ export default function Level1Screen({ route }) {
   const [showPopup, setShowPopup] = useState(false);
   const [popupType, setPopupType] = useState(''); // 'win' or 'lose'
   const [popupMessage, setPopupMessage] = useState({title: '', message: ''});
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [cardAnim] = useState(new Animated.Value(0));
   const timerRef = useRef(null);
   const previewTimerRef = useRef(null);
   
@@ -199,22 +201,34 @@ export default function Level1Screen({ route }) {
         console.error('Failed to add points:', err);
       });
       
-      setTimeout(() => {
-        Alert.alert(
-          "Level Complete!",
-          `You matched all the cards!\nScore: ${finalScore}\nTime left: ${timer}s\nMoves: ${moves}`,
-          [
-            { text: "Continue", onPress: async () => {
-                try {
-                  await ApiService.markLevelComplete(1);
-                } catch (err) {
-                  console.error('Failed to mark level as complete:', err);
-                }
-                navigation.goBack();
-              }
-            }
-          ]
-        );
+      setTimeout(async () => {
+        try {
+          await ApiService.markLevelComplete(1);
+          // Award collectible card
+          await ApiService.awardCollectibleCard({ level: 1 });
+          setShowCardModal(true);
+          Animated.sequence([
+            Animated.timing(cardAnim, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true
+            }),
+            Animated.timing(cardAnim, {
+              toValue: 0.8,
+              duration: 200,
+              useNativeDriver: true
+            }),
+            Animated.timing(cardAnim, {
+              toValue: 1,
+              duration: 200,
+              useNativeDriver: true
+            })
+          ]).start();
+        } catch (err) {
+          console.error('Failed to mark level as complete or award card:', err);
+          Alert.alert('Level Complete!', `You matched all the cards!\nScore: ${finalScore}\nTime left: ${timer}s\nMoves: ${moves}`);
+          navigation.goBack();
+        }
       }, 1000);
     } else {
       playSoundEffect('lose');
@@ -351,6 +365,58 @@ export default function Level1Screen({ route }) {
     );
   };
   
+  // 8-bit style collectible card modal
+  const renderCardModal = () => {
+    if (!showCardModal) return null;
+    return (
+      <Modal
+        transparent={true}
+        visible={showCardModal}
+        animationType="none"
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View 
+            style={[
+              styles.modalContent,
+              {
+                transform: [
+                  { scale: cardAnim }
+                ]
+              }
+            ]}
+          >
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalHeaderText}>🎴 COLLECTIBLE CARD UNLOCKED!</Text>
+            </View>
+            <View style={styles.modalBody}>
+              <Image
+                source={require('../../../../../assets/images/levels/Level1/rabbit-jump.png')}
+                style={{ width: 120, height: 120, marginBottom: 16 }}
+                resizeMode="contain"
+              />
+              <Text style={styles.modalMessage}>Rabbit Jump Card
+Congratulations! You collected a new card for Level 1.</Text>
+              <TouchableOpacity 
+                style={styles.modalButton}
+                onPress={() => {
+                  setShowCardModal(false);
+                  navigation.goBack();
+                }}
+              >
+                <LinearGradient
+                  colors={['#FFB703', '#FB8500']}
+                  style={styles.modalButtonGradient}
+                >
+                  <Text style={styles.modalButtonText}>CONTINUE</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
+    );
+  };
+  
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -445,6 +511,7 @@ export default function Level1Screen({ route }) {
 
         {/* 8-bit Popup Message */}
         {renderPopup()}
+        {renderCardModal()}
       </LinearGradient>
     </View>
   );
@@ -668,6 +735,71 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   popupButtonText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
+  },
+  // 8-bit modal styles
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#1A3C40',
+    borderRadius: 10,
+    borderWidth: 4,
+    borderColor: '#FFD700',
+    // 8-bit style shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 10,
+  },
+  modalHeader: {
+    padding: 12,
+    alignItems: 'center',
+    borderBottomWidth: 4,
+    borderBottomColor: '#FFD700',
+  },
+  modalHeaderText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 16,
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 0,
+  },
+  modalBody: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalMessage: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  modalButton: {
+    marginTop: 10,
+    borderRadius: 4,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#FFD700',
+  },
+  modalButtonGradient: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButtonText: {
     fontFamily: 'PressStart2P_400Regular',
     color: '#FFF',
     fontSize: 12,

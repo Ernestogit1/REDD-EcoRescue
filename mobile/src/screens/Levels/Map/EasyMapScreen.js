@@ -12,10 +12,10 @@ export default function EasyMapScreen() {
     const [selectedLevel, setSelectedLevel] = useState(null);
     const [levels, setLevels] = useState([
         { id: 1, name: 'Level 1', stars: 0, unlocked: true },
-        { id: 2, name: 'Level 2', stars: 0, unlocked: null },
-        { id: 3, name: 'Level 3', stars: 0, unlocked: null },
-        { id: 4, name: 'Level 4', stars: 0, unlocked: null },
-        { id: 5, name: 'Level 5', stars: 0, unlocked: null },
+        { id: 2, name: 'Level 2', stars: 0, unlocked: true },
+        { id: 3, name: 'Level 3', stars: 0, unlocked: true },
+        { id: 4, name: 'Level 4', stars: 0, unlocked: true },
+        { id: 5, name: 'Level 5', stars: 0, unlocked: true },
     ]);
     const [userId, setUserId] = useState(null);
     
