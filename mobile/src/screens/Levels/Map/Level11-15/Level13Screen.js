@@ -9,10 +9,14 @@ import {
   Vibration,
   PanResponder,
   BackHandler,
+  Modal,
+  Animated,
 } from 'react-native';
 import { PixelRatio } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import ApiService from '../../../../services/api.service';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useFonts, PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
 
 // Get window dimensions
 const { width, height } = Dimensions.get('window');
@@ -24,9 +28,17 @@ const normalize = (size) => Math.round(size * scale * pixelRatio) / pixelRatio;
 
 // Grid setup for 8-bit snake game
 const GRID_SIZE = 13;
-const CELL_SIZE = Math.floor(Math.min(width, height - 200) / GRID_SIZE);
-const GRID_WIDTH = Math.floor(width / CELL_SIZE);
-const GRID_HEIGHT = Math.floor((height - 200) / CELL_SIZE);
+const GAME_AREA_MARGIN = normalize(10);
+const HEADER_HEIGHT = normalize(60);
+const STATS_HEIGHT = normalize(30);
+const CONTROLS_HEIGHT = normalize(120);
+const MAX_CELL_SIZE = normalize(60);
+const CELL_SIZE = Math.min(
+  Math.floor((Math.min(width - 2 * GAME_AREA_MARGIN, height - HEADER_HEIGHT - STATS_HEIGHT - CONTROLS_HEIGHT - 2 * GAME_AREA_MARGIN) / GRID_SIZE)),
+  MAX_CELL_SIZE
+);
+const GRID_PIXEL_WIDTH = CELL_SIZE * GRID_SIZE;
+const GRID_PIXEL_HEIGHT = CELL_SIZE * GRID_SIZE;
 
 // Directions for turtle movement
 const DIRECTIONS = {
@@ -58,8 +70,8 @@ const Level13Screen = () => {
 
   // Generate random grid position
   const getRandomPosition = useCallback(() => ({
-    x: Math.floor(Math.random() * GRID_WIDTH),
-    y: Math.floor(Math.random() * GRID_HEIGHT),
+    x: Math.floor(Math.random() * GRID_SIZE),
+    y: Math.floor(Math.random() * GRID_SIZE),
   }), []);
 
   // Check if position is occupied by turtle
@@ -116,9 +128,9 @@ const Level13Screen = () => {
           // Check boundaries and self-collision
           if (
             head.x < 0 ||
-            head.x >= GRID_WIDTH ||
+            head.x >= GRID_SIZE ||
             head.y < 0 ||
-            head.y >= GRID_HEIGHT ||
+            head.y >= GRID_SIZE ||
             newTurtle.some((segment, index) => index > 0 && segment.x === head.x && segment.y === head.y)
           ) {
             endGame(prev.score, newTurtle);
@@ -260,32 +272,33 @@ const Level13Screen = () => {
     ];
     const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
 
-    let message = `Game Over!\nScore: ${finalScore}\nTurtle Length: ${finalTurtle.length}\nFun Fact: ${randomFact}`;
+    let message = `Score: ${finalScore}\nTurtle Length: ${finalTurtle.length}\nFun Fact: ${randomFact}`;
 
     if (finalScore >= 100) {
-      message += '\n🌊 Victory! Sea turtle grew strong!\nProtect oceans: Reduce plastic pollution!';
+      setEndModalType('success');
+      setEndModalMessage('★ VICTORY! ★\nSea turtle grew strong!\n' + message + '\nProtect oceans: Reduce plastic pollution!');
     } else {
-      message += '\n🐢 Oh no! Try again to reach 100 points!\nProtect oceans: Reduce plastic pollution!';
+      setEndModalType('failure');
+      setEndModalMessage('× TRY AGAIN ×\n' + message + '\nTry again to reach 100 points!\nProtect oceans: Reduce plastic pollution!');
     }
-
-    Alert.alert(
-      'Level 13: Sea Turtle Trek',
-      message,
-      [
-        {
-          text: 'Play Again',
-          onPress: () => {
-            initializeGame();
-            setGameState((prev) => ({ ...prev, gameStarted: true, gameOver: false }));
-          },
-        },
-        {
-          text: 'Main Menu',
-          onPress: () => navigation.goBack(),
-        },
-      ],
-      { cancelable: false }
-    );
+    setShowEndModal(true);
+    Animated.sequence([
+      Animated.timing(endModalAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true
+      }),
+      Animated.timing(endModalAnim, {
+        toValue: 0.8,
+        duration: 200,
+        useNativeDriver: true
+      }),
+      Animated.timing(endModalAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true
+      })
+    ]).start();
   };
 
   const startGame = useCallback(() => {
@@ -293,167 +306,208 @@ const Level13Screen = () => {
     setGameState((prev) => ({ ...prev, gameStarted: true, gameOver: false }));
   }, [initializeGame]);
 
+  const [endModalAnim] = useState(new Animated.Value(0));
+  const [showInstructions, setShowInstructions] = useState(true);
+  const [showEndModal, setShowEndModal] = useState(false);
+  const [endModalType, setEndModalType] = useState('success');
+  const [endModalMessage, setEndModalMessage] = useState('');
+
+  const [fontsLoaded] = useFonts({
+    PressStart2P_400Regular,
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.backButtonText}>← BACK</Text>
+      {/* 8-bit Header */}
+      <View style={styles.header8bit}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.exitButton8bit}>
+          <Text style={styles.exitButtonText8bit}>EXIT</Text>
         </TouchableOpacity>
-        <Text style={styles.levelTitle}>LEVEL 13: SEA TURTLE TREK</Text>
-        <View style={styles.headerSpacer} />
+        <Text style={styles.headerTitle8bit}>LEVEL 13: SEA TURTLE TREK</Text>
+        <View style={styles.statsBox8bit}>
+          <Text style={styles.statsText8bit}>Score: {gameState.score}</Text>
+          <Text style={styles.statsText8bit}>Length: {gameState.turtle.length}</Text>
+        </View>
       </View>
-
-      {/* Game Stats */}
-      <View style={styles.statsContainer}>
-        <Text style={styles.statText}>Score: {gameState.score}</Text>
-        <Text style={styles.statText}>Length: {gameState.turtle.length}</Text>
-      </View>
-
-      {/* Game Area */}
-      <View style={styles.gameArea} {...panResponder.panHandlers}>
-        <View style={styles.background} />
-        {showDebug && gameState.gameStarted && (
-          <Text style={styles.debugText}>
-            Turtle Head: ({gameState.turtle[0].x}, {gameState.turtle[0].y}) | Score: {gameState.score}
-          </Text>
-        )}
-        {/* Turtle */}
-        {gameState.turtle.map((segment, index) => (
-          <View
-            key={index}
-            style={[
-              styles.turtle,
-              {
-                left: segment.x * CELL_SIZE,
-                top: segment.y * CELL_SIZE,
-                width: CELL_SIZE,
-                height: CELL_SIZE,
-              },
-            ]}
-          >
-            <Text style={styles.turtleEmoji}>{index === 0 ? '🐢' : '🟢'}</Text>
+      {/* 8-bit Instructions Modal */}
+      {showInstructions && !gameState.gameStarted && !gameState.gameOver && (
+        <View style={styles.instructionsOverlay}>
+          <View style={styles.instructionsBox}>
+            <Text style={styles.instructionsTitle}>LEVEL 13: SEA TURTLE TREK</Text>
+            <Text style={styles.instructionsText}>Grow the 🐢 by eating 🍤 and avoid 🛍️ plastics!</Text>
+            <Text style={styles.instructionsText}>Swipe or use D-pad to move</Text>
+            <Text style={styles.instructionsText}>Eat food: +10 pts, Grow longer</Text>
+            <Text style={styles.instructionsText}>🎯 Goal: Reach 100 points!</Text>
+            <Text style={styles.instructionsText}>🌊 Protect oceans: Reduce plastic!</Text>
+            <TouchableOpacity style={styles.startButton} onPress={() => { setShowInstructions(false); setGameState((prev) => ({ ...prev, gameStarted: true, gameOver: false })); }}>
+              <LinearGradient colors={['#FFD700', '#FB8500']} style={styles.startButtonGradient}>
+                <Text style={styles.startButtonText}>START SWIMMING</Text>
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
-        ))}
-        {/* Food */}
-        {gameState.food && (
-          <View
-            style={[
-              styles.food,
-              {
-                left: gameState.food.x * CELL_SIZE,
-                top: gameState.food.y * CELL_SIZE,
-                width: CELL_SIZE,
-                height: CELL_SIZE,
-              },
-            ]}
-          >
-            <Text style={styles.foodEmoji}>🍤</Text>
-          </View>
-        )}
-        {/* Hazards */}
-        {gameState.hazards.map((hazard, index) => (
-          <View
-            key={index}
-            style={[
-              styles.hazard,
-              {
-                left: hazard.x * CELL_SIZE,
-                top: hazard.y * CELL_SIZE,
-                width: CELL_SIZE,
-                height: CELL_SIZE,
-              },
-            ]}
-          >
-            <Text style={styles.emoji}>🛍️</Text>
-          </View>
-        ))}
-        {/* Instructions */}
-        {!gameState.gameStarted && !gameState.gameOver && (
-          <View style={styles.instructions}>
-            <Text style={styles.instructionTitle}>Mission: Grow the Sea Turtle!</Text>
-            <Text style={styles.instructionText}>
-              👆 Swipe or use D-pad to move the turtle (🐢)
+        </View>
+      )}
+      {/* Game Area - bigger */}
+      <View style={styles.mainRow8bit}>
+        <View style={styles.gameArea8bit} {...panResponder.panHandlers}>
+          <View style={styles.background} />
+          {showDebug && gameState.gameStarted && (
+            <Text style={styles.debugText}>
+              Turtle Head: ({gameState.turtle[0].x}, {gameState.turtle[0].y}) | Score: {gameState.score}
             </Text>
-            <Text style={styles.instructionText}>
-              🍤 Eat food to grow (10 pts each)
-            </Text>
-            <Text style={styles.instructionText}>
-              🛍️ Avoid plastic hazards
-            </Text>
-            <Text style={styles.instructionText}>
-              🎯 Goal: Reach 100 points!
-            </Text>
-            <Text style={styles.instructionText}>
-              🌊 Habitat: Oceans Worldwide
-            </Text>
-            <Text style={styles.instructionText}>
-              🚨 Status: Endangered
-            </Text>
-          </View>
-        )}
-      </View>
-
-      {/* D-pad and Control Buttons */}
-      <View style={styles.controlsContainer}>
-        {gameState.gameStarted ? (
-          <View style={styles.dPadContainer}>
-            <View style={styles.dPadRow}>
-              <View style={styles.dPadSpacer} />
-              <TouchableOpacity
-                style={styles.dPadButton}
-                onPress={() => changeDirection(DIRECTIONS.UP)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.dPadText}>↑</Text>
-              </TouchableOpacity>
-              <View style={styles.dPadSpacer} />
+          )}
+          {/* Turtle */}
+          {gameState.turtle.map((segment, index) => (
+            <View
+              key={index}
+              style={[
+                styles.turtle,
+                {
+                  left: segment.x * CELL_SIZE * 1.2,
+                  top: segment.y * CELL_SIZE * 1.2,
+                  width: CELL_SIZE * 1.2,
+                  height: CELL_SIZE * 1.2,
+                  backgroundColor: 'transparent',
+                  borderWidth: 0,
+                },
+              ]}
+            >
+              <Text style={styles.turtleEmoji}>{index === 0 ? '🐢' : '🟢'}</Text>
             </View>
-            <View style={styles.dPadRow}>
-              <TouchableOpacity
-                style={styles.dPadButton}
-                onPress={() => changeDirection(DIRECTIONS.LEFT)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.dPadText}>←</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.dPadButton}
-                onPress={initializeGame}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.dPadText}>RESET</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.dPadButton}
-                onPress={() => changeDirection(DIRECTIONS.RIGHT)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.dPadText}>→</Text>
+          ))}
+          {/* Food */}
+          {gameState.food && (
+            <View
+              style={[
+                styles.food,
+                {
+                  left: gameState.food.x * CELL_SIZE * 1.2,
+                  top: gameState.food.y * CELL_SIZE * 1.2,
+                  width: CELL_SIZE * 1.2,
+                  height: CELL_SIZE * 1.2,
+                  backgroundColor: 'transparent',
+                  borderWidth: 0,
+                },
+              ]}
+            >
+              <Text style={styles.foodEmoji}>🍤</Text>
+            </View>
+          )}
+          {/* Hazards */}
+          {gameState.hazards.map((hazard, index) => (
+            <View
+              key={index}
+              style={[
+                styles.hazard,
+                {
+                  left: hazard.x * CELL_SIZE * 1.2,
+                  top: hazard.y * CELL_SIZE * 1.2,
+                  width: CELL_SIZE * 1.2,
+                  height: CELL_SIZE * 1.2,
+                  backgroundColor: 'transparent',
+                  borderWidth: 0,
+                },
+              ]}
+            >
+              <Text style={styles.emoji}>🛍️</Text>
+            </View>
+          ))}
+        </View>
+        {/* D-pad beside the game, bigger and 8-bit styled */}
+        {gameState.gameStarted && (
+          <View style={styles.dPadColumn8bit}>
+            <View style={styles.dPadRow8bit}>
+              <TouchableOpacity style={styles.dPadButton8bit} onPress={() => changeDirection(DIRECTIONS.UP)}>
+                <Text style={styles.dPadText8bit}>▲</Text>
               </TouchableOpacity>
             </View>
-            <View style={styles.dPadRow}>
-              <View style={styles.dPadSpacer} />
-              <TouchableOpacity
-                style={styles.dPadButton}
-                onPress={() => changeDirection(DIRECTIONS.DOWN)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.dPadText}>↓</Text>
+            <View style={styles.dPadRow8bit}>
+              <TouchableOpacity style={styles.dPadButton8bit} onPress={() => changeDirection(DIRECTIONS.LEFT)}>
+                <Text style={styles.dPadText8bit}>◀</Text>
               </TouchableOpacity>
-              <View style={styles.dPadSpacer} />
+              <TouchableOpacity style={styles.dPadButton8bit} onPress={initializeGame}>
+                <Text style={styles.dPadText8bit}>⟳</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.dPadButton8bit} onPress={() => changeDirection(DIRECTIONS.RIGHT)}>
+                <Text style={styles.dPadText8bit}>▶</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.dPadRow8bit}>
+              <TouchableOpacity style={styles.dPadButton8bit} onPress={() => changeDirection(DIRECTIONS.DOWN)}>
+                <Text style={styles.dPadText8bit}>▼</Text>
+              </TouchableOpacity>
             </View>
           </View>
-        ) : (
-          <TouchableOpacity style={styles.startButton} onPress={startGame}>
-            <Text style={styles.buttonText}>START SWIMMING</Text>
-          </TouchableOpacity>
         )}
       </View>
+      {/* 8-bit Endgame Modal */}
+      <Modal
+        transparent={true}
+        visible={showEndModal}
+        animationType="none"
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View 
+            style={[
+              styles.modalContent,
+              {
+                transform: [
+                  { scale: endModalAnim }
+                ]
+              }
+            ]}
+          >
+            <LinearGradient
+              colors={endModalType === 'success' ? ['#FFD700', '#FB8500'] : ['#E63946', '#D00000']}
+              style={styles.modalHeader}
+            >
+              <Text style={styles.modalHeaderText}>
+                {endModalType === 'success' ? '★ VICTORY! ★' : '× TRY AGAIN ×'}
+              </Text>
+            </LinearGradient>
+            <View style={styles.modalBody}>
+              <Text style={styles.modalMessage}>{endModalMessage}</Text>
+              <TouchableOpacity 
+                style={styles.modalButton}
+                onPress={() => {
+                  setShowEndModal(false);
+                  initializeGame();
+                  setShowInstructions(true);
+                }}
+              >
+                <LinearGradient
+                  colors={['#FFB703', '#FB8500']}
+                  style={styles.modalButtonGradient}
+                >
+                  <Text style={styles.modalButtonText}>
+                    PLAY AGAIN
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.modalButton, { marginTop: 10 }]}
+                onPress={() => {
+                  setShowEndModal(false);
+                  navigation.goBack();
+                }}
+              >
+                <LinearGradient
+                  colors={['#FFD700', '#FB8500']}
+                  style={styles.modalButtonGradient}
+                >
+                  <Text style={styles.modalButtonText}>
+                    MAIN MENU
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -651,6 +705,297 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  instructionsOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 100,
+  },
+  instructionsBox: {
+    backgroundColor: '#222',
+    borderWidth: 4,
+    borderColor: '#FFD700',
+    borderRadius: 0,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 340,
+    maxWidth: '90%',
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 0,
+  },
+  instructionsTitle: {
+    color: '#FFD700',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 12,
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  instructionsText: {
+    color: '#FFF',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 11,
+    textAlign: 'center',
+    marginBottom: 6,
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  startButton: {
+    marginTop: 18,
+    width: 220,
+    borderRadius: 0,
+    overflow: 'hidden',
+    alignSelf: 'center',
+    borderWidth: 3,
+    borderColor: '#FFD700',
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 0,
+  },
+  startButtonGradient: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  startButtonText: {
+    color: '#222',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 15,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    letterSpacing: 1,
+    textShadowColor: '#FFF',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#222',
+    borderWidth: 4,
+    borderColor: '#FFD700',
+    borderRadius: 0,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '90%',
+    maxWidth: 380,
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 0,
+  },
+  modalHeader: {
+    width: '100%',
+    paddingVertical: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: '#FFD700',
+    borderRadius: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalHeaderText: {
+    color: '#222',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textShadowColor: '#FFF',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  modalBody: {
+    width: '100%',
+    marginTop: 15,
+    alignItems: 'center',
+  },
+  modalMessage: {
+    color: '#FFF',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 13,
+    textAlign: 'center',
+    marginBottom: 20,
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  modalButton: {
+    width: 200,
+    borderRadius: 0,
+    overflow: 'hidden',
+    alignSelf: 'center',
+    borderWidth: 3,
+    borderColor: '#FFD700',
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 0,
+  },
+  modalButtonGradient: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButtonText: {
+    color: '#222',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 15,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    letterSpacing: 1,
+    textShadowColor: '#FFF',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  header8bit: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderBottomWidth: 4,
+    borderBottomColor: '#FFD700',
+    backgroundColor: '#222',
+    minHeight: 60,
+    position: 'relative',
+    zIndex: 10,
+  },
+  exitButton8bit: {
+    position: 'absolute',
+    left: 15,
+    paddingVertical: 6,
+    paddingHorizontal: 18,
+    backgroundColor: '#FFD700',
+    borderRadius: 0,
+    borderWidth: 2,
+    borderColor: '#FFF',
+    shadowColor: '#333',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    zIndex: 10,
+  },
+  exitButtonText8bit: {
+    color: '#222',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 14,
+    letterSpacing: 1,
+    fontWeight: 'bold',
+  },
+  headerTitle8bit: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFD700',
+    fontSize: 16,
+    textAlign: 'center',
+    flex: 1,
+    letterSpacing: 1,
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  statsBox8bit: {
+    position: 'absolute',
+    right: 15,
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    backgroundColor: '#222',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 0,
+    borderWidth: 2,
+    borderColor: '#FFD700',
+    fontWeight: 'bold',
+  },
+  statsText8bit: {
+    color: '#FFB703',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 13,
+    fontWeight: 'bold',
+    textAlign: 'right',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  mainRow8bit: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+    marginTop: 10,
+  },
+  gameArea8bit: {
+    margin: GAME_AREA_MARGIN,
+    borderRadius: 0,
+    overflow: 'hidden',
+    borderWidth: 4,
+    borderColor: '#FFD700',
+    backgroundColor: '#111',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    width: GRID_PIXEL_WIDTH * 1.2,
+    height: GRID_PIXEL_HEIGHT * 1.2,
+    minWidth: 400,
+    minHeight: 300,
+    maxWidth: 600,
+    maxHeight: 500,
+  },
+  dPadColumn8bit: {
+    marginLeft: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: 120,
+  },
+  dPadRow8bit: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 8,
+  },
+  dPadButton8bit: {
+    backgroundColor: '#FFD700',
+    borderWidth: 3,
+    borderColor: '#FFF',
+    width: 64,
+    height: 64,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 8,
+    borderRadius: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 0,
+  },
+  dPadText8bit: {
+    color: '#222',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    textShadowColor: '#FFF',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
   },
 });
 
