@@ -402,11 +402,17 @@ export default function LevelDetailsScreen({ route }) {
         },
         body: JSON.stringify(cardData),
       });
-      if (response.status === 201) {
+      if (response.status === 201 || response.status === 409) {
         setCollected(true);
-      } else if (response.status === 409) {
-        setCollected(true);
-        setCollectError('Card already collected!');
+        // Call onComplete callback if provided (this will unlock the next level)
+        if (route.params && typeof route.params.onComplete === 'function') {
+          await route.params.onComplete();
+        }
+        // Instead of setTimeout and navigation.goBack(), use navigation.reset to force remount
+        setTimeout(() => {
+          navigation.popToTop();
+          navigation.replace('LevelMap', { level: { name: 'EASY' } });
+        }, 500);
       } else {
         const data = await response.json();
         setCollectError(data.message || 'Failed to collect card');
