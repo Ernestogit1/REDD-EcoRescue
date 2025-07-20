@@ -36,3 +36,27 @@ exports.getUserInventory = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// Consume food from inventory
+exports.consumeFood = async (req, res) => {
+  try {
+    const userId = req.userDetails._id;
+    const { foodId } = req.body;
+    if (!foodId) return res.status(400).json({ message: 'Food ID is required' });
+
+    let inventory = await Inventory.findOne({ user: userId, food: foodId });
+    if (!inventory || inventory.quantity < 1) {
+      return res.status(400).json({ message: 'No food left in inventory' });
+    }
+    inventory.quantity -= 1;
+    if (inventory.quantity === 0) {
+      await Inventory.deleteOne({ _id: inventory._id });
+      return res.json({ message: 'Food consumed and removed from inventory', foodId });
+    } else {
+      await inventory.save();
+      return res.json({ message: 'Food consumed', foodId, quantity: inventory.quantity });
+    }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

@@ -271,6 +271,14 @@ class ApiService {
   async getInventory() {
     return await this.makeNonMobileRequest('/api/inventory');
   }
+
+  // Consume food from inventory
+  async consumeFood(foodId) {
+    return await this.makeNonMobileRequest('/api/inventory/consume', {
+      method: 'POST',
+      body: JSON.stringify({ foodId }),
+    });
+  }
 }
 
 export default new ApiService();

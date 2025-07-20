@@ -179,7 +179,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#3d2914',
-    paddingTop: 40,
   },
   tabBar: {
     flexDirection: 'row',

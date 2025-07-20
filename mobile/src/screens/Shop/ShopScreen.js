@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import ApiService from '../../services/api.service';
 
 export default function ShopScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
   const [foods, setFoods] = useState([]);
+  const [filteredFoods, setFilteredFoods] = useState([]);
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingInventory, setLoadingInventory] = useState(false);
@@ -14,12 +16,52 @@ export default function ShopScreen() {
   const [user, setUser] = useState(null);
   const [buying, setBuying] = useState(false);
   const [tab, setTab] = useState('shop'); // 'shop' or 'inventory'
+  
+  // Get parameters from navigation if available
+  const focusAnimal = route.params?.focusAnimal;
+  const recommendedItems = route.params?.recommendedItems || [];
+  
+  // Reference to FlatList for scrolling to recommended items
+  const flatListRef = useRef(null);
 
   useEffect(() => {
     loadShopItems();
     loadUserData();
     loadInventory();
   }, []);
+
+  // Filter foods when data is loaded or focusAnimal changes
+  useEffect(() => {
+    if (foods.length > 0) {
+      if (focusAnimal) {
+        // Filter foods for the specific animal
+        const animalFoods = foods.filter(item => 
+          item.animal && item.animal.includes(focusAnimal)
+        );
+        setFilteredFoods(animalFoods);
+        
+        // Find first recommended item index to scroll to
+        if (recommendedItems.length > 0 && flatListRef.current) {
+          const firstRecommendedIndex = foods.findIndex(item => 
+            recommendedItems.includes(item._id)
+          );
+          
+          if (firstRecommendedIndex !== -1) {
+            setTimeout(() => {
+              flatListRef.current.scrollToIndex({
+                index: firstRecommendedIndex,
+                animated: true,
+                viewPosition: 0.5
+              });
+            }, 500);
+          }
+        }
+      } else {
+        // No filter, show all foods
+        setFilteredFoods(foods);
+      }
+    }
+  }, [foods, focusAnimal, recommendedItems]);
 
   const loadUserData = async () => {
     try {
@@ -88,6 +130,18 @@ export default function ShopScreen() {
     navigation.goBack();
   };
 
+  const isRecommended = (itemId) => {
+    return recommendedItems.includes(itemId);
+  };
+
+  // Handle scroll error for flatlist
+  const handleScrollToIndexFailed = (info) => {
+    const wait = new Promise(resolve => setTimeout(resolve, 500));
+    wait.then(() => {
+      flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
+    });
+  };
+
   if (loading) {
     return (
       <LinearGradient colors={["#1a4d2e", "#2d5a3d", "#1a4d2e"]} style={styles.container}>
@@ -118,7 +172,9 @@ export default function ShopScreen() {
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <Text style={styles.backButtonText}>← BACK</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>ANIMAL FOOD SHOP</Text>
+        <Text style={styles.headerTitle}>
+          {focusAnimal ? `${focusAnimal} FOOD` : 'ANIMAL FOOD SHOP'}
+        </Text>
       </View>
 
       {/* Tabs */}
@@ -147,11 +203,20 @@ export default function ShopScreen() {
       {/* Tab Content */}
       {tab === 'shop' ? (
         <FlatList
-          data={foods}
+          ref={flatListRef}
+          data={filteredFoods}
           keyExtractor={item => item._id}
           renderItem={({ item }) => (
             <View style={styles.cardWrapper}>
-              <View style={styles.card}>
+              <View style={[
+                styles.card, 
+                isRecommended(item._id) && styles.recommendedCard
+              ]}>
+                {isRecommended(item._id) && (
+                  <View style={styles.recommendedBadge}>
+                    <Text style={styles.recommendedText}>Recommended</Text>
+                  </View>
+                )}
                 <Image source={{ uri: item.image }} style={styles.image} />
                 <View style={styles.info}>
                   <Text style={styles.name}>{item.name}</Text>
@@ -177,6 +242,7 @@ export default function ShopScreen() {
             </View>
           )}
           contentContainerStyle={styles.listContainer}
+          onScrollToIndexFailed={handleScrollToIndexFailed}
         />
       ) : (
         loadingInventory ? (
@@ -314,6 +380,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.6,
     shadowRadius: 4,
     elevation: 6,
+  },
+  recommendedCard: {
+    borderColor: '#FFD700',
+    borderWidth: 3,
+  },
+  recommendedBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: '#FFD700',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderBottomLeftRadius: 8,
+    zIndex: 1,
+  },
+  recommendedText: {
+    color: '#8B4513',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   image: { 
     width: 100, 
