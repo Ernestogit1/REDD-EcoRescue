@@ -279,9 +279,9 @@ const animalData = {
     difficulty: "Hard"
   },
   15: {
-    animalName: "Poison Dart Frog",
+    animalName: "Poison Dart",
     habitat: "Rainforests of Central and South America",
-    diet: "Carnivore (Small insects)",
+    diet: "Carnivore",
     conservationStatus: "Varies by species",
     funFacts: [
       "Their bright colors warn predators they're toxic",
