@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, TouchableOpacity, Text, Modal, Animated } from 'react-native';
+import { View, StyleSheet, Dimensions, TouchableOpacity, Text, Modal, Animated, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,9 +11,9 @@ const CELL_SIZE = Math.floor(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT - 150) / GRID_
 // Game elements
 const EMPTY = 0;
 const WALL = 1;
-const RACCOON = 2;
-const HUNTER = 3;
-const FINISH = 4;
+const RESCUER = 2; // Changed from RACCOON to RESCUER (man)
+const POISON = 3;  // Changed from HUNTER to POISON
+const RACCOON = 4; // Changed from FINISH to RACCOON (the animal to be rescued)
 
 // Simplified maze layout (10x10) for better mobile visibility
 const initialMaze = [
@@ -32,8 +32,8 @@ const initialMaze = [
 export default function Level7Screen() {
   const navigation = useNavigation();
   const [maze, setMaze] = useState(initialMaze);
-  const [raccoonPos, setRaccoonPos] = useState({ x: 1, y: 1 });
-  const [hunters, setHunters] = useState([
+  const [rescuerPos, setRescuerPos] = useState({ x: 1, y: 1 }); // Changed from raccoonPos to rescuerPos
+  const [poisons, setPoisons] = useState([  // Changed from hunters to poisons
     { x: 3, y: 1, dx: 1, dy: 0 },
     { x: 8, y: 5, dx: 0, dy: 1 }
   ]);
@@ -45,70 +45,70 @@ export default function Level7Screen() {
   const [modalType, setModalType] = useState(''); // 'success' or 'failure'
   const [modalAnim] = useState(new Animated.Value(0));
 
-  // Move the raccoon
-  const moveRaccoon = (dx, dy) => {
+  // Move the rescuer
+  const moveRescuer = (dx, dy) => {  // Changed from moveRaccoon to moveRescuer
     if (!gameStarted || gameOver) return;
 
-    const newX = raccoonPos.x + dx;
-    const newY = raccoonPos.y + dy;
+    const newX = rescuerPos.x + dx;
+    const newY = rescuerPos.y + dy;
 
     // Check if the move is valid (not a wall)
     if (maze[newY][newX] !== WALL) {
       // Update previous position to empty
       const newMaze = maze.map(row => [...row]);
-      newMaze[raccoonPos.y][raccoonPos.x] = EMPTY;
+      newMaze[rescuerPos.y][rescuerPos.x] = EMPTY;
       
-      // Check if reached finish
-      if (maze[newY][newX] === FINISH) {
+      // Check if reached raccoon
+      if (maze[newY][newX] === RACCOON) {  // Changed from FINISH to RACCOON
         setGameOver(true);
         show8BitAlert('success', 'You successfully rescued the raccoon!');
         return;
       }
 
       // Update new position
-      newMaze[newY][newX] = RACCOON;
+      newMaze[newY][newX] = RESCUER;  // Changed from RACCOON to RESCUER
       setMaze(newMaze);
-      setRaccoonPos({ x: newX, y: newY });
+      setRescuerPos({ x: newX, y: newY });  // Changed from setRaccoonPos to setRescuerPos
       setScore(score + 10);
     }
   };
 
-  // Move hunters
+  // Move poisons
   useEffect(() => {
     if (!gameStarted || gameOver) return;
 
     const moveInterval = setInterval(() => {
-      setHunters(currentHunters => {
-        return currentHunters.map(hunter => {
-          let newX = hunter.x + hunter.dx;
-          let newY = hunter.y + hunter.dy;
+      setPoisons(currentPoisons => {  // Changed from setHunters/currentHunters to setPoisons/currentPoisons
+        return currentPoisons.map(poison => {  // Changed from hunter to poison
+          let newX = poison.x + poison.dx;
+          let newY = poison.y + poison.dy;
 
-          // If hunter hits a wall or another hunter, change direction
+          // If poison hits a wall or another poison, change direction
           if (maze[newY][newX] === WALL) {
-            hunter.dx = -hunter.dx;
-            hunter.dy = -hunter.dy;
-            newX = hunter.x + hunter.dx;
-            newY = hunter.y + hunter.dy;
+            poison.dx = -poison.dx;
+            poison.dy = -poison.dy;
+            newX = poison.x + poison.dx;
+            newY = poison.y + poison.dy;
           }
 
-          // Check if hunter caught the raccoon
-          if (newX === raccoonPos.x && newY === raccoonPos.y) {
+          // Check if poison caught the rescuer
+          if (newX === rescuerPos.x && newY === rescuerPos.y) {  // Changed from raccoonPos to rescuerPos
             setGameOver(true);
-            show8BitAlert('failure', 'The hunters caught the raccoon! Try again!');
+            show8BitAlert('failure', 'You were poisoned! Try again!');  // Updated message
           }
 
-          return { ...hunter, x: newX, y: newY };
+          return { ...poison, x: newX, y: newY };
         });
       });
     }, 500); // Move every 500ms
 
     return () => clearInterval(moveInterval);
-  }, [gameStarted, gameOver, raccoonPos]);
+  }, [gameStarted, gameOver, rescuerPos]);  // Changed from raccoonPos to rescuerPos
 
   const resetGame = () => {
     setMaze(initialMaze);
-    setRaccoonPos({ x: 1, y: 1 });
-    setHunters([
+    setRescuerPos({ x: 1, y: 1 });  // Changed from setRaccoonPos to setRescuerPos
+    setPoisons([  // Changed from setHunters to setPoisons
       { x: 3, y: 1, dx: 1, dy: 0 },
       { x: 8, y: 5, dx: 0, dy: 1 }
     ]);
@@ -159,7 +159,7 @@ export default function Level7Screen() {
             <View style={styles.controlsInner}>
               <TouchableOpacity
                 style={[styles.button, styles.topButton]}
-                onPress={() => moveRaccoon(0, -1)}
+                onPress={() => moveRescuer(0, -1)}  // Changed from moveRaccoon to moveRescuer
               >
                 <View style={styles.pixelArrow}>
                   <View style={styles.pixelArrowTop} />
@@ -168,7 +168,7 @@ export default function Level7Screen() {
               <View style={styles.middleButtons}>
                 <TouchableOpacity
                   style={[styles.button, styles.leftButton]}
-                  onPress={() => moveRaccoon(-1, 0)}
+                  onPress={() => moveRescuer(-1, 0)}  // Changed from moveRaccoon to moveRescuer
                 >
                   <View style={styles.pixelArrow}>
                     <View style={styles.pixelArrowLeft} />
@@ -176,7 +176,7 @@ export default function Level7Screen() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.button, styles.rightButton]}
-                  onPress={() => moveRaccoon(1, 0)}
+                  onPress={() => moveRescuer(1, 0)}  // Changed from moveRaccoon to moveRescuer
                 >
                   <View style={styles.pixelArrow}>
                     <View style={styles.pixelArrowRight} />
@@ -185,7 +185,7 @@ export default function Level7Screen() {
               </View>
               <TouchableOpacity
                 style={[styles.button, styles.bottomButton]}
-                onPress={() => moveRaccoon(0, 1)}
+                onPress={() => moveRescuer(0, 1)}  // Changed from moveRaccoon to moveRescuer
               >
                 <View style={styles.pixelArrow}>
                   <View style={styles.pixelArrowBottom} />
@@ -205,11 +205,31 @@ export default function Level7Screen() {
                       style={[
                         styles.cell,
                         cell === WALL && styles.wall,
-                        cell === RACCOON && styles.raccoon,
-                        cell === FINISH && styles.finish,
-                        hunters.some(h => h.x === x && h.y === y) && styles.hunter
+                        cell === RACCOON && styles.raccoonCell,  // Changed from FINISH to RACCOON
                       ]}
-                    />
+                    >
+                      {cell === RESCUER && (  // Changed from RACCOON to RESCUER
+                        <Image 
+                          source={require('../../../../../assets/images/pets/man.png')}  // Changed to man.png
+                          style={styles.characterImage}
+                          resizeMode="contain"
+                        />
+                      )}
+                      {cell === RACCOON && (  // Added to display raccoon at the finish position
+                        <Image 
+                          source={require('../../../../../assets/images/pets/racoon.png')}
+                          style={styles.characterImage}
+                          resizeMode="contain"
+                        />
+                      )}
+                      {poisons.some(p => p.x === x && p.y === y) && (  // Changed from hunters to poisons
+                        <Image 
+                          source={require('../../../../../assets/images/pets/poison.png')}  // Added poison.png
+                          style={styles.characterImage}
+                          resizeMode="contain"
+                        />
+                      )}
+                    </View>
                   ))}
                 </View>
               ))}
@@ -366,20 +386,18 @@ const styles = StyleSheet.create({
     margin: 1,
     borderRadius: 3,
     backgroundColor: '#1A3C40',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   wall: {
     backgroundColor: '#1A759F',
   },
-  raccoon: {
-    backgroundColor: '#808080',
-    borderRadius: CELL_SIZE / 2,
+  characterImage: {
+    width: '90%',
+    height: '90%',
   },
-  hunter: {
-    backgroundColor: '#FF0000',
-    borderRadius: CELL_SIZE / 2,
-  },
-  finish: {
-    backgroundColor: '#76C893',
+  raccoonCell: {
+    backgroundColor: '#1A3C40', // Same as empty cell, will show raccoon image
   },
   middleButtons: {
     flexDirection: 'row',
