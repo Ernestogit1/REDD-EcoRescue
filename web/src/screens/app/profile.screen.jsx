@@ -13,6 +13,7 @@ const ProfileScreen = () => {
     isEditing,
     editData,
     userStats,
+    previewImage,
     handleBack,
     handleLogout,
     handleEdit,
@@ -35,6 +36,7 @@ const ProfileScreen = () => {
       editData={editData}
       isUpdating={isUpdating}
       userStats={userStats}
+      previewImage={previewImage}
       onInputChange={handleInputChange}
       onAvatarUpload={handleAvatarUpload}
       onEdit={handleEdit}

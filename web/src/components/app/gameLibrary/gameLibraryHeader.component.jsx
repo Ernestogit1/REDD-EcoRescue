@@ -18,17 +18,7 @@ const GameLibraryHeader = ({ user, onProfileClick, onStoreClick, onLogout, searc
         </div>
         
         <div className="user-menu">
-          <div className="user-info">
-            <img 
-              src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.username || 'User')}&background=4ade80&color=1a4d2e&size=40`}
-              alt="User Avatar"
-              className="user-avatar"
-            />
-            <div className="user-details">
-              <span className="username pixel-text">{user?.username}</span>
-              <span className="user-rank">{user?.rank || 'Novice'} • ⭐ {user?.rescueStars || 0}</span>
-            </div>
-          </div>
+      
           
           <div className="menu-buttons">
             <button className="pixel-button secondary small" onClick={onProfileClick}>
