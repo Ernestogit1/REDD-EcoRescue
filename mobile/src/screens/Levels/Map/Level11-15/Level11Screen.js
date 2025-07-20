@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
   },
   statText: {
     color: '#FFF',
-    fontSize: normalize(10),
+    fontSize: normalize(12),
     fontFamily: 'monospace',
     fontWeight: 'bold',
   },
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
     borderColor: '#FFF',
   },
   instructionTitle: {
-    fontSize: normalize(14),
+    fontSize: normalize(30),
     fontFamily: 'monospace',
     fontWeight: 'bold',
     color: '#FFF',
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   instructionText: {
-    fontSize: normalize(10),
+    fontSize: normalize(25),
     fontFamily: 'monospace',
     color: '#FFF',
     marginBottom: normalize(4),
