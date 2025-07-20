@@ -393,7 +393,8 @@ export default function LevelDetailsScreen({ route }) {
         description: `${animal.animalName} - ${animal.habitat}`,
       };
       // Call backend
-      const response = await fetch('http://192.168.1.19:5000/api/collected-cards/collect', {
+      const url = `${ApiService.baseURL.replace('/api/mobile', '')}/api/collected-cards/collect`;
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -48,7 +48,8 @@ export default function UserDetailsScreen() {
             setCardsLoading(false);
             return;
           }
-          fetch('http://192.168.1.19:5000/api/collected-cards/user', {
+          const url = `${ApiService.baseURL.replace('/api/mobile', '')}/api/collected-cards/user`;
+          fetch(url, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',

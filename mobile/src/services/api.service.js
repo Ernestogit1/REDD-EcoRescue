@@ -183,6 +183,26 @@ class ApiService {
       body: JSON.stringify({ points }),
     });
   }
+
+  // Mark a level as completed for the user
+  async markLevelComplete(levelId) {
+    const token = await this.getAuthToken();
+    if (!token) throw new Error('Not authenticated');
+    const url = `${API_BASE_URL}/api/levels/complete`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ levelId: String(levelId) }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.message || 'Failed to mark level as complete');
+    }
+    return response.json();
+  }
 }
 
 export default new ApiService();

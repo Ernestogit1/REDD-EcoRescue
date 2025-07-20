@@ -214,6 +214,13 @@ const Level14Screen = () => {
       console.error('Failed to add points:', err);
     });
 
+    // Mark level as completed on backend
+    try {
+      ApiService.markLevelComplete(14);
+    } catch (err) {
+      console.error('Failed to mark level 14 as completed:', err);
+    }
+
     const funFacts = [
       "Coral reefs support 25% of marine life but are threatened by pollution",
       "Oceans absorb 30% of global CO2 emissions",

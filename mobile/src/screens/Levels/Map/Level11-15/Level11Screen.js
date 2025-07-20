@@ -239,17 +239,7 @@ const Level11Screen = ({ navigation: navigationProp }) => { // Rename prop to av
 
     // Mark level as completed on backend
     try {
-      const token = await ApiService.getAuthToken();
-      if (token) {
-        await fetch('http://192.168.1.19:5000/api/levels/complete', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({ levelId: '11' }),
-        });
-      }
+      await ApiService.markLevelComplete(11);
     } catch (err) {
       console.error('Failed to mark level 11 as completed:', err);
     }

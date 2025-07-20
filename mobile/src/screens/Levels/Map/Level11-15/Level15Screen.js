@@ -118,17 +118,7 @@ const Level15Screen = () => {
 
     // Mark level as completed on backend
     try {
-      const token = await ApiService.getAuthToken();
-      if (token) {
-        await fetch('http://192.168.1.19:5000/api/levels/complete', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({ levelId: '15' }),
-        });
-      }
+      await ApiService.markLevelComplete(15);
     } catch (err) {
       console.error('Failed to mark level 15 as completed:', err);
     }
