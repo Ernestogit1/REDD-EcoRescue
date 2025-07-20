@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { PixelRatio } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+
 import ApiService from '../../../../services/api.service';
 
 const { width, height } = Dimensions.get('window');
@@ -346,7 +347,7 @@ const Level12Screen = () => {
     [gameState.gameStarted, gameState.gameOver, handleSlash]
   );
 
-  const endGame = useCallback(() => {
+  const endGame = useCallback(async () => {
     if (gameState.gameOver || endGameRef.current) return;
     endGameRef.current = true;
 
@@ -357,6 +358,23 @@ const Level12Screen = () => {
     ApiService.addPoints(gameState.score).catch((err) => {
       console.error('Failed to add points:', err);
     });
+
+    // Mark level as completed on backend
+    try {
+      const token = await ApiService.getAuthToken();
+      if (token) {
+        await fetch('http://192.168.1.19:5000/api/levels/complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ levelId: '12' }),
+        });
+      }
+    } catch (err) {
+      console.error('Failed to mark level 12 as completed:', err);
+    }
 
     const fruitsSlashed = gameState.fruits.filter((fruit) => fruit.slashed).length;
     const debrisSlashed = gameState.debris.filter((item) => item.slashed).length;

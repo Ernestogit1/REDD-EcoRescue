@@ -228,7 +228,7 @@ const Level11Screen = ({ navigation: navigationProp }) => { // Rename prop to av
   };
 
   // Update endGame function to use safe navigation
-  const endGame = () => {
+  const endGame = async () => {
     setGameOver(true);
     setGameStarted(false);
 
@@ -236,6 +236,23 @@ const Level11Screen = ({ navigation: navigationProp }) => { // Rename prop to av
     ApiService.addPoints(score).catch((err) => {
       console.error('Failed to add points:', err);
     });
+
+    // Mark level as completed on backend
+    try {
+      const token = await ApiService.getAuthToken();
+      if (token) {
+        await fetch('http://192.168.1.19:5000/api/levels/complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ levelId: '11' }),
+        });
+      }
+    } catch (err) {
+      console.error('Failed to mark level 11 as completed:', err);
+    }
 
     const treesPlanted = trees.filter((tree) => tree.planted).length;
     const pollutionCleaned = pollution.filter((item) => item.cleaned).length;

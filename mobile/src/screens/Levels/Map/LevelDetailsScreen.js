@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Animated, 
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ApiService from '../../../services/api.service';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const isLandscape = screenWidth > screenHeight;
@@ -308,6 +310,10 @@ export default function LevelDetailsScreen({ route }) {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
   const detailsAnim = useRef(new Animated.Value(0)).current;
 
+  const [isCollecting, setIsCollecting] = useState(false);
+  const [collected, setCollected] = useState(false);
+  const [collectError, setCollectError] = useState(null);
+
   useEffect(() => {
     // Card entrance animation
     Animated.sequence([
@@ -366,6 +372,49 @@ export default function LevelDetailsScreen({ route }) {
     inputRange: [0, 1],
     outputRange: [-200, 200]
   });
+
+  // Collect card handler
+  const handleCollectCard = async () => {
+    setIsCollecting(true);
+    setCollectError(null);
+    try {
+      // Get auth token using ApiService
+      const token = await ApiService.getAuthToken();
+      if (!token) {
+        setCollectError('User not authenticated');
+        setIsCollecting(false);
+        return;
+      }
+      // Prepare card data
+      const cardData = {
+        levelId: String(level),
+        name: animal.animalName,
+        image: animal.animalName, // Use animal name as a placeholder for image
+        description: `${animal.animalName} - ${animal.habitat}`,
+      };
+      // Call backend
+      const response = await fetch('http://192.168.1.19:5000/api/collected-cards/collect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(cardData),
+      });
+      if (response.status === 201) {
+        setCollected(true);
+      } else if (response.status === 409) {
+        setCollected(true);
+        setCollectError('Card already collected!');
+      } else {
+        const data = await response.json();
+        setCollectError(data.message || 'Failed to collect card');
+      }
+    } catch (err) {
+      setCollectError('Network error');
+    }
+    setIsCollecting(false);
+  };
 
   // Render stars for conservation status
   const renderStars = () => {
@@ -466,9 +515,18 @@ export default function LevelDetailsScreen({ route }) {
               <Text style={styles.dietValue}>{animal.diet}</Text>
             </View>
             
-            {/* Card Footer */}
+            {/* Card Footer with Collect Button */}
             <View style={styles.cardFooter}>
-              <Text style={styles.cardFooterText}>COLLECT ME!</Text>
+              {collected ? (
+                <Text style={styles.cardFooterText}>Collected!</Text>
+              ) : (
+                <TouchableOpacity onPress={handleCollectCard} disabled={isCollecting} style={{ opacity: isCollecting ? 0.6 : 1 }}>
+                  <Text style={styles.cardFooterText}>{isCollecting ? 'Collecting...' : 'Collect Card'}</Text>
+                </TouchableOpacity>
+              )}
+              {collectError && (
+                <Text style={[styles.cardFooterText, { color: '#FF6B6B', marginTop: 4 }]}>{collectError}</Text>
+              )}
             </View>
           </Animated.View>
           

@@ -221,31 +221,17 @@ const Level14Screen = () => {
     ];
     const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
 
-    let message = `Game Over!\nScore: ${finalScore}\nFun Fact: ${randomFact}`;
-    if (finalScore >= 910) { // 81 correct placements (810) + 100 bonus
-      message += '\n🌊 Victory! You solved the puzzle!\nProtect oceans: Reduce plastic pollution!';
+    let message = `Game Over!\nScore: ${finalScore}`;
+    if (finalScore >= 100) {
+      message += '\n🌟 Victory! You won!';
     } else {
-      message += '\n🐠 Try again to solve the puzzle!\nProtect oceans: Reduce plastic pollution!';
+      message += '\n💪 Try again to reach 100 points!';
     }
 
-    Alert.alert(
-      'Level 14: Ocean Sudoku',
-      message,
-      [
-        {
-          text: 'Play Again',
-          onPress: () => {
-            initializeGame();
-            setGameState((prev) => ({ ...prev, gameStarted: true, gameOver: false, selectedCell: { x: 0, y: 0 } }));
-          },
-        },
-        {
-          text: 'Main Menu',
-          onPress: () => navigation.goBack(),
-        },
-      ],
-      { cancelable: false }
-    );
+    Alert.alert('Level 14 Complete', message, [
+      { text: 'Play Again', onPress: initializeGame },
+      { text: 'Main Menu', onPress: () => navigation.goBack() },
+    ]);
   }, [initializeGame, navigation]);
 
   // Start game

@@ -10,10 +10,10 @@ import backgroundMusic from "../assets/audio/bg-forest.mp3"; // ✅ Import backg
 import "react-jigsaw-puzzle/lib/jigsaw-puzzle.css";
 import backgroundImage from "../assets/images/puzgamebg.png"; // Background
 import puzzleBoard from "../assets/images/puzzleboard.png"; // Puzzle board
-import sharkImage from "../assets/images/76.png";
-import turtleImage from "../assets/images/77.png";
-import salamanderImage from "../assets/images/78.png";
-import fishImage from "../assets/images/79.png";
+import sharkImage from "../assets/images/1.png";
+import turtleImage from "../assets/images/2.png";
+import salamanderImage from "../assets/images/3.png";
+import fishImage from "../assets/images/4.png";
 
 // Remove scrollbars globally
 document.body.style.overflow = "hidden";
@@ -327,10 +327,10 @@ const Jigsaw = () => {
               transition={{ duration: 1.5, ease: "easeInOut" }}
               style={{
                 position: "absolute",
-                width: "170%",
-                height: "170%",
-                left: "-35%",
-                top: "5%",
+                width: "100%",
+                height: "100%",
+                left: "10%",
+                top: "10%",
               }}
             >
               <JigsawPuzzle
