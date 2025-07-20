@@ -125,23 +125,10 @@ export default function MainMenuScreen() {
     })();
   }, []);
 
-  const handleMenuAction = (action) => {
-    switch (action) {
-      case 'play':
-        navigation.navigate('GameRoot');
-        break;
-      case 'about':
-        navigation.navigate('AboutUs');
-        break;
-      case 'options':
-        navigation.navigate('Options');
-        break;
-      case 'login':
-        navigation.navigate('Login');
-        break;
-      default:
-        break;
-    }
+  // Logout handler
+  const handleLogout = async () => {
+    await ApiService.logout();
+    setUser(null);
   };
 
   const toggleBackgroundSelector = () => {
@@ -165,9 +152,33 @@ export default function MainMenuScreen() {
     { id: 'play', title: 'PLAY', icon: '🎮', color: '#4ade80' },
     { id: 'about', title: 'ABOUT US', icon: '📖', color: '#60a5fa' },
     { id: 'options', title: 'OPTIONS', icon: '⚙️', color: '#fbbf24' },
-    // Only show login if user is not logged in
-    ...(!user ? [{ id: 'login', title: 'LOGIN', icon: '👤', color: '#f87171' }] : []),
+    // Show login if not logged in, else show logout
+    ...(!user
+      ? [{ id: 'login', title: 'LOGIN', icon: '👤', color: '#f87171' }]
+      : [{ id: 'logout', title: 'LOGOUT', icon: '🚪', color: '#f87171' }]),
   ];
+
+  const handleMenuAction = (action) => {
+    switch (action) {
+      case 'play':
+        navigation.navigate('GameRoot');
+        break;
+      case 'about':
+        navigation.navigate('AboutUs');
+        break;
+      case 'options':
+        navigation.navigate('Options');
+        break;
+      case 'login':
+        navigation.navigate('Login');
+        break;
+      case 'logout':
+        handleLogout();
+        break;
+      default:
+        break;
+    }
+  };
 
   // Add avatar button if user is logged in
   const renderAvatarButton = () => {
