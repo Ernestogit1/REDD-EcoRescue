@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, ScrollView, ActivityIndicator, Modal } from 'react-native';
 import ApiService from '../../services/api.service';
 import { useFocusEffect } from '@react-navigation/native';
 import AnimalCard from '../../components/AnimalCard';
+import animalData from '../../constants/animalData';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -12,7 +13,25 @@ const TABS = [
   { key: 'cards', label: 'Animal Cards Owned' },
 ];
 
-export default function UserDetailsScreen() {
+const PET_GIFS = {
+  1: require('../../../assets/images/pets/rabbitt.mp4'),
+  2: require('../../../assets/images/pets/squirell.mp4'),
+  3: require('../../../assets/images/pets/duckk.mp4'),
+  4: require('../../../assets/images/pets/butterflyy.mp4'),
+  5: require('../../../assets/images/pets/frogg.mp4'),
+  6: require('../../../assets/images/pets/redfoxx.mp4'),
+  7: require('../../../assets/images/pets/racconn.mp4'),
+  8: require('../../../assets/images/pets/owll.mp4'),
+  9: require('../../../assets/images/pets/beaverr.mp4'),
+  10: require('../../../assets/images/pets/turtlee.mp4'),
+  11: require('../../../assets/images/pets/leopardd.mp4'),
+  12: require('../../../assets/images/pets/orangutann.mp4'),
+  13: require('../../../assets/images/pets/seaturtlee.mp4'),
+  14: require('../../../assets/images/pets/baldeaglee.mp4'),
+  15: require('../../../assets/images/pets/bluedartt.mp4'),
+};
+
+export default function UserDetailsScreen({ navigation }) {
   const [activeTab, setActiveTab] = useState('details');
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,6 +39,8 @@ export default function UserDetailsScreen() {
   const [cards, setCards] = useState([]);
   const [cardsLoading, setCardsLoading] = useState(false);
   const [cardsError, setCardsError] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalGif, setModalGif] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -89,7 +110,7 @@ export default function UserDetailsScreen() {
             <Text style={styles.label}><Text style={styles.labelHighlight}>Username:</Text> {user.username}</Text>
             <Text style={styles.label}><Text style={styles.labelHighlight}>Email:</Text> {user.email}</Text>
             <Text style={styles.label}><Text style={styles.labelHighlight}>Rank:</Text> {user.rank}</Text>
-            <Text style={styles.label}><Text style={styles.labelHighlight}>Rescue Stars:</Text> {user.rescueStars}</Text>
+            {/* <Text style={styles.label}><Text style={styles.labelHighlight}>Rescue Stars:</Text> {user.rescueStars}</Text> */}
             <Text style={styles.label}><Text style={styles.labelHighlight}>Points:</Text> {user.points}</Text>
           </View>
         );
@@ -116,7 +137,13 @@ export default function UserDetailsScreen() {
             ) : (
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
                 {cards.map((card, idx) => (
-                  <AnimalCard key={card._id || idx} levelId={parseInt(card.levelId)} collectedAt={card.collectedAt} />
+                  <AnimalCard
+                    key={card._id || idx}
+                    levelId={parseInt(card.levelId)}
+                    collectedAt={card.collectedAt}
+                    image={animalData[parseInt(card.levelId)]?.image}
+                    onPress={levelId => navigation.navigate('PetGif', { levelId })}
+                  />
                 ))}
               </View>
             )}
@@ -154,7 +181,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#3d2914',
-    paddingTop: 40,
   },
   tabBar: {
     flexDirection: 'row',

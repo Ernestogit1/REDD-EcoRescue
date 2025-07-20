@@ -8,10 +8,13 @@ import {
   Alert,
   PanResponder,
   BackHandler,
+  Modal,
+  Animated,
 } from 'react-native';
 import { PixelRatio } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import ApiService from '../../../../services/api.service';
+import { LinearGradient } from 'expo-linear-gradient';
 
 // Get window dimensions
 const { width, height } = Dimensions.get('window');
@@ -74,6 +77,10 @@ const Level15Screen = () => {
   const lastSwipeTimeRef = useRef(0);
   const sinkTimersRef = useRef(new Map());
   const showDebug = process.env.NODE_ENV === 'development';
+  const [showEndModal, setShowEndModal] = useState(false);
+  const [endModalType, setEndModalType] = useState('success');
+  const [endModalMessage, setEndModalMessage] = useState('');
+  const [endModalAnim] = useState(new Animated.Value(0));
 
   // Generate random position for hazards
   const getRandomPosition = useCallback(() => ({
@@ -130,31 +137,32 @@ const Level15Screen = () => {
     ];
     const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
 
-    let message = `Game Over!\nScore: ${finalScore}\nFun Fact: ${randomFact}`;
+    let message = `Score: ${finalScore}\nFun Fact: ${randomFact}`;
     if (gameState.frog.y === 0) {
-      message += '\n🌊 Victory! Frog reached the safe zone!\nProtect ponds: Reduce plastic pollution!';
+      setEndModalType('success');
+      setEndModalMessage('★ VICTORY! ★\nFrog reached the safe zone!\n' + message + '\nProtect ponds: Reduce plastic pollution!');
     } else {
-      message += '\n🐸 Oh no! Try again to reach the safe zone!\nProtect ponds: Reduce plastic pollution!';
+      setEndModalType('failure');
+      setEndModalMessage('× TRY AGAIN ×\n' + message + '\nTry again to reach the safe zone!\nProtect ponds: Reduce plastic pollution!');
     }
-
-    Alert.alert(
-      'Level 15: Frog Leap',
-      message,
-      [
-        {
-          text: 'Play Again',
-          onPress: () => {
-            initializeGame();
-            setGameState((prev) => ({ ...prev, gameStarted: true, gameOver: false, showInstructions: false }));
-          },
-        },
-        {
-          text: 'Main Menu',
-          onPress: () => navigation.goBack(),
-        },
-      ],
-      { cancelable: false }
-    );
+    setShowEndModal(true);
+    Animated.sequence([
+      Animated.timing(endModalAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true
+      }),
+      Animated.timing(endModalAnim, {
+        toValue: 0.8,
+        duration: 200,
+        useNativeDriver: true
+      }),
+      Animated.timing(endModalAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true
+      })
+    ]).start();
   }, [gameState.frog, gameState.gameOver, clearAllSinkTimers, navigation]);
 
   // Initialize game
@@ -358,174 +366,192 @@ const Level15Screen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.backButtonText}>← BACK</Text>
+      {/* 8-bit Header */}
+      <View style={styles.header8bit}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.exitButton8bit}>
+          <Text style={styles.exitButtonText8bit}>EXIT</Text>
         </TouchableOpacity>
-        <Text style={styles.levelTitle}>LEVEL 15: FROG LEAP</Text>
-        <View style={styles.headerSpacer} />
+        <Text style={styles.headerTitle8bit}>LEVEL 15: FROG LEAP</Text>
+        <Text style={styles.scoreText8bit}>Score: {gameState.score}</Text>
       </View>
-
-      {/* Game Stats */}
-      <View style={styles.statsContainer}>
-        <Text style={styles.statText}>Score: {gameState.score}</Text>
-      </View>
-
       {/* Instructions or Game Area */}
       {gameState.showInstructions ? (
-        <View style={styles.instructionsContainer}>
-          <Text style={styles.instructionTitle}>Level 15: Frog Leap Mechanics</Text>
-          <Text style={styles.instructionText}>
-            Welcome to Frog Leap! Guide your frog to the safe zone while avoiding plastic hazards and sinking lily pads.
-          </Text>
-          <Text style={styles.instructionText}>
-            🐸 Your frog starts at the bottom of a 10x6 grid. The goal is to reach the top row (safe zone, 🏞️).
-          </Text>
-          <Text style={styles.instructionText}>
-            👆 Tap a lily pad (🟢) within 2 cells to jump. Each jump earns 10 points.
-          </Text>
-          <Text style={styles.instructionText}>
-            🌊 Use the D-pad (right side) or swipe to move one cell at a time (up, down, left, right).
-          </Text>
-          <Text style={styles.instructionText}>
-            🛍️ Avoid plastic hazards falling from the top. A collision ends the game.
-          </Text>
-          <Text style={styles.instructionText}>
-            🌱 Lily pads sink for 2 seconds after you land, making you vulnerable to hazards.
-          </Text>
-          <Text style={styles.instructionText}>
-            🎯 Reach the safe zone for a 100-point bonus and win!
-          </Text>
-          <Text style={styles.instructionText}>
-            🌍 EcoRescue Mission: Plastic pollution harms amphibians. Help keep ponds clean!
-          </Text>
-          <TouchableOpacity style={styles.startButton} onPress={startGame}>
-            <Text style={styles.buttonText}>START JUMPING</Text>
-          </TouchableOpacity>
+        <View style={styles.instructionsOverlay}>
+          <View style={styles.instructionsBox}>
+            <Text style={styles.instructionsTitle}>LEVEL 15: FROG LEAP</Text>
+            <Text style={styles.instructionsText}>Guide 🐸 to the top (🏞️) and avoid 🛍️ plastics!</Text>
+            <Text style={styles.instructionsText}>Tap a 🟢 lily pad (max 2 cells) to jump</Text>
+            <Text style={styles.instructionsText}>Use D-pad or swipe to move 1 cell</Text>
+            <Text style={styles.instructionsText}>Pads sink for 2s after landing</Text>
+            <Text style={styles.instructionsText}>🎯 Safe zone: +100 pts | Jump: +10 pts</Text>
+            <Text style={styles.instructionsText}>🌍 EcoRescue: Keep ponds clean!</Text>
+            <TouchableOpacity style={styles.startButton} onPress={startGame}>
+              <LinearGradient colors={['#FFD700', '#FB8500']} style={styles.startButtonGradient}>
+                <Text style={styles.startButtonText}>START JUMPING</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
         </View>
       ) : (
-        <View style={styles.gameArea} {...panResponder.panHandlers}>
-          <View style={styles.background} />
-          <View style={styles.gridContainer}>
-            {/* Lily Pads and Safe Zone */}
-            {gameState.lilyPads.map((pad) => (
-              <TouchableOpacity
-                key={pad.id}
-                style={[
-                  styles.lilyPad,
-                  {
-                    left: pad.x * CELL_SIZE,
-                    top: pad.y * CELL_SIZE,
-                    width: CELL_SIZE,
-                    height: CELL_SIZE,
-                    backgroundColor: pad.isSafeZone ? '#228B22' : pad.sinking ? '#006400' : '#32CD32',
-                  },
-                ]}
-                onPress={() => moveFrog(pad.x, pad.y)}
-              >
-                <Text style={styles.padText}>{pad.isSafeZone ? '🏞️' : '🟢'}</Text>
-              </TouchableOpacity>
-            ))}
-            {/* Frog */}
-            <View
-              style={[
-                styles.frog,
-                {
-                  left: gameState.frog.x * CELL_SIZE,
-                  top: gameState.frog.y * CELL_SIZE,
-                  width: CELL_SIZE,
-                  height: CELL_SIZE,
-                },
-              ]}
-            >
-              <Text style={styles.frogText}>🐸</Text>
-            </View>
-            {/* Hazards */}
-            {gameState.hazards.map((hazard) => (
+        <View style={styles.mainRow8bit}>
+          {/* Game Area - bigger */}
+          <View style={styles.gameArea8bit} {...panResponder.panHandlers}>
+            <View style={styles.background} />
+            <View style={styles.gridContainer8bit}>
+              {/* Lily Pads and Safe Zone */}
+              {gameState.lilyPads.map((pad) => (
+                <TouchableOpacity
+                  key={pad.id}
+                  style={[
+                    styles.lilyPad8bit,
+                    {
+                      left: pad.x * CELL_SIZE * 1.2,
+                      top: pad.y * CELL_SIZE * 1.2,
+                      width: CELL_SIZE * 1.2,
+                      height: CELL_SIZE * 1.2,
+                      backgroundColor: 'transparent',
+                      borderWidth: 0,
+                    },
+                  ]}
+                  onPress={() => moveFrog(pad.x, pad.y)}
+                >
+                  <Text style={styles.padText8bit}>{pad.isSafeZone ? '🏞️' : '🟢'}</Text>
+                </TouchableOpacity>
+              ))}
+              {/* Frog */}
               <View
-                key={hazard.id}
                 style={[
-                  styles.hazard,
+                  styles.frog8bit,
                   {
-                    left: hazard.x * CELL_SIZE,
-                    top: hazard.y * CELL_SIZE,
-                    width: CELL_SIZE,
-                    height: CELL_SIZE,
+                    left: gameState.frog.x * CELL_SIZE * 1.2,
+                    top: gameState.frog.y * CELL_SIZE * 1.2,
+                    width: CELL_SIZE * 1.2,
+                    height: CELL_SIZE * 1.2,
+                    backgroundColor: 'transparent',
+                    borderWidth: 0,
                   },
                 ]}
               >
-                <Text style={styles.hazardText}>🛍️</Text>
+                <Text style={styles.frogText8bit}>🐸</Text>
               </View>
-            ))}
+              {/* Hazards */}
+              {gameState.hazards.map((hazard) => (
+                <View
+                  key={hazard.id}
+                  style={[
+                    styles.hazard8bit,
+                    {
+                      left: hazard.x * CELL_SIZE * 1.2,
+                      top: hazard.y * CELL_SIZE * 1.2,
+                      width: CELL_SIZE * 1.2,
+                      height: CELL_SIZE * 1.2,
+                      backgroundColor: 'transparent',
+                      borderWidth: 0,
+                    },
+                  ]}
+                >
+                  <Text style={styles.hazardText8bit}>🛍️</Text>
+                </View>
+              ))}
+            </View>
+            {showDebug && gameState.gameStarted && (
+              <Text style={styles.debugText}>
+                Frog: ({gameState.frog.x}, {gameState.frog.y}) | Score: {gameState.score}
+              </Text>
+            )}
           </View>
-          {showDebug && gameState.gameStarted && (
-            <Text style={styles.debugText}>
-              Frog: ({gameState.frog.x}, {gameState.frog.y}) | Score: {gameState.score}
-            </Text>
-          )}
-          {/* In-Game Instructions */}
-          {!gameState.gameStarted && !gameState.gameOver && !gameState.showInstructions && (
-            <View style={styles.instructions}>
-              <Text style={styles.instructionTitle}>Mission: Guide the Frog!</Text>
-              <Text style={styles.instructionText}>👆 Tap lily pad to jump (max 2 cells)</Text>
-              <Text style={styles.instructionText}>🌊 Swipe/D-pad to move</Text>
-              <Text style={styles.instructionText}>🛍️ Avoid plastics</Text>
-              <Text style={styles.instructionText}>🌱 Pads sink for 2s</Text>
-              <Text style={styles.instructionText}>🎯 Safe zone: +100 pts</Text>
-              <Text style={styles.instructionText}>🔢 Jump: +10 pts</Text>
-              <Text style={styles.instructionText}>🌍 Protect ponds!</Text>
+          {/* D-pad beside the game */}
+          {gameState.gameStarted && (
+            <View style={styles.dPadColumn8bit}>
+              <View style={styles.dPadRow8bit}>
+                <TouchableOpacity style={styles.dPadButton8bit} onPress={() => moveFrogDpad(DIRECTIONS.UP)}>
+                  <Text style={styles.dPadText8bit}>▲</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.dPadRow8bit}>
+                <TouchableOpacity style={styles.dPadButton8bit} onPress={() => moveFrogDpad(DIRECTIONS.LEFT)}>
+                  <Text style={styles.dPadText8bit}>◀</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.dPadButton8bit} onPress={initializeGame}>
+                  <Text style={styles.dPadText8bit}>⟳</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.dPadButton8bit} onPress={() => moveFrogDpad(DIRECTIONS.RIGHT)}>
+                  <Text style={styles.dPadText8bit}>▶</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.dPadRow8bit}>
+                <TouchableOpacity style={styles.dPadButton8bit} onPress={() => moveFrogDpad(DIRECTIONS.DOWN)}>
+                  <Text style={styles.dPadText8bit}>▼</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
         </View>
       )}
-
-      {/* Controls */}
-      {gameState.gameStarted && (
-        <View style={styles.controlsContainer}>
-          <View style={styles.dPadContainer}>
-            <TouchableOpacity
-              style={[styles.dPadButton, { top: normalize(0), left: normalize(40) }]}
-              onPress={() => moveFrogDpad(DIRECTIONS.UP)}
-              activeOpacity={0.7}
+      {/* 8-bit Endgame Modal */}
+      <Modal
+        transparent={true}
+        visible={showEndModal}
+        animationType="none"
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View 
+            style={[
+              styles.modalContent,
+              {
+                transform: [
+                  { scale: endModalAnim }
+                ]
+              }
+            ]}
+          >
+            <LinearGradient
+              colors={endModalType === 'success' ? ['#FFD700', '#FB8500'] : ['#E63946', '#D00000']}
+              style={styles.modalHeader}
             >
-              <Text style={styles.dPadText}>↑</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.dPadButton, { top: normalize(40), left: normalize(0) }]}
-              onPress={() => moveFrogDpad(DIRECTIONS.LEFT)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.dPadText}>←</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.dPadButton, { top: normalize(40), left: normalize(40) }]}
-              onPress={initializeGame}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.dPadText}>RESET</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.dPadButton, { top: normalize(40), right: normalize(0) }]}
-              onPress={() => moveFrogDpad(DIRECTIONS.RIGHT)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.dPadText}>→</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.dPadButton, { bottom: normalize(0), left: normalize(40) }]}
-              onPress={() => moveFrogDpad(DIRECTIONS.DOWN)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.dPadText}>↓</Text>
-            </TouchableOpacity>
-          </View>
+              <Text style={styles.modalHeaderText}>
+                {endModalType === 'success' ? '★ VICTORY! ★' : '× TRY AGAIN ×'}
+              </Text>
+            </LinearGradient>
+            <View style={styles.modalBody}>
+              <Text style={styles.modalMessage}>{endModalMessage}</Text>
+              <TouchableOpacity 
+                style={styles.modalButton}
+                onPress={() => {
+                  setShowEndModal(false);
+                  initializeGame();
+                  setGameState((prev) => ({ ...prev, gameStarted: true, gameOver: false, showInstructions: false }));
+                }}
+              >
+                <LinearGradient
+                  colors={['#FFB703', '#FB8500']}
+                  style={styles.modalButtonGradient}
+                >
+                  <Text style={styles.modalButtonText}>
+                    PLAY AGAIN
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.modalButton, { marginTop: 10 }]}
+                onPress={() => {
+                  setShowEndModal(false);
+                  navigation.goBack();
+                }}
+              >
+                <LinearGradient
+                  colors={['#FFD700', '#FB8500']}
+                  style={styles.modalButtonGradient}
+                >
+                  <Text style={styles.modalButtonText}>
+                    MAIN MENU
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
         </View>
-      )}
+      </Modal>
     </View>
   );
 };
@@ -729,20 +755,348 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   startButton: {
-    backgroundColor: '#0F0',
-    paddingHorizontal: normalize(25),
-    paddingVertical: normalize(12),
+    marginTop: 18,
+    width: 220,
     borderRadius: 0,
-    borderWidth: normalize(2),
-    borderColor: '#FFF',
-    marginTop: normalize(10),
+    overflow: 'hidden',
+    alignSelf: 'center',
+    borderWidth: 3,
+    borderColor: '#FFD700',
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 0,
   },
-  buttonText: {
+  startButtonGradient: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  startButtonText: {
+    color: '#222',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 15,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    letterSpacing: 1,
+    textShadowColor: '#FFF',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  instructionsOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 100,
+  },
+  instructionsBox: {
+    backgroundColor: '#222',
+    borderWidth: 4,
+    borderColor: '#FFD700',
+    borderRadius: 0,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 340,
+    maxWidth: '90%',
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 0,
+  },
+  instructionsTitle: {
+    color: '#FFD700',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 12,
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  instructionsText: {
     color: '#FFF',
-    fontSize: normalize(11),
-    fontFamily: 'monospace',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 11,
+    textAlign: 'center',
+    marginBottom: 6,
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  header8bit: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderBottomWidth: 4,
+    borderBottomColor: '#FFD700',
+    backgroundColor: '#222',
+    minHeight: 60,
+    position: 'relative',
+    zIndex: 10,
+  },
+  exitButton8bit: {
+    position: 'absolute',
+    left: 15,
+    paddingVertical: 6,
+    paddingHorizontal: 18,
+    backgroundColor: '#FFD700',
+    borderRadius: 0,
+    borderWidth: 2,
+    borderColor: '#FFF',
+    shadowColor: '#333',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    zIndex: 10,
+  },
+  exitButtonText8bit: {
+    color: '#222',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 14,
+    letterSpacing: 1,
+    fontWeight: 'bold',
+  },
+  headerTitle8bit: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFD700',
+    fontSize: 16,
+    textAlign: 'center',
+    flex: 1,
+    letterSpacing: 1,
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  scoreText8bit: {
+    position: 'absolute',
+    right: 15,
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFB703',
+    fontSize: 13,
+    zIndex: 2,
+    backgroundColor: '#222',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 0,
+    borderWidth: 2,
+    borderColor: '#FFD700',
+    fontWeight: 'bold',
+  },
+  mainRow8bit: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+    marginTop: 10,
+  },
+  gameArea8bit: {
+    margin: GAME_AREA_MARGIN,
+    borderRadius: 0,
+    overflow: 'hidden',
+    borderWidth: 4,
+    borderColor: '#FFD700',
+    backgroundColor: '#111',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    width: GRID_PIXEL_WIDTH * 1.2,
+    height: GRID_PIXEL_HEIGHT * 1.2,
+    minWidth: 400,
+    minHeight: 300,
+    maxWidth: 600,
+    maxHeight: 500,
+  },
+  gridContainer8bit: {
+    width: GRID_PIXEL_WIDTH * 1.2,
+    height: GRID_PIXEL_HEIGHT * 1.2,
+    position: 'relative',
+    backgroundColor: '#111',
+    borderWidth: 2,
+    borderColor: '#FFD700',
+  },
+  lilyPad8bit: {
+    position: 'absolute',
+    borderWidth: 2,
+    borderColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 0,
+  },
+  padText8bit: {
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 22,
+    color: '#FFD700',
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  frog8bit: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFD700',
+    borderRadius: 0,
+    backgroundColor: '#222',
+  },
+  frogText8bit: {
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 28,
+    color: '#39FF14',
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  hazard8bit: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFD700',
+    borderRadius: 0,
+    backgroundColor: '#222',
+  },
+  hazardText8bit: {
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 22,
+    color: '#E63946',
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  dPadColumn8bit: {
+    marginLeft: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: 120,
+  },
+  dPadRow8bit: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 4,
+  },
+  dPadButton8bit: {
+    backgroundColor: '#FFD700',
+    borderWidth: 3,
+    borderColor: '#FFF',
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 6,
+    borderRadius: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 0,
+  },
+  dPadText8bit: {
+    color: '#222',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 22,
     fontWeight: 'bold',
     textAlign: 'center',
+    textShadowColor: '#FFF',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#222',
+    borderWidth: 4,
+    borderColor: '#FFD700',
+    borderRadius: 0,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '90%',
+    maxWidth: 380,
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 0,
+  },
+  modalHeader: {
+    width: '100%',
+    paddingVertical: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: '#FFD700',
+    borderRadius: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalHeaderText: {
+    color: '#222',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textShadowColor: '#FFF',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  modalBody: {
+    width: '100%',
+    marginTop: 15,
+    alignItems: 'center',
+  },
+  modalMessage: {
+    color: '#FFF',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 13,
+    textAlign: 'center',
+    marginBottom: 20,
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  modalButton: {
+    width: 200,
+    borderRadius: 0,
+    overflow: 'hidden',
+    alignSelf: 'center',
+    borderWidth: 3,
+    borderColor: '#FFD700',
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 0,
+  },
+  modalButtonGradient: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButtonText: {
+    color: '#222',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 15,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    letterSpacing: 1,
+    textShadowColor: '#FFF',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
   },
 });
 

@@ -2,54 +2,47 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Animated, ImageBackground } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ApiService from '../../../services/api.service';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function HardMapScreen() {
     const navigation = useNavigation();
     const [selectedLevel, setSelectedLevel] = useState(null);
-    const [unlockedLevels, setUnlockedLevels] = useState(1); // Only first level unlocked initially
+    const [levels, setLevels] = useState([
+        { id: 11, name: 'Level 11', stars: 0, unlocked: true },
+        { id: 12, name: 'Level 12', stars: 0, unlocked: true },
+        { id: 13, name: 'Level 13', stars: 0, unlocked: true },
+        { id: 14, name: 'Level 14', stars: 0, unlocked: true },
+        { id: 15, name: 'Level 15', stars: 0, unlocked: true },
+    ]);
+    const [userId, setUserId] = useState(null);
     
     // Animation values
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const mapAnim = useRef(new Animated.Value(0)).current;
     const levelAnims = useRef([...Array(5)].map(() => new Animated.Value(0))).current;
-
-    // Level data
-    const levels = [
-        {
-            id: 11,
-            name: 'Level 11',
-            stars: 0,
-            unlocked: true,
-        },
-        {
-            id: 12,
-            name: 'Level 12',
-            stars: 0,
-            unlocked: true,
-        },
-        {
-            id: 13,
-            name: 'Level 13',
-            stars: 0,
-            unlocked: true,
-        },
-        {
-            id: 14,
-            name: 'Level 14',
-            stars: 0,
-            unlocked: true,
-        },
-        {
-            id: 15,
-            name: 'Level 15',
-            stars: 0,
-            unlocked: true,
-        },
-    ];
+    const backButtonAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
+        const fetchProgress = async () => {
+            const user = await ApiService.getUserData();
+            if (!user || !user._id) return;
+            setUserId(user._id);
+            const progressKey = `progress_${user._id}_hard`;
+            let progress = 1;
+            try {
+                const stored = await AsyncStorage.getItem(progressKey);
+                if (stored) progress = parseInt(stored, 10);
+            } catch {}
+            setLevels(prev => prev.map((lvl, idx) => ({
+                ...lvl,
+                unlocked: idx === 0 || idx < progress,
+                stars: idx < progress ? 1 : 0
+            })));
+        };
+        fetchProgress();
         // Title and map animations
         Animated.parallel([
             Animated.timing(fadeAnim, {
@@ -61,6 +54,11 @@ export default function HardMapScreen() {
                 toValue: 1,
                 tension: 50,
                 friction: 7,
+                useNativeDriver: true,
+            }),
+            Animated.timing(backButtonAnim, {
+                toValue: 1,
+                duration: 600,
                 useNativeDriver: true,
             }),
         ]).start();
@@ -87,7 +85,13 @@ export default function HardMapScreen() {
             // Navigate to the level details screen
             navigation.navigate('LevelDetails', { 
                 difficulty: 'Hard', 
-                level: level.id 
+                level: level.id,
+                onComplete: async () => {
+                    if (!userId) return;
+                    const progressKey = `progress_${userId}_hard`;
+                    const nextLevel = Math.max(level.id + 1, levels.filter(l => l.unlocked).length + 1);
+                    await AsyncStorage.setItem(progressKey, String(nextLevel));
+                }
             });
         }, 300);
     };
@@ -119,6 +123,29 @@ export default function HardMapScreen() {
                 {/* Title overlay */}
                 <Animated.View style={[styles.titleOverlay, { opacity: fadeAnim }]}>
                     <Text style={styles.title}>HARD MODE</Text>
+                </Animated.View>
+                
+                {/* Back Button - 8-bit style */}
+                <Animated.View 
+                    style={[
+                        styles.backButtonContainer,
+                        {
+                            opacity: backButtonAnim,
+                            transform: [
+                                { translateX: backButtonAnim.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [-50, 0]
+                                })}
+                            ]
+                        }
+                    ]}
+                >
+                    <TouchableOpacity 
+                        style={styles.backButton}
+                        onPress={handleGoBack}
+                    >
+                        <Text style={styles.backButtonText}>RETURN</Text>
+                    </TouchableOpacity>
                 </Animated.View>
                 
                 {/* Level 11 */}
@@ -448,5 +475,34 @@ const styles = StyleSheet.create({
     },
     unearnedStar: {
         tintColor: '#555',
+    },
+    backButtonContainer: {
+        position: 'absolute',
+        top: 20,
+        left: 20,
+        zIndex: 10,
+    },
+    backButton: {
+        backgroundColor: '#8B4513',
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        borderWidth: 3,
+        borderColor: '#FFD700',
+        // 8-bit style with sharp edges
+        borderRadius: 0,
+        // Pixelated shadow effect
+        shadowColor: '#000',
+        shadowOffset: { width: 4, height: 4 },
+        shadowOpacity: 1,
+        shadowRadius: 0,
+        elevation: 5,
+    },
+    backButtonText: {
+        fontFamily: 'PressStart2P_400Regular',
+        color: '#FFF',
+        fontSize: 12,
+        textShadowColor: '#000',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 0,
     },
 });

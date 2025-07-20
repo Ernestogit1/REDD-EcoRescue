@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Animated, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Animated, Alert, Modal } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -68,6 +68,8 @@ export default function Level2Screen() {
   const [powerups, setPowerups] = useState([]);
   const [activePowerups, setActivePowerups] = useState({});
   const powerupSpawnTimeRef = useRef(0);
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [cardAnim] = useState(new Animated.Value(0));
   
   // Game elements
   const [squirrelPosition, setSquirrelPosition] = useState({ 
@@ -129,7 +131,7 @@ export default function Level2Screen() {
   // Handle game over
   useEffect(() => {
     if (lives <= 0 && !gameOver) {
-      handleGameOver(false);
+      handleGameOver();
     }
   }, [lives]);
 
@@ -144,10 +146,7 @@ export default function Level2Screen() {
       setDifficulty(4);
     }
     
-    // Check for win condition
-    if (score >= 200 && !gameOver) {
-      handleGameOver(true);
-    }
+    // Remove win condition based on score
   }, [score]);
   
   // Handle active powerups
@@ -255,10 +254,10 @@ export default function Level2Screen() {
     });
     
     // Now check for collisions after positions are updated
-    // This is a separate step to ensure positions are updated first
-    setTimeout(() => {
+    // Instead of using setTimeout, we'll use requestAnimationFrame to ensure we're not in a render cycle
+    requestAnimationFrame(() => {
       checkCollisionsAfterUpdate();
-    }, 0);
+    });
     
     // Update nuts with magnet powerup effect
     if (activePowerups.magnet) {
@@ -319,7 +318,9 @@ export default function Level2Screen() {
       
       // Update score
       if (scoreIncrease > 0) {
-        setScore(s => s + scoreIncrease);
+        requestAnimationFrame(() => {
+          setScore(s => s + scoreIncrease);
+        });
       }
       
       return remainingNuts;
@@ -329,6 +330,7 @@ export default function Level2Screen() {
     setPowerups(prev => {
       if (prev.length === 0) return prev;
       
+      const collectedPowerups = [];
       const remainingPowerups = prev.filter(powerup => {
         // Check if powerup is off screen
         if (powerup.y >= screenHeight) {
@@ -383,7 +385,9 @@ export default function Level2Screen() {
         
         // Apply damage
         if (damageTotal > 0) {
-          setLives(l => Math.max(0, l - damageTotal));
+          requestAnimationFrame(() => {
+            setLives(l => Math.max(0, l - damageTotal));
+          });
         }
         
         return remainingObstacles;
@@ -479,8 +483,11 @@ export default function Level2Screen() {
       });
       
       if (scoreIncrease > 0) {
-        setScore(s => s + scoreIncrease);
-        playSoundEffect('collect');
+        // Update score outside of render using requestAnimationFrame
+        requestAnimationFrame(() => {
+          setScore(s => s + scoreIncrease);
+          playSoundEffect('collect');
+        });
       }
       
       return remainingNuts;
@@ -506,11 +513,11 @@ export default function Level2Screen() {
       });
       
       if (collectedPowerups.length > 0) {
-        playSoundEffect('powerup');
-        // Use setTimeout to avoid state updates during render
-        setTimeout(() => {
+        // Handle powerup activation outside of render using requestAnimationFrame
+        requestAnimationFrame(() => {
+          playSoundEffect('powerup');
           collectedPowerups.forEach(type => activatePowerup(type));
-        }, 0);
+        });
       }
       
       return remainingPowerups;
@@ -537,8 +544,11 @@ export default function Level2Screen() {
         });
         
         if (damageTotal > 0) {
-          setLives(l => Math.max(0, l - damageTotal));
-          playSoundEffect('hit');
+          // Update lives outside of render using requestAnimationFrame
+          requestAnimationFrame(() => {
+            setLives(l => Math.max(0, l - damageTotal));
+            playSoundEffect('hit');
+          });
         }
         
         return remainingObstacles;
@@ -564,7 +574,9 @@ export default function Level2Screen() {
         });
         
         if (hitCount > 0) {
-          playSoundEffect('deflect');
+          requestAnimationFrame(() => {
+            playSoundEffect('deflect');
+          });
         }
         
         return remainingObstacles;
@@ -610,43 +622,49 @@ export default function Level2Screen() {
         ...prev,
         x: newX,
       }));
+
+      // Use setTimeout to ensure state update completes before checking collisions
+      setTimeout(() => {
+        checkCollisionsAfterMovement();
+      }, 0);
     }
   };
   
-  const handleGameOver = (isWin) => {
+  const handleGameOver = () => {
     setGameOver(true);
-
-    // Calculate the final score to send
-    const finalScore = score; // If you want to add bonuses, do it here
-
-    // Always add points, win or lose
+    const finalScore = score;
     ApiService.addPoints(finalScore).catch((err) => {
       console.error('Failed to add points:', err);
     });
-
-    if (isWin) {
-      playSoundEffect('win');
-      setTimeout(() => {
-        Alert.alert(
-          "Level Complete!",
-          `Great job! You collected enough nuts!\nScore: ${finalScore}`,
-          [
-            { text: "Continue", onPress: () => navigation.goBack() }
-          ]
-        );
-      }, 1000);
-    } else {
-      playSoundEffect('lose');
-      setTimeout(() => {
-        Alert.alert(
-          "Game Over",
-          `You ran out of lives. \nFinal Score: ${finalScore}`,
-          [
-            { text: "Continue", onPress: () => navigation.goBack() }
-          ]
-        );
-      }, 1000);
-    }
+    // No collectCard call here
+    // Always award the card and show the modal
+    setTimeout(async () => {
+      try {
+        await ApiService.markLevelComplete(2);
+        setShowCardModal(true);
+        Animated.sequence([
+          Animated.timing(cardAnim, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true
+          }),
+          Animated.timing(cardAnim, {
+            toValue: 0.8,
+            duration: 200,
+            useNativeDriver: true
+          }),
+          Animated.timing(cardAnim, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true
+          })
+        ]).start();
+      } catch (err) {
+        console.error('Failed to mark level as complete or award card:', err);
+        Alert.alert('Level Complete!', `Great job! You finished the game!\nScore: ${finalScore}`);
+        navigation.goBack();
+      }
+    }, 1000);
   };
   
   const togglePause = () => {
@@ -658,8 +676,34 @@ export default function Level2Screen() {
   };
   
   const playSoundEffect = (type) => {
-    // You would implement different sound effects here
-    // For example: audioService.playSound(type);
+    // Implement different sound effects
+    try {
+      switch(type) {
+        case 'collect':
+          audioService.playSound('collect');
+          break;
+        case 'hit':
+          audioService.playSound('hit');
+          break;
+        case 'powerup':
+          audioService.playSound('powerup');
+          break;
+        case 'deflect':
+          audioService.playSound('deflect');
+          break;
+        case 'win':
+          audioService.playSound('win');
+          break;
+        case 'lose':
+          audioService.playSound('lose');
+          break;
+        default:
+          // No sound
+          break;
+      }
+    } catch (error) {
+      console.log('Sound effect error:', error);
+    }
   };
   
   const activatePowerup = (powerupType) => {
@@ -793,6 +837,57 @@ export default function Level2Screen() {
       );
     }
     return livesArray;
+  };
+  
+  // 8-bit style collectible card modal
+  const renderCardModal = () => {
+    if (!showCardModal) return null;
+    return (
+      <Modal
+        transparent={true}
+        visible={showCardModal}
+        animationType="none"
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View 
+            style={[
+              styles.modalContent,
+              {
+                transform: [
+                  { scale: cardAnim }
+                ]
+              }
+            ]}
+          >
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalHeaderText}>🎴 COLLECTIBLE CARD UNLOCKED!</Text>
+            </View>
+            <View style={styles.modalBody}>
+              <Image
+                source={require('../../../../../assets/images/pets/Squirrel.png')}
+                style={{ width: 120, height: 120, marginBottom: 16 }}
+                resizeMode="contain"
+              />
+              <Text style={styles.modalMessage}>Congratulations! You collected a new card for Level 2.</Text>
+              <TouchableOpacity 
+                style={styles.modalButton}
+                onPress={() => {
+                  setShowCardModal(false);
+                  navigation.goBack();
+                }}
+              >
+                <LinearGradient
+                  colors={['#FFB703', '#FB8500']}
+                  style={styles.modalButtonGradient}
+                >
+                  <Text style={styles.modalButtonText}>CONTINUE</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
+    );
   };
   
   return (
@@ -954,6 +1049,7 @@ export default function Level2Screen() {
             </View>
           )}
         </LinearGradient>
+        {renderCardModal()}
       </View>
     </GestureHandlerRootView>
   );
@@ -1265,5 +1361,69 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 8,
     overflow: 'hidden',
+  },
+  // Add modal styles if not present
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#1A3C40',
+    borderRadius: 10,
+    borderWidth: 4,
+    borderColor: '#FFD700',
+    shadowColor: '#000',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 10,
+  },
+  modalHeader: {
+    padding: 12,
+    alignItems: 'center',
+    borderBottomWidth: 4,
+    borderBottomColor: '#FFD700',
+  },
+  modalHeaderText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 16,
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 0,
+  },
+  modalBody: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalMessage: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  modalButton: {
+    marginTop: 10,
+    borderRadius: 4,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#FFD700',
+  },
+  modalButtonGradient: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButtonText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
   },
 });

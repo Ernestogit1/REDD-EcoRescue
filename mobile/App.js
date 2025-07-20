@@ -7,11 +7,13 @@ import { ActivityIndicator, View } from 'react-native';
 import DashboardScreen from './src/screens/Dashboard/DashboardScreen';
 import HomeNavigator from './src/navigators/HomeNavigator';
 import GameNavigator from './src/navigators/GameNavigator';
+import ShopNavigator from './src/navigators/ShopNavigator';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useEffect } from 'react';
 import audioService from './src/services/audio.service';
 import 'expo-dev-client';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { BackgroundProvider } from './src/context/BackgroundContext';
 
 const Stack = createNativeStackNavigator();
 
@@ -85,18 +87,21 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName="Home"
-          screenOptions={screenOptions}
-        >
-          <Stack.Screen name="Home" component={HomeNavigator} />
-          <Stack.Screen name="GameRoot" component={GameNavigator} />
-          <Stack.Screen name="Dashboard" component={DashboardScreen} />
-        </Stack.Navigator>
-        <StatusBar hidden={true} />
-      </NavigationContainer>
-    </SafeAreaProvider>
+    <BackgroundProvider>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <Stack.Navigator
+            initialRouteName="Home"
+            screenOptions={screenOptions}
+          >
+            <Stack.Screen name="Home" component={HomeNavigator} />
+            <Stack.Screen name="GameRoot" component={GameNavigator} />
+            <Stack.Screen name="Shop" component={ShopNavigator} />
+            <Stack.Screen name="Dashboard" component={DashboardScreen} />
+          </Stack.Navigator>
+          <StatusBar hidden={true} />
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </BackgroundProvider>
   );
 }

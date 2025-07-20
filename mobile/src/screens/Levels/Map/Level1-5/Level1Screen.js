@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Animated, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Animated, Alert, Modal } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,7 +18,7 @@ const cardImages = [
   { id: '6', image: require('../../../../../assets/images/levels/Level1/no-pesticides.png') },
 ];
 
-export default function Level1Screen() {
+export default function Level1Screen({ route }) {
   const navigation = useNavigation();
   const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState([]);
@@ -28,12 +28,18 @@ export default function Level1Screen() {
   const [score, setScore] = useState(0);
   const [timer, setTimer] = useState(60); // 60 seconds game time
   const [isPreviewPhase, setIsPreviewPhase] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupType, setPopupType] = useState(''); // 'win' or 'lose'
+  const [popupMessage, setPopupMessage] = useState({title: '', message: ''});
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [cardAnim] = useState(new Animated.Value(0));
   const timerRef = useRef(null);
   const previewTimerRef = useRef(null);
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const bounceAnim = useRef(new Animated.Value(0)).current;
+  const popupAnim = useRef(new Animated.Value(0)).current;
   
   // Sound effects
   const playSoundEffect = (type) => {
@@ -112,6 +118,27 @@ export default function Level1Screen() {
       handleGameOver(true);
     }
   }, [matched]);
+
+  // Animate popup when it appears
+  useEffect(() => {
+    if (showPopup) {
+      Animated.sequence([
+        Animated.timing(popupAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.spring(popupAnim, {
+          toValue: 1,
+          friction: 5,
+          tension: 40,
+          useNativeDriver: true,
+        })
+      ]).start();
+    } else {
+      popupAnim.setValue(0);
+    }
+  }, [showPopup]);
   
   const startGame = () => {
     // Create card deck with pairs
@@ -126,6 +153,7 @@ export default function Level1Screen() {
     setGameComplete(false);
     setTimer(60);
     setScore(0);
+    setShowPopup(false);
     
     if (timerRef.current) clearInterval(timerRef.current);
     
@@ -173,32 +201,59 @@ export default function Level1Screen() {
         console.error('Failed to add points:', err);
       });
       
-      setTimeout(() => {
-        Alert.alert(
-          "Level Complete!",
-          `You matched all the cards!\nScore: ${finalScore}\nTime left: ${timer}s\nMoves: ${moves}`,
-          [
-            { text: "Continue", onPress: () => navigation.goBack() }
-          ]
-        );
+      setTimeout(async () => {
+        try {
+          await ApiService.markLevelComplete(1);
+          // Award collectible card
+          await ApiService.awardCollectibleCard({ level: 1 });
+          setShowCardModal(true);
+          Animated.sequence([
+            Animated.timing(cardAnim, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true
+            }),
+            Animated.timing(cardAnim, {
+              toValue: 0.8,
+              duration: 200,
+              useNativeDriver: true
+            }),
+            Animated.timing(cardAnim, {
+              toValue: 1,
+              duration: 200,
+              useNativeDriver: true
+            })
+          ]).start();
+        } catch (err) {
+          console.error('Failed to mark level as complete or award card:', err);
+          Alert.alert('Level Complete!', `You matched all the cards!\nScore: ${finalScore}\nTime left: ${timer}s\nMoves: ${moves}`);
+          navigation.goBack();
+        }
       }, 1000);
     } else {
       playSoundEffect('lose');
-      setTimeout(() => {
-        Alert.alert(
-          "Time's Up!",
-          "You ran out of time. Try again?",
-          [
-            { text: "Retry", onPress: () => startGame() },
-            { text: "Exit", onPress: () => navigation.goBack() }
-          ]
-        );
-      }, 1000);
+      // Show 8-bit style lose popup
+      setPopupType('lose');
+      setPopupMessage({
+        title: "TIME'S UP!",
+        message: "YOU RAN OUT OF TIME.\nTRY AGAIN?"
+      });
+      setShowPopup(true);
     }
   };
   
   const handleGoBack = () => {
     navigation.goBack();
+  };
+
+  const handlePopupAction = (action) => {
+    setShowPopup(false);
+    
+    if (action === 'retry' || action === 'playAgain') {
+      startGame();
+    } else if (action === 'continue' || action === 'exit') {
+      navigation.goBack();
+    }
   };
   
   const renderCard = (index) => {
@@ -223,6 +278,138 @@ export default function Level1Screen() {
           </View>
         )}
       </TouchableOpacity>
+    );
+  };
+
+  // 8-bit style popup component
+  const renderPopup = () => {
+    if (!showPopup) return null;
+
+    return (
+      <View style={styles.modalOverlay}>
+        <Animated.View 
+          style={[
+            styles.modalContent,
+            {
+              transform: [
+                { scale: popupAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.5, 1]
+                })}
+              ]
+            }
+          ]}
+        >
+          <LinearGradient
+            colors={popupType === 'win' ? ['#76C893', '#52B69A'] : ['#E63946', '#D00000']}
+            style={styles.modalHeader}
+          >
+            <Text style={styles.modalHeaderText}>
+              {popupType === 'win' ? '★ VICTORY! ★' : '× TIME\'S UP ×'}
+            </Text>
+          </LinearGradient>
+          
+          <View style={styles.modalBody}>
+            <Text style={styles.modalMessage}>{popupMessage.message}</Text>
+            
+            <View style={styles.modalButtonsContainer}>
+              {popupType === 'win' && (
+                <TouchableOpacity 
+                  style={styles.modalButton}
+                  onPress={() => handlePopupAction('playAgain')}
+                >
+                  <LinearGradient
+                    colors={['#FFB703', '#FB8500']}
+                    style={styles.modalButtonGradient}
+                  >
+                    <Text style={styles.modalButtonText}>PLAY AGAIN</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              )}
+              
+              {popupType === 'lose' && (
+                <TouchableOpacity 
+                  style={styles.modalButton}
+                  onPress={() => handlePopupAction('retry')}
+                >
+                  <LinearGradient
+                    colors={['#FFB703', '#FB8500']}
+                    style={styles.modalButtonGradient}
+                  >
+                    <Text style={styles.modalButtonText}>TRY AGAIN</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              )}
+              
+              <TouchableOpacity 
+                style={styles.modalButton}
+                onPress={() => handlePopupAction(popupType === 'win' ? 'continue' : 'exit')}
+              >
+                <LinearGradient
+                  colors={['#1A3C40', '#0D1B1E']}
+                  style={styles.modalButtonGradient}
+                >
+                  <Text style={styles.modalButtonText}>
+                    {popupType === 'win' ? 'EXIT' : 'EXIT'}
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Animated.View>
+      </View>
+    );
+  };
+  
+  // 8-bit style collectible card modal
+  const renderCardModal = () => {
+    if (!showCardModal) return null;
+    return (
+      <Modal
+        transparent={true}
+        visible={showCardModal}
+        animationType="none"
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View 
+            style={[
+              styles.modalContent,
+              {
+                transform: [
+                  { scale: cardAnim }
+                ]
+              }
+            ]}
+          >
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalHeaderText}>🎴 COLLECTIBLE CARD UNLOCKED!</Text>
+            </View>
+            <View style={styles.modalBody}>
+              <Image
+                source={require('../../../../../assets/images/levels/Level1/rabbit-jump.png')}
+                style={{ width: 120, height: 120, marginBottom: 16 }}
+                resizeMode="contain"
+              />
+              <Text style={styles.modalMessage}>Rabbit Jump Card
+Congratulations! You collected a new card for Level 1.</Text>
+              <TouchableOpacity 
+                style={styles.modalButton}
+                onPress={() => {
+                  setShowCardModal(false);
+                  navigation.goBack();
+                }}
+              >
+                <LinearGradient
+                  colors={['#FFB703', '#FB8500']}
+                  style={styles.modalButtonGradient}
+                >
+                  <Text style={styles.modalButtonText}>CONTINUE</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
     );
   };
   
@@ -317,6 +504,10 @@ export default function Level1Screen() {
             <Text style={styles.previewText}>MEMORIZE!</Text>
           </View>
         )}
+
+        {/* 8-bit Popup Message */}
+        {renderPopup()}
+        {renderCardModal()}
       </LinearGradient>
     </View>
   );
@@ -463,5 +654,151 @@ const styles = StyleSheet.create({
     fontFamily: 'PressStart2P_400Regular',
     color: '#FFD700',
     fontSize: 18,
+  },
+  // 8-bit popup styles
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  modalContent: {
+    width: '80%',
+    maxWidth: 300,
+    backgroundColor: '#2A2B2A',
+    borderWidth: 4,
+    borderColor: '#FFD700',
+    borderRadius: 10,
+    overflow: 'hidden',
+    // 8-bit style shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 10,
+  },
+  modalHeader: {
+    padding: 15,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: '#FFD700',
+  },
+  modalHeaderText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 16,
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 0,
+  },
+  modalBody: {
+    padding: 20,
+    alignItems: 'center',
+    backgroundColor: '#1A3C40',
+  },
+  modalMessage: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  modalButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    padding: 15,
+  },
+  modalButton: {
+    marginHorizontal: 10,
+    width: 120,
+    height: 44,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#FFD700',
+  },
+  modalButtonGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+  },
+  popupButtonText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
+  },
+  // 8-bit modal styles
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#1A3C40',
+    borderRadius: 10,
+    borderWidth: 4,
+    borderColor: '#FFD700',
+    // 8-bit style shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 10,
+  },
+  modalHeader: {
+    padding: 12,
+    alignItems: 'center',
+    borderBottomWidth: 4,
+    borderBottomColor: '#FFD700',
+  },
+  modalHeaderText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 16,
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 0,
+  },
+  modalBody: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalMessage: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  modalButton: {
+    marginTop: 10,
+    borderRadius: 4,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#FFD700',
+  },
+  modalButtonGradient: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButtonText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
+    textAlign: 'center',
   }
 });

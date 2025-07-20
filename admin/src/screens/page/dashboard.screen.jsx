@@ -68,7 +68,7 @@ const DashboardScreen = () => {
         </DashboardTitle>
 
         <Grid container spacing={3} sx={{ width: '100%', margin: 0 }}>
-          <Grid item xs={12} md={4}>
+          {/* <Grid item xs={12} md={4}>
             <DashboardCard>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -88,7 +88,7 @@ const DashboardScreen = () => {
                 </DashboardButton>
               </CardContent>
             </DashboardCard>
-          </Grid>
+          </Grid> */}
 
           <Grid item xs={12} md={4}>
             <DashboardCard>
@@ -112,7 +112,7 @@ const DashboardScreen = () => {
             </DashboardCard>
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          {/* <Grid item xs={12} md={4}>
             <DashboardCard>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -132,7 +132,7 @@ const DashboardScreen = () => {
                 </DashboardButton>
               </CardContent>
             </DashboardCard>
-          </Grid>
+          </Grid> */}
 
           <Grid item xs={12}>
             <DashboardTestPaper>

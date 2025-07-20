@@ -8,10 +8,15 @@ import {
   Alert,
   PanResponder,
   BackHandler,
+  ImageBackground,
+  Image,
+  Modal,
+  Animated,
 } from 'react-native';
 import { PixelRatio } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import ApiService from '../../../../services/api.service';
+import { LinearGradient } from 'expo-linear-gradient';
 
 // Get window dimensions
 const { width, height } = Dimensions.get('window');
@@ -82,6 +87,12 @@ const Level14Screen = () => {
   const endGameRef = useRef(false);
   const lastSwipeTimeRef = useRef(0);
   const showDebug = process.env.NODE_ENV === 'development';
+
+  // State for modal
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState('success'); // 'success' or 'failure'
+  const [modalMessage, setModalMessage] = useState('');
+  const [modalAnim] = useState(new Animated.Value(0));
 
   // Initialize game
   const initializeGame = useCallback(() => {
@@ -199,7 +210,7 @@ const Level14Screen = () => {
     [gameState.gameStarted, gameState.gameOver, moveSelection]
   );
 
-  // End game function
+  // End game function (refactored for modal)
   const endGame = useCallback((finalScore) => {
     if (gameState.gameOver || endGameRef.current) return;
     endGameRef.current = true;
@@ -221,25 +232,33 @@ const Level14Screen = () => {
       console.error('Failed to mark level 14 as completed:', err);
     }
 
-    const funFacts = [
-      "Coral reefs support 25% of marine life but are threatened by pollution",
-      "Oceans absorb 30% of global CO2 emissions",
-      "Over 8 million tons of plastic enter the oceans annually",
-    ];
-    const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
-
-    let message = `Game Over!\nScore: ${finalScore}`;
+    let message = `Score: ${finalScore}`;
     if (finalScore >= 100) {
-      message += '\n🌟 Victory! You won!';
+      setModalType('success');
+      setModalMessage('★ VICTORY! ★\nYou solved the Ocean Sudoku!');
     } else {
-      message += '\n💪 Try again to reach 100 points!';
+      setModalType('failure');
+      setModalMessage('× TRY AGAIN ×\nTry again to reach 100 points!');
     }
-
-    Alert.alert('Level 14 Complete', message, [
-      { text: 'Play Again', onPress: initializeGame },
-      { text: 'Main Menu', onPress: () => navigation.goBack() },
-    ]);
-  }, [initializeGame, navigation]);
+    setShowModal(true);
+    Animated.sequence([
+      Animated.timing(modalAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true
+      }),
+      Animated.timing(modalAnim, {
+        toValue: 0.8,
+        duration: 200,
+        useNativeDriver: true
+      }),
+      Animated.timing(modalAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true
+      })
+    ]).start();
+  }, [showDebug, initializeGame]);
 
   // Start game
   const startGame = useCallback(() => {
@@ -264,356 +283,468 @@ const Level14Screen = () => {
     return () => subscription?.remove();
   }, [initializeGame]);
 
+  const PIXEL_BG = require('../../../../../assets/images/levels/Level12/tree.jpg'); // Use your pixel-art background asset
+
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.backButtonText}>← BACK</Text>
-        </TouchableOpacity>
-        <Text style={styles.levelTitle}>LEVEL 14: OCEAN SUDOKU</Text>
-        <View style={styles.headerSpacer} />
-      </View>
-
-      {/* Game Stats */}
-      <View style={styles.statsContainer}>
-        <Text style={styles.statText}>Score: {gameState.score}</Text>
-      </View>
-
-      {/* Game Area */}
-      <View style={styles.gameArea} {...panResponder.panHandlers}>
-        <View style={styles.background} />
-        <View style={styles.gridContainer}>
-          {gameState.grid.map((row, y) => (
-            row.map((num, x) => (
-              <TouchableOpacity
-                key={`${x}-${y}`}
-                style={[
-                  styles.cell,
-                  {
-                    left: x * CELL_SIZE,
-                    top: y * CELL_SIZE,
-                    width: CELL_SIZE,
-                    height: CELL_SIZE,
-                    borderRightWidth: (x + 1) % 3 === 0 ? normalize(3) : normalize(1),
-                    borderBottomWidth: (y + 1) % 3 === 0 ? normalize(3) : normalize(1),
-                    backgroundColor:
-                      gameState.selectedCell.x === x && gameState.selectedCell.y === y
-                        ? '#FFD700'
-                        : initialPuzzle[y][x] !== 0
-                        ? '#87CEEB'
-                        : num === solution[y][x]
-                        ? '#90EE90'
-                        : num !== 0
-                        ? '#FF4500'
-                        : '#FFF',
-                  },
-                ]}
-                onPress={() => selectCell(x, y)}
-              >
-                <Text style={styles.cellText}>{num !== 0 ? num : ''}</Text>
-              </TouchableOpacity>
-            ))
-          ))}
+    <ImageBackground source={PIXEL_BG} style={styles.pixelBackground} resizeMode="cover">
+      <View style={styles.outerContainer}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.exitButton}>
+            <Text style={styles.exitButtonText}>EXIT</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>LEVEL 14: OCEAN SUDOKU</Text>
+          <Text style={styles.scoreText}>Score: {gameState.score}</Text>
         </View>
-        {showDebug && gameState.gameStarted && (
-          <Text style={styles.debugText}>
-            Selected: ({gameState.selectedCell.x}, {gameState.selectedCell.y}) | Score: {gameState.score}
-          </Text>
-        )}
-        {/* Instructions */}
-        {!gameState.gameStarted && !gameState.gameOver && (
-          <View style={styles.instructions}>
-            <Text style={styles.instructionTitle}>Mission: Solve the Ocean Puzzle!</Text>
-            <Text style={styles.instructionText}>👆 Tap a cell, then a number to place it</Text>
-            <Text style={styles.instructionText}>🔢 Correct: +10 pts, Incorrect: -5 pts</Text>
-            <Text style={styles.instructionText}>🎯 Complete puzzle: +100 pts</Text>
-            <Text style={styles.instructionText}>🐠 No repeats in row, column, or 3x3</Text>
-            <Text style={styles.instructionText}>🌍 Protect oceans: Reduce plastic!</Text>
-          </View>
-        )}
-      </View>
-
-      {/* Number Pad and Controls */}
-      <View style={styles.controlsContainer}>
-        {gameState.gameStarted ? (
-          <>
-            <View style={styles.numberPad}>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                <TouchableOpacity
-                  key={num}
-                  style={styles.numberButton}
-                  onPress={() => placeNumber(num)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.numberText}>{num}</Text>
-                </TouchableOpacity>
+        {/* Main Content: Board + Number Pad */}
+        <View style={styles.mainRow}>
+          {/* Game Area */}
+          <View style={styles.gameArea} {...panResponder.panHandlers}>
+            <View style={styles.gridContainer}>
+              {gameState.grid.map((row, y) => (
+                row.map((num, x) => (
+                  <TouchableOpacity
+                    key={`${x}-${y}`}
+                    style={[
+                      styles.cell,
+                      {
+                        left: x * CELL_SIZE,
+                        top: y * CELL_SIZE,
+                        width: CELL_SIZE,
+                        height: CELL_SIZE,
+                        borderRightWidth: (x + 1) % 3 === 0 ? normalize(4) : normalize(2),
+                        borderBottomWidth: (y + 1) % 3 === 0 ? normalize(4) : normalize(2),
+                        backgroundColor:
+                          gameState.selectedCell.x === x && gameState.selectedCell.y === y
+                            ? '#FFD700'
+                            : initialPuzzle[y][x] !== 0
+                            ? '#1E90FF'
+                            : num === solution[y][x]
+                            ? '#39FF14'
+                            : num !== 0
+                            ? '#FF3131'
+                            : '#222',
+                        borderColor: '#FFF',
+                        shadowColor: '#000',
+                        shadowOffset: { width: 2, height: 2 },
+                        shadowOpacity: 0.7,
+                        shadowRadius: 0,
+                      },
+                    ]}
+                    onPress={() => selectCell(x, y)}
+                  >
+                    <Text style={styles.cellText}>{num !== 0 ? num : ''}</Text>
+                  </TouchableOpacity>
+                ))
               ))}
             </View>
-            {/* <View style={styles.dPadContainer}>
-              <View style={styles.dPadRow}>
-                <View style={styles.dPadSpacer} />
-                <TouchableOpacity
-                  style={styles.dPadButton}
-                  onPress={() => moveSelection(DIRECTIONS.UP)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.dPadText}>↑</Text>
-                </TouchableOpacity>
-                <View style={styles.dPadSpacer} />
+            {showDebug && gameState.gameStarted && (
+              <Text style={styles.debugText}>
+                Selected: ({gameState.selectedCell.x}, {gameState.selectedCell.y}) | Score: {gameState.score}
+              </Text>
+            )}
+            {/* Instructions */}
+            {!gameState.gameStarted && !gameState.gameOver && (
+              <View style={styles.instructionsBox}>
+                <Text style={styles.instructionTitle}>Mission: Solve the Ocean Puzzle!</Text>
+                <Text style={styles.instructionText}>👆 Tap a cell, then a number to place it</Text>
+                <Text style={styles.instructionText}>🔢 Correct: +10 pts, Incorrect: -5 pts</Text>
+                <Text style={styles.instructionText}>🎯 Complete puzzle: +100 pts</Text>
+                <Text style={styles.instructionText}>🐠 No repeats in row, column, or 3x3</Text>
+                <Text style={styles.instructionText}>🌍 Protect oceans: Reduce plastic!</Text>
               </View>
-              <View style={styles.dPadRow}>
-                <TouchableOpacity
-                  style={styles.dPadButton}
-                  onPress={() => moveSelection(DIRECTIONS.LEFT)}
-                  activeOpacity={0.7}
+            )}
+          </View>
+          {/* Number Pad on the right */}
+          <View style={styles.numberPadContainer}>
+            {gameState.gameStarted ? (
+              <View style={styles.numberPadBox}>
+                {[1,2,3,4,5,6,7,8,9].map((num, idx) => (
+                  <TouchableOpacity
+                    key={num}
+                    style={styles.numberButton}
+                    onPress={() => placeNumber(num)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.numberText}>{num}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ) : (
+              <TouchableOpacity style={styles.startButton} onPress={startGame}>
+                <Text style={styles.buttonText}>START PUZZLE</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+        {/* 8-Bit Style Endgame Modal */}
+        <Modal
+          transparent={true}
+          visible={showModal}
+          animationType="none"
+        >
+          <View style={styles.modalOverlay}>
+            <Animated.View 
+              style={[
+                styles.modalContent,
+                {
+                  transform: [
+                    { scale: modalAnim }
+                  ]
+                }
+              ]}
+            >
+              <LinearGradient
+                colors={modalType === 'success' ? ['#FFD700', '#FB8500'] : ['#E63946', '#D00000']}
+                style={styles.modalHeader}
+              >
+                <Text style={styles.modalHeaderText}>
+                  {modalType === 'success' ? '★ VICTORY! ★' : '× TRY AGAIN ×'}
+                </Text>
+              </LinearGradient>
+              <View style={styles.modalBody}>
+                <Text style={styles.modalMessage}>{modalMessage}</Text>
+                <TouchableOpacity 
+                  style={styles.modalButton}
+                  onPress={() => {
+                    setShowModal(false);
+                    if (modalType === 'success') initializeGame();
+                    else initializeGame();
+                  }}
                 >
-                  <Text style={styles.dPadText}>←</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.dPadButton}
-                  onPress={initializeGame}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.dPadText}>RESET</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.dPadButton}
-                  onPress={() => moveSelection(DIRECTIONS.RIGHT)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.dPadText}>→</Text>
+                  <LinearGradient
+                    colors={['#FFB703', '#FB8500']}
+                    style={styles.modalButtonGradient}
+                  >
+                    <Text style={styles.modalButtonText}>
+                      {modalType === 'success' ? 'PLAY AGAIN' : 'TRY AGAIN'}
+                    </Text>
+                  </LinearGradient>
                 </TouchableOpacity>
               </View>
-              <View style={styles.dPadRow}>
-                <View style={styles.dPadSpacer} />
-                <TouchableOpacity
-                  style={styles.dPadButton}
-                  onPress={() => moveSelection(DIRECTIONS.DOWN)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.dPadText}>↓</Text>
-                </TouchableOpacity>
-                <View style={styles.dPadSpacer} />
-              </View>
-            </View> */}
-          </>
-        ) : (
-          <TouchableOpacity style={styles.startButton} onPress={startGame}>
-            <Text style={styles.buttonText}>START PUZZLE</Text>
-          </TouchableOpacity>
-        )}
+            </Animated.View>
+          </View>
+        </Modal>
       </View>
-    </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  pixelBackground: {
     flex: 1,
-    backgroundColor: '#000',
+    width: '100%',
+    height: '100%',
+  },
+  outerContainer: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   header: {
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: normalize(15),
-    paddingTop: normalize(20), // Reduced for better space
-    paddingBottom: normalize(10),
-    backgroundColor: '#1E90FF',
-    height: HEADER_HEIGHT,
+    justifyContent: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 16,
+    borderBottomWidth: 2,
+    borderBottomColor: '#FFD700',
+    backgroundColor: 'rgba(0,0,0,0.10)',
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    position: 'relative',
+    zIndex: 20,
   },
-  backButton: {
-    padding: normalize(1),
-    borderWidth: normalize(2),
-    borderColor: '#FFF',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    minWidth: normalize(60),
-    alignItems: 'center',
-  },
-  backButtonText: {
-    color: '#FFF',
-    fontSize: normalize(10),
-    fontFamily: 'monospace',
-    fontWeight: 'bold',
-  },
-  levelTitle: {
-    color: '#FFF',
-    fontSize: normalize(12),
-    fontFamily: 'monospace',
-    fontWeight: 'bold',
-    textAlign: 'center',
-    flex: 1,
-  },
-  headerSpacer: {
-    width: normalize(60),
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: normalize(10),
-    paddingVertical: normalize(5),
-    backgroundColor: '#4682B4',
-    height: STATS_HEIGHT,
-  },
-  statText: {
-    color: '#FFF',
-    fontSize: normalize(8),
-    fontFamily: 'monospace',
-    fontWeight: 'bold',
-  },
-  debugText: {
+  exitButton: {
     position: 'absolute',
-    top: normalize(10),
-    left: normalize(10),
-    color: '#FFF',
-    fontSize: normalize(12),
-    fontFamily: 'monospace',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    padding: normalize(5),
+    left: 10,
+    top: '50%',
+    transform: [{ translateY: -16 }],
+    backgroundColor: '#FFD700',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderWidth: 2,
+    borderColor: '#FFF',
+    zIndex: 10,
+  },
+  exitButtonText: {
+    color: '#222',
+    fontWeight: 'bold',
+    fontSize: 14,
+    fontFamily: 'PressStart2P_400Regular',
+  },
+  headerTitle: {
+    color: '#FFD700',
+    fontSize: 18,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+    textShadowColor: '#333',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+    flex: 1,
+    textAlign: 'center',
+    fontFamily: 'PressStart2P_400Regular',
+  },
+  scoreText: {
+    position: 'absolute',
+    right: 10,
+    top: '50%',
+    transform: [{ translateY: -16 }],
+    fontSize: 14,
+    color: '#FFB703',
+    backgroundColor: '#222',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    fontWeight: 'bold',
+    fontFamily: 'PressStart2P_400Regular',
+    borderWidth: 2,
+    borderColor: '#FFD700',
+  },
+  mainRow: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+    marginTop: 10,
   },
   gameArea: {
     margin: GAME_AREA_MARGIN,
     borderRadius: 0,
     overflow: 'hidden',
-    borderWidth: normalize(2),
+    borderWidth: normalize(4),
     borderColor: '#FFF',
-    backgroundColor: '#87CEEB',
+    backgroundColor: 'rgba(30, 144, 255, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  background: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#4682B4',
+    alignSelf: 'center',
   },
   gridContainer: {
     width: GRID_WIDTH,
     height: GRID_WIDTH,
     position: 'relative',
+    backgroundColor: '#111',
+    borderWidth: normalize(2),
+    borderColor: '#FFD700',
   },
   cell: {
     position: 'absolute',
-    borderWidth: normalize(1),
-    borderColor: '#000',
+    borderWidth: normalize(2),
+    borderColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 0,
   },
   cellText: {
-    fontSize: normalize(18), // Adjusted for better fit
-    fontFamily: 'monospace',
+    fontSize: normalize(18),
+    fontFamily: 'PressStart2P_400Regular',
     fontWeight: 'bold',
-    color: '#000',
+    color: '#FFF',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 0,
   },
-  instructions: {
+  instructionsBox: {
     position: 'absolute',
     top: '20%',
     left: normalize(10),
     right: normalize(10),
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    backgroundColor: '#222',
     padding: normalize(10),
-    borderWidth: normalize(2),
-    borderColor: '#FFF',
-    borderRadius: normalize(5),
+    borderWidth: normalize(4),
+    borderColor: '#FFD700',
+    borderRadius: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 0,
   },
   instructionTitle: {
-    fontSize: normalize(25),
-    fontFamily: 'monospace',
+    fontSize: normalize(18),
+    fontFamily: 'PressStart2P_400Regular',
     fontWeight: 'bold',
-    color: '#FFF',
+    color: '#39FF14',
     marginBottom: normalize(5),
     textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 0,
   },
   instructionText: {
-    fontSize: normalize(15),
-    fontFamily: 'monospace',
-    color: '#FFF',
+    fontSize: normalize(12),
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFD700',
     marginBottom: normalize(2),
     textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
   },
   controlsContainer: {
     padding: normalize(10),
-    backgroundColor: '#333',
+    backgroundColor: '#111',
     height: CONTROLS_HEIGHT,
     justifyContent: 'center',
     alignItems: 'center',
+    borderTopWidth: normalize(4),
+    borderColor: '#FFF',
   },
   numberPad: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    width: normalize(220), // Fits 5 buttons per row
+    width: normalize(220),
+  },
+  numberPadContainer: {
+    marginLeft: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 0,
+    minWidth: 60,
+    height: '100%',
+  },
+  numberPadBox: {
+    width: 144,
+    height: 250,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#111',
+    borderWidth: 3,
+    borderColor: '#FFD700',
+    borderRadius: 0,
+    padding: 4,
   },
   numberButton: {
-    backgroundColor: '#555',
-    padding: normalize(5),
-    margin: normalize(3),
-    borderWidth: normalize(2),
-    borderColor: '#FFF',
-    width: normalize(36),
-    height: normalize(36),
+    backgroundColor: '#222',
+    margin: 4,
+    borderWidth: 3,
+    borderColor: '#FFD700',
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 0,
   },
   numberText: {
-    color: '#FFF',
-    fontSize: normalize(16),
-    fontFamily: 'monospace',
+    color: '#39FF14',
+    fontSize: 20,
+    fontFamily: 'PressStart2P_400Regular',
     fontWeight: 'bold',
-  },
-  dPadContainer: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginTop: normalize(5),
-  },
-  dPadRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  dPadButton: {
-    backgroundColor: '#555',
-    padding: normalize(5),
-    margin: normalize(3),
-    borderWidth: normalize(2),
-    borderColor: '#FFF',
-    width: normalize(40),
-    height: normalize(40),
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dPadText: {
-    color: '#FFF',
-    fontSize: normalize(16),
-    fontFamily: 'monospace',
-    fontWeight: 'bold',
-  },
-  dPadSpacer: {
-    width: normalize(40),
-    height: normalize(40),
-    margin: normalize(3),
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
   },
   startButton: {
-    backgroundColor: '#0F0',
+    backgroundColor: '#39FF14',
     paddingHorizontal: normalize(25),
     paddingVertical: normalize(12),
     borderRadius: 0,
-    borderWidth: normalize(2),
-    borderColor: '#FFF',
+    borderWidth: normalize(4),
+    borderColor: '#FFD700',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.7,
+    shadowRadius: 0,
   },
   buttonText: {
-    color: '#FFF',
-    fontSize: normalize(11),
-    fontFamily: 'monospace',
+    color: '#222',
+    fontSize: normalize(13),
+    fontFamily: 'PressStart2P_400Regular',
     fontWeight: 'bold',
     textAlign: 'center',
+    textShadowColor: '#FFF',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  pixelIcon: {
+    width: normalize(20),
+    height: normalize(20),
+    marginRight: normalize(8),
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+  },
+  modalContent: {
+    width: 320,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#222',
+    borderWidth: 4,
+    borderColor: '#FFD700',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 10,
+  },
+  modalHeader: {
+    width: '100%',
+    paddingVertical: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomWidth: 2,
+    borderColor: '#FFF',
+  },
+  modalHeaderText: {
+    color: '#FFF',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 18,
+    textAlign: 'center',
+    letterSpacing: 1,
+    textShadowColor: '#333',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  modalBody: {
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalMessage: {
+    color: '#FFD700',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 18,
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  modalButton: {
+    width: 200,
+    borderRadius: 8,
+    overflow: 'hidden',
+    alignSelf: 'center',
+  },
+  modalButtonGradient: {
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButtonText: {
+    color: '#222',
+    fontFamily: 'PressStart2P_400Regular',
+    fontSize: 16,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    letterSpacing: 1,
   },
 });
 

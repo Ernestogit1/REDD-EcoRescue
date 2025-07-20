@@ -4,21 +4,19 @@
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "landscape",
-    "icon": "./assets/sample-icon.png",
+    "icon": "./assets/eco-rescue-icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/sample-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "image": "./assets/eco-rescue-icon.png",
+      "resizeMode": "contain"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/sample-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/eco-rescue-icon.png"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.reddecorescue.mobile"

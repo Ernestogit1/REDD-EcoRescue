@@ -2,11 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import { useBackground, backgrounds } from '../../context/BackgroundContext';
+import { Video } from 'expo-av';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function DifficultyScreen() {
     const navigation = useNavigation();
+    const { currentBackground } = useBackground();
     const [selectedLevel, setSelectedLevel] = useState(null);
     
     // Animation values
@@ -83,19 +86,45 @@ export default function DifficultyScreen() {
         navigation.goBack();
     };
 
-    return (
-        <LinearGradient colors={["#1a4d2e", "#2d5a3d", "#1a4d2e"]} style={styles.container}>
-            <View style={styles.mainContent}>
-                {/* Title */}
-                <Animated.View style={[
-                    styles.header,
-                    {
-                        transform: [{ scale: scaleAnim }],
-                        opacity: fadeAnim,
-                    }
-                ]}>
-                    <Text style={styles.title}>SELECT DIFFICULTY</Text>
-                </Animated.View>
+    // Render background based on currentBackground
+    const renderBackground = (children) => {
+        if (currentBackground === 0) {
+            return (
+                <LinearGradient colors={["#1a4d2e", "#2d5a3d", "#1a4d2e"]} style={styles.container}>
+                    {/* Wrap children in a fragment to avoid adjacent JSX error */}
+                    <>{children}</>
+                </LinearGradient>
+            );
+        } else {
+            const selectedBg = backgrounds.find(bg => bg.id === currentBackground);
+            return (
+                <View style={styles.container}>
+                    <Video 
+                        source={selectedBg?.source}
+                        style={styles.backgroundImage}
+                        resizeMode="cover"
+                        shouldPlay
+                        isLooping
+                        isMuted
+                    />
+                    {children}
+                </View>
+            );
+        }
+    };
+
+    return renderBackground(
+        <View style={styles.mainContent}>
+            {/* Title */}
+            <Animated.View style={[
+                styles.header,
+                {
+                    transform: [{ scale: scaleAnim }],
+                    opacity: fadeAnim,
+                }
+            ]}>
+                <Text style={styles.title}>SELECT DIFFICULTY</Text>
+            </Animated.View>
 
                 {/* Difficulty Boxes Row */}
                 <View style={styles.boxesRow}>
@@ -144,7 +173,6 @@ export default function DifficultyScreen() {
                     ))}
                 </View>
             </View>
-        </LinearGradient>
     );
 }
 
@@ -243,5 +271,13 @@ const styles = StyleSheet.create({
         fontFamily: 'PressStart2P_400Regular',
         color: '#FFD700',
         fontSize: 10,
+    },
+    backgroundImage: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+        opacity: 0.5, // Adjust as needed for overlay effect
     },
 });

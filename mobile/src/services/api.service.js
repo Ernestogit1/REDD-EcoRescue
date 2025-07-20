@@ -110,11 +110,55 @@ class ApiService {
       
       return data;
     } catch (error) {
+      console.log('API Request error:', error);
+      console.log('Error details:', {
+        message: error.message,
+        endpoint,
+        baseURL: this.baseURL
+      });
+      throw error;
+    }
+  }
+
+  // Make request to non-mobile API endpoints
+  async makeNonMobileRequest(endpoint, options = {}) {
+    try {
+      const token = await this.getAuthToken();
+      const url = `${API_BASE_URL}${endpoint}`;
+
+      console.log('Making request to:', url);
+
+      const config = {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+          ...options.headers,
+        },
+        ...options,
+      };
+
+      console.log('Request config:', config);
+
+      const response = await fetch(url, config);
+      
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Request failed' }));
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Response data:', data);
+      
+      return data;
+    } catch (error) {
       console.error('API Request error:', error);
       console.error('Error details:', {
         message: error.message,
         endpoint,
-        baseURL: this.baseURL
+        baseURL: API_BASE_URL
       });
       throw error;
     }
@@ -200,6 +244,75 @@ class ApiService {
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       throw new Error(data.message || 'Failed to mark level as complete');
+    }
+    return response.json();
+  }
+
+  // Shop API methods
+  async getShopItems() {
+    return await this.makeNonMobileRequest('/api/shop');
+  }
+
+  async getShopItem(id) {
+    return await this.makeNonMobileRequest(`/api/shop/${id}`);
+  }
+
+  async buyShopItem(itemId) {
+    const token = await this.getAuthToken();
+    if (!token) throw new Error('Not authenticated');
+    
+    return await this.makeNonMobileRequest('/api/shop/buy', {
+      method: 'POST',
+      body: JSON.stringify({ itemId }),
+    });
+  }
+
+  // Inventory API methods
+  async getInventory() {
+    return await this.makeNonMobileRequest('/api/inventory');
+  }
+
+  // Consume a food item from inventory (feed animal)
+  async consumeFood(foodId) {
+    const token = await this.getAuthToken();
+    if (!token) throw new Error('Not authenticated');
+    const url = `${API_BASE_URL}/api/inventory/consume`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ foodId }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.message || 'Failed to feed animal');
+    }
+    return response.json();
+  }
+
+  // Collected Cards API methods
+  async getUserCollectedCards() {
+    return await this.makeNonMobileRequest('/api/collected-cards/user');
+  }
+
+  // Add a collected card for the user
+  async collectCard({ levelId, name, image, description }) {
+    const token = await this.getAuthToken();
+    if (!token) throw new Error('Not authenticated');
+    const url = `${API_BASE_URL}/api/collected-cards`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ levelId, name, image, description }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.message || 'Failed to collect card');
     }
     return response.json();
   }

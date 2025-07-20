@@ -27,6 +27,25 @@ const collectCard = async (req, res) => {
     });
 
     await collectedCard.save();
+
+    // Update user rank based on number of collected cards
+    const cardCount = await CollectedCard.countDocuments({ userId });
+    let newRank = 'Novice';
+    if (cardCount > 0 && cardCount <= 5) {
+      newRank = 'Beginner';
+    }
+    else if (cardCount > 5 && cardCount <= 10) {
+      newRank = 'Great Collector';
+    } else if (cardCount > 10 && cardCount <= 15) {
+      newRank = 'Expert';
+    }
+    // Update the user's rank if it has changed
+    const User = require('../../../database/models/user.model');
+    const user = await User.findById(userId);
+    if (user && user.rank !== newRank) {
+      user.rank = newRank;
+      await user.save();
+    }
     return res.status(201).json({ message: 'Card collected successfully', card: collectedCard });
   } catch (error) {
     // Duplicate key error (already collected)

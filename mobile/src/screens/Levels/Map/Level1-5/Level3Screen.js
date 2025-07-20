@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, Image, Modal } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,10 +20,17 @@ export default function Level3Screen() {
   const [gameComplete, setGameComplete] = useState(false);
   const [activeHoles, setActiveHoles] = useState(new Array(8).fill(false));
   const [bugTypes, setBugTypes] = useState(new Array(8).fill(null));
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState('');
+  const [popupTitle, setPopupTitle] = useState('');
+  const [popupButtons, setPopupButtons] = useState([]);
   const timerRef = useRef(null);
   const gameInterval = useRef(null);
   const fadeAnims = useRef(activeHoles.map(() => new Animated.Value(0))).current;
   const rotateAnims = useRef(activeHoles.map(() => new Animated.Value(0))).current;
+  const popupAnim = useRef(new Animated.Value(0)).current;
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [cardAnim] = useState(new Animated.Value(0));
 
   const spawnInsect = useCallback(() => {
     const randomIndex = Math.floor(Math.random() * 8);
@@ -71,16 +78,18 @@ export default function Level3Screen() {
     ]);
 
     Animated.parallel([fadeAnimation, rotateAnimation]).start(() => {
-      setActiveHoles(prev => {
-        const updatedHoles = [...prev];
-        updatedHoles[randomIndex] = false;
-        return updatedHoles;
-      });
-      setBugTypes(prev => {
-        const updatedTypes = [...prev];
-        updatedTypes[randomIndex] = null;
-        return updatedTypes;
-      });
+      setTimeout(() => {
+        setActiveHoles(prev => {
+          const updatedHoles = [...prev];
+          updatedHoles[randomIndex] = false;
+          return updatedHoles;
+        });
+        setBugTypes(prev => {
+          const updatedTypes = [...prev];
+          updatedTypes[randomIndex] = null;
+          return updatedTypes;
+        });
+      }, 0);
     });
 
     return () => {
@@ -114,6 +123,7 @@ export default function Level3Screen() {
     setGameComplete(false);
     setActiveHoles(new Array(8).fill(false));
     setBugTypes(new Array(8).fill(null));
+    setShowPopup(false);
     
     // Reset animations
     fadeAnims.forEach(anim => anim.setValue(0));
@@ -145,31 +155,206 @@ export default function Level3Screen() {
     }
   }, [timer]);
 
+  // Popup animation when it appears
+  useEffect(() => {
+    if (showPopup) {
+      // Use requestAnimationFrame to avoid useInsertionEffect warning
+      requestAnimationFrame(() => {
+        Animated.spring(popupAnim, {
+          toValue: 1,
+          friction: 7,
+          tension: 40,
+          useNativeDriver: true,
+        }).start();
+      });
+    } else {
+      popupAnim.setValue(0);
+    }
+  }, [showPopup]);
+
+  // Track what to do after popup closes
+  const [pendingAction, setPendingAction] = useState(null); // 'restart' | 'exit' | null
+
+  // Effect to run pending action after popup is hidden
+  useEffect(() => {
+    if (!showPopup && pendingAction) {
+      if (pendingAction === 'restart') {
+        startGame();
+      } else if (pendingAction === 'exit') {
+        navigation.goBack();
+      }
+      setPendingAction(null);
+    }
+  }, [showPopup, pendingAction, startGame, navigation]);
+
+  // Memoized handlers for popup buttons
+  const handlePlayAgain = useCallback(() => {
+    setShowPopup(false);
+    setPendingAction('restart');
+  }, []);
+  const handleExit = useCallback(() => {
+    setShowPopup(false);
+    setPendingAction('exit');
+  }, []);
+
   const handleGameOver = () => {
     clearInterval(timerRef.current);
     clearInterval(gameInterval.current);
     setGameComplete(true);
+    // Always award the card and show the modal
+    ApiService.addPoints(score).catch((err) => {
+      console.error('Failed to add points:', err);
+    });
+    setPopupTitle('LEVEL COMPLETE!');
+    setPopupMessage(`GREAT JOB! YOU SCORED ${score} POINTS!`);
+    setPopupButtons([
+      { text: 'PLAY AGAIN', onPress: handlePlayAgain },
+      { text: 'EXIT', onPress: handleExit }
+    ]);
+    setShowPopup(true);
+    setTimeout(async () => {
+      try {
+        await ApiService.markLevelComplete(3);
+        await ApiService.awardCollectibleCard({ level: 3 });
+        setShowCardModal(true);
+        Animated.sequence([
+          Animated.timing(cardAnim, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true
+          }),
+          Animated.timing(cardAnim, {
+            toValue: 0.8,
+            duration: 200,
+            useNativeDriver: true
+          }),
+          Animated.timing(cardAnim, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true
+          })
+        ]).start();
+      } catch (err) {
+        navigation.goBack();
+      }
+    }, 1000);
+  };
 
-    if (score >= 100) {
-      // Send points to backend
-      ApiService.addPoints(score).catch((err) => {
-        console.error('Failed to add points:', err);
-      });
-      Alert.alert(
-        "Level Complete!",
-        `Great job! You scored ${score} points!`,
-        [{ text: "Continue", onPress: () => navigation.goBack() }]
-      );
-    } else {
-      Alert.alert(
-        "Time's Up!",
-        `You scored ${score} points. Try again to reach 100!`,
-        [
-          { text: "Retry", onPress: () => startGame() },
-          { text: "Exit", onPress: () => navigation.goBack() }
-        ]
-      );
-    }
+  // Memoize button handlers to prevent recreation on each render
+  const handlePopupButtonPress = useCallback((onPress) => {
+    return onPress;
+  }, []);
+
+  const renderPopup = () => {
+    if (!showPopup) return null;
+
+    return (
+      <View style={styles.popupOverlay}>
+        <Animated.View 
+          style={[
+            styles.popupContainer,
+            {
+              transform: [
+                { scale: popupAnim },
+                { 
+                  translateY: popupAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [50, 0]
+                  })
+                }
+              ]
+            }
+          ]}
+        >
+          <LinearGradient 
+            colors={['#52B69A', '#1A759F']} 
+            style={styles.popupHeader}
+          >
+            <Text style={styles.popupTitle}>{popupTitle}</Text>
+          </LinearGradient>
+          
+          <View style={styles.popupBody}>
+            <Text style={styles.popupMessage}>{popupMessage}</Text>
+            
+            <View style={styles.popupButtonContainer}>
+              {popupButtons.map((button, index) => {
+                // Create a stable handler for each button
+                const stableHandler = handlePopupButtonPress(button.onPress);
+                
+                return (
+                  <TouchableOpacity 
+                    key={index} 
+                    style={[
+                      styles.popupButton,
+                      index === 0 ? styles.primaryButton : styles.secondaryButton
+                    ]} 
+                    onPress={stableHandler}
+                    activeOpacity={0.7}
+                  >
+                    <LinearGradient 
+                      colors={index === 0 ? ['#52B69A', '#1A759F'] : ['#4A5859', '#2C3333']} 
+                      style={styles.buttonGradient}
+                    >
+                      <Text style={styles.popupButtonText}>{button.text}</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </Animated.View>
+      </View>
+    );
+  };
+
+  const renderCardModal = () => {
+    if (!showCardModal) return null;
+    return (
+      <Modal
+        transparent={true}
+        visible={showCardModal}
+        animationType="none"
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View 
+            style={[
+              styles.modalContent,
+              {
+                transform: [
+                  { scale: cardAnim }
+                ]
+              }
+            ]}
+          >
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalHeaderText}>🎴 COLLECTIBLE CARD UNLOCKED!</Text>
+            </View>
+            <View style={styles.modalBody}>
+              <Image
+                source={require('../../../../../assets/images/pets/Beaver.png')}
+                style={{ width: 120, height: 120, marginBottom: 16 }}
+                resizeMode="contain"
+              />
+              <Text style={styles.modalMessage}>Hedgehog Card\nCongratulations! You collected a new card for Level 3.</Text>
+              <TouchableOpacity 
+                style={styles.modalButton}
+                onPress={() => {
+                  setShowCardModal(false);
+                  navigation.goBack();
+                }}
+              >
+                <LinearGradient
+                  colors={['#FFB703', '#FB8500']}
+                  style={styles.modalButtonGradient}
+                >
+                  <Text style={styles.modalButtonText}>CONTINUE</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
+    );
   };
 
   return (
@@ -237,6 +422,9 @@ export default function Level3Screen() {
           </LinearGradient>
         </TouchableOpacity>
       </LinearGradient>
+      
+      {renderPopup()}
+      {renderCardModal()}
     </View>
   );
 }
@@ -337,6 +525,143 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   controlButtonText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
+  },
+  // 8-bit style popup styles
+  popupOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  popupContainer: {
+    width: screenWidth * 0.8,
+    backgroundColor: '#2A2B2A',
+    borderWidth: 4,
+    borderColor: '#52B69A',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  popupHeader: {
+    padding: 10,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: '#52B69A',
+  },
+  popupTitle: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  popupBody: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  popupMessage: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  popupButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+  },
+  popupButton: {
+    minWidth: 100,
+    marginHorizontal: 5,
+    borderRadius: 5,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#FFF',
+  },
+  primaryButton: {
+    borderColor: '#FFD700',
+  },
+  secondaryButton: {
+    borderColor: '#FFF',
+  },
+  buttonGradient: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    alignItems: 'center',
+  },
+  popupButtonText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 10,
+  },
+  // Add modal styles if not present
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#1A3C40',
+    borderRadius: 10,
+    borderWidth: 4,
+    borderColor: '#FFD700',
+    shadowColor: '#000',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 10,
+  },
+  modalHeader: {
+    padding: 12,
+    alignItems: 'center',
+    borderBottomWidth: 4,
+    borderBottomColor: '#FFD700',
+  },
+  modalHeaderText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 16,
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 0,
+  },
+  modalBody: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalMessage: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  modalButton: {
+    marginTop: 10,
+    borderRadius: 4,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#FFD700',
+  },
+  modalButtonGradient: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButtonText: {
     fontFamily: 'PressStart2P_400Regular',
     color: '#FFF',
     fontSize: 12,
