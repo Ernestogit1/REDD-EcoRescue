@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Alert, Image } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Alert, Image, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import ApiService from '../../../../services/api.service';
@@ -25,6 +25,14 @@ export default function Level5Screen() {
   const [jumpHeight, setJumpHeight] = useState(0);
   const [tongue, setTongue] = useState({ active: false, x: 0, y: 0, targetX: 0, targetY: 0, length: 0, angle: 0 });
   const [aimTarget, setAimTarget] = useState({ x: 0, y: -20 });
+  // Add popup state variables
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupTitle, setPopupTitle] = useState('');
+  const [popupMessage, setPopupMessage] = useState('');
+  const [popupButtons, setPopupButtons] = useState([]);
+  const [pendingAction, setPendingAction] = useState(null); // 'restart' | 'exit' | null
+  const popupAnim = useRef(new Animated.Value(0)).current;
+  
   const timerRef = useRef(null);
   const gameInterval = useRef(null);
   const jumpTimerRef = useRef(null);
@@ -32,7 +40,7 @@ export default function Level5Screen() {
   
   // Joystick state
   const [joystickActive, setJoystickActive] = useState(false);
-  const [joystickPosition, setJoystickPosition] = useState({ x: 70, y: screenHeight - 140 });
+  const [joystickPosition, setJoystickPosition] = useState({ x: 120, y: screenHeight - 200 });
   const [joystickValue, setJoystickValue] = useState({ x: 0, y: -1 });
   const [knobPosition, setKnobPosition] = useState({ x: 0, y: 0 });
   const joystickBaseRadius = JOYSTICK_SIZE / 2;
@@ -53,6 +61,56 @@ export default function Level5Screen() {
   useEffect(() => {
     if (timer === 0) handleGameOver();
   }, [timer]);
+
+  // Effect to run pending action after popup is hidden
+  useEffect(() => {
+    if (!showPopup && pendingAction) {
+      if (pendingAction === 'restart') {
+        startGame();
+      } else if (pendingAction === 'exit') {
+        navigation.goBack();
+      }
+      setPendingAction(null);
+    }
+  }, [showPopup, pendingAction]);
+
+  // Popup animation when it appears
+  useEffect(() => {
+    if (showPopup) {
+      // Use requestAnimationFrame to avoid useInsertionEffect warning
+      requestAnimationFrame(() => {
+        Animated.spring(popupAnim, {
+          toValue: 1,
+          friction: 7,
+          tension: 40,
+          useNativeDriver: true,
+        }).start();
+      });
+    } else {
+      popupAnim.setValue(0);
+    }
+  }, [showPopup]);
+
+  // Memoized handlers for popup buttons
+  const handlePlayAgain = useCallback(() => {
+    setShowPopup(false);
+    setPendingAction('restart');
+  }, []);
+  
+  const handleExit = useCallback(() => {
+    setShowPopup(false);
+    setPendingAction('exit');
+  }, []);
+
+  const handleContinue = useCallback(() => {
+    setShowPopup(false);
+    setPendingAction('exit');
+  }, []);
+
+  // Memoize button handlers to prevent recreation on each render
+  const handlePopupButtonPress = useCallback((onPress) => {
+    return onPress;
+  }, []);
 
   // Setup lily pads
   const setupLilyPads = () => {
@@ -240,20 +298,23 @@ export default function Level5Screen() {
       ApiService.addPoints(score).catch((err) => {
         console.error('Failed to add points:', err);
       });
-      Alert.alert(
-        "Level Complete!",
-        `Great job! You caught ${score / 10} flies!`,
-        [{ text: "Continue", onPress: () => navigation.goBack() }]
-      );
+      
+      // Show success popup
+      setPopupTitle('LEVEL COMPLETE!');
+      setPopupMessage(`GREAT JOB! YOU CAUGHT ${score / 10} FLIES!`);
+      setPopupButtons([
+        { text: 'CONTINUE', onPress: handleContinue }
+      ]);
+      setShowPopup(true);
     } else {
-      Alert.alert(
-        "Time's Up!",
-        `You caught ${score / 10} flies. Try again to reach 10!`,
-        [
-          { text: "Retry", onPress: () => startGame() },
-          { text: "Exit", onPress: () => navigation.goBack() }
-        ]
-      );
+      // Show failure popup
+      setPopupTitle('TIME\'S UP!');
+      setPopupMessage(`YOU CAUGHT ${score / 10} FLIES. TRY AGAIN TO REACH 10!`);
+      setPopupButtons([
+        { text: 'RETRY', onPress: handlePlayAgain },
+        { text: 'EXIT', onPress: handleExit }
+      ]);
+      setShowPopup(true);
     }
   };
 
@@ -490,6 +551,69 @@ export default function Level5Screen() {
     );
   };
 
+  // Render popup component
+  const renderPopup = () => {
+    if (!showPopup) return null;
+
+    return (
+      <View style={styles.popupOverlay}>
+        <Animated.View 
+          style={[
+            styles.popupContainer,
+            {
+              transform: [
+                { scale: popupAnim },
+                { 
+                  translateY: popupAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [50, 0]
+                  })
+                }
+              ]
+            }
+          ]}
+        >
+          <LinearGradient 
+            colors={['#52B69A', '#1A759F']} 
+            style={styles.popupHeader}
+          >
+            <Text style={styles.popupTitle}>{popupTitle}</Text>
+          </LinearGradient>
+          
+          <View style={styles.popupBody}>
+            <Text style={styles.popupMessage}>{popupMessage}</Text>
+            
+            <View style={styles.popupButtonContainer}>
+              {popupButtons.map((button, index) => {
+                // Create a stable handler for each button
+                const stableHandler = handlePopupButtonPress(button.onPress);
+                
+                return (
+                  <TouchableOpacity 
+                    key={index} 
+                    style={[
+                      styles.popupButton,
+                      index === 0 ? styles.primaryButton : styles.secondaryButton
+                    ]} 
+                    onPress={stableHandler}
+                    activeOpacity={0.7}
+                  >
+                    <LinearGradient 
+                      colors={index === 0 ? ['#52B69A', '#1A759F'] : ['#4A5859', '#2C3333']} 
+                      style={styles.buttonGradient}
+                    >
+                      <Text style={styles.popupButtonText}>{button.text}</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </Animated.View>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <LinearGradient colors={['#1A3C40', '#0D1B1E']} style={styles.background}>
@@ -597,6 +721,8 @@ export default function Level5Screen() {
           </View>
         )}
       </LinearGradient>
+      
+      {renderPopup()}
     </View>
   );
 }
@@ -742,10 +868,10 @@ const styles = StyleSheet.create({
   },
   fireButton: {
     position: 'absolute',
-    bottom: 20,
-    right: 20,
-    width: 80,
-    height: 80,
+    bottom: 70,
+    right: 120,
+    width: 90,
+    height: 90,
     backgroundColor: '#E53935',
     borderRadius: 40,
     justifyContent: 'center',
@@ -773,5 +899,78 @@ const styles = StyleSheet.create({
     fontSize: 10,
     marginVertical: 5,
     textAlign: 'center',
+  },
+  // 8-bit style popup styles
+  popupOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  popupContainer: {
+    width: screenWidth * 0.8,
+    backgroundColor: '#2A2B2A',
+    borderWidth: 4,
+    borderColor: '#52B69A',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  popupHeader: {
+    padding: 10,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: '#52B69A',
+  },
+  popupTitle: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  popupBody: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  popupMessage: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  popupButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+  },
+  popupButton: {
+    minWidth: 100,
+    marginHorizontal: 5,
+    borderRadius: 5,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#FFF',
+  },
+  primaryButton: {
+    borderColor: '#FFD700',
+  },
+  secondaryButton: {
+    borderColor: '#FFF',
+  },
+  buttonGradient: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    alignItems: 'center',
+  },
+  popupButtonText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 10,
   },
 });

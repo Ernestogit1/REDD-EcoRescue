@@ -28,12 +28,16 @@ export default function Level1Screen({ route }) {
   const [score, setScore] = useState(0);
   const [timer, setTimer] = useState(60); // 60 seconds game time
   const [isPreviewPhase, setIsPreviewPhase] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupType, setPopupType] = useState(''); // 'win' or 'lose'
+  const [popupMessage, setPopupMessage] = useState({title: '', message: ''});
   const timerRef = useRef(null);
   const previewTimerRef = useRef(null);
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const bounceAnim = useRef(new Animated.Value(0)).current;
+  const popupAnim = useRef(new Animated.Value(0)).current;
   
   // Sound effects
   const playSoundEffect = (type) => {
@@ -112,6 +116,27 @@ export default function Level1Screen({ route }) {
       handleGameOver(true);
     }
   }, [matched]);
+
+  // Animate popup when it appears
+  useEffect(() => {
+    if (showPopup) {
+      Animated.sequence([
+        Animated.timing(popupAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.spring(popupAnim, {
+          toValue: 1,
+          friction: 5,
+          tension: 40,
+          useNativeDriver: true,
+        })
+      ]).start();
+    } else {
+      popupAnim.setValue(0);
+    }
+  }, [showPopup]);
   
   const startGame = () => {
     // Create card deck with pairs
@@ -126,6 +151,7 @@ export default function Level1Screen({ route }) {
     setGameComplete(false);
     setTimer(60);
     setScore(0);
+    setShowPopup(false);
     
     if (timerRef.current) clearInterval(timerRef.current);
     
@@ -173,40 +199,42 @@ export default function Level1Screen({ route }) {
         console.error('Failed to add points:', err);
       });
       
-      setTimeout(() => {
-        Alert.alert(
-          "Level Complete!",
-          `You matched all the cards!\nScore: ${finalScore}\nTime left: ${timer}s\nMoves: ${moves}`,
-          [
-            { text: "Continue", onPress: async () => {
-                try {
-                  await ApiService.markLevelComplete(1);
-                } catch (err) {
-                  console.error('Failed to mark level as complete:', err);
-                }
-                navigation.goBack();
-              }
-            }
-          ]
-        );
-      }, 1000);
+      // Set popup for win scenario
+      setPopupType('win');
+      setPopupMessage({
+        title: "LEVEL COMPLETE!",
+        message: `GREAT JOB!\nScore: ${finalScore}\nTime left: ${timer}s\nMoves: ${moves}`
+      });
+      setShowPopup(true);
+      
+      // Mark level as complete
+      ApiService.markLevelComplete(1).catch((err) => {
+        console.error('Failed to mark level as complete:', err);
+      });
     } else {
       playSoundEffect('lose');
-      setTimeout(() => {
-        Alert.alert(
-          "Time's Up!",
-          "You ran out of time. Try again?",
-          [
-            { text: "Retry", onPress: () => startGame() },
-            { text: "Exit", onPress: () => navigation.goBack() }
-          ]
-        );
-      }, 1000);
+      // Show 8-bit style lose popup
+      setPopupType('lose');
+      setPopupMessage({
+        title: "TIME'S UP!",
+        message: "YOU RAN OUT OF TIME.\nTRY AGAIN?"
+      });
+      setShowPopup(true);
     }
   };
   
   const handleGoBack = () => {
     navigation.goBack();
+  };
+
+  const handlePopupAction = (action) => {
+    setShowPopup(false);
+    
+    if (action === 'retry' || action === 'playAgain') {
+      startGame();
+    } else if (action === 'continue' || action === 'exit') {
+      navigation.goBack();
+    }
   };
   
   const renderCard = (index) => {
@@ -231,6 +259,86 @@ export default function Level1Screen({ route }) {
           </View>
         )}
       </TouchableOpacity>
+    );
+  };
+
+  // 8-bit style popup component
+  const renderPopup = () => {
+    if (!showPopup) return null;
+
+    return (
+      <View style={styles.modalOverlay}>
+        <Animated.View 
+          style={[
+            styles.modalContent,
+            {
+              transform: [
+                { scale: popupAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.5, 1]
+                })}
+              ]
+            }
+          ]}
+        >
+          <LinearGradient
+            colors={popupType === 'win' ? ['#76C893', '#52B69A'] : ['#E63946', '#D00000']}
+            style={styles.modalHeader}
+          >
+            <Text style={styles.modalHeaderText}>
+              {popupType === 'win' ? '★ VICTORY! ★' : '× TIME\'S UP ×'}
+            </Text>
+          </LinearGradient>
+          
+          <View style={styles.modalBody}>
+            <Text style={styles.modalMessage}>{popupMessage.message}</Text>
+            
+            <View style={styles.modalButtonsContainer}>
+              {popupType === 'win' && (
+                <TouchableOpacity 
+                  style={styles.modalButton}
+                  onPress={() => handlePopupAction('playAgain')}
+                >
+                  <LinearGradient
+                    colors={['#FFB703', '#FB8500']}
+                    style={styles.modalButtonGradient}
+                  >
+                    <Text style={styles.modalButtonText}>PLAY AGAIN</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              )}
+              
+              {popupType === 'lose' && (
+                <TouchableOpacity 
+                  style={styles.modalButton}
+                  onPress={() => handlePopupAction('retry')}
+                >
+                  <LinearGradient
+                    colors={['#FFB703', '#FB8500']}
+                    style={styles.modalButtonGradient}
+                  >
+                    <Text style={styles.modalButtonText}>TRY AGAIN</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              )}
+              
+              <TouchableOpacity 
+                style={styles.modalButton}
+                onPress={() => handlePopupAction(popupType === 'win' ? 'continue' : 'exit')}
+              >
+                <LinearGradient
+                  colors={['#1A3C40', '#0D1B1E']}
+                  style={styles.modalButtonGradient}
+                >
+                  <Text style={styles.modalButtonText}>
+                    {popupType === 'win' ? 'EXIT' : 'EXIT'}
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Animated.View>
+      </View>
     );
   };
   
@@ -325,6 +433,9 @@ export default function Level1Screen({ route }) {
             <Text style={styles.previewText}>MEMORIZE!</Text>
           </View>
         )}
+
+        {/* 8-bit Popup Message */}
+        {renderPopup()}
       </LinearGradient>
     </View>
   );
@@ -471,5 +582,86 @@ const styles = StyleSheet.create({
     fontFamily: 'PressStart2P_400Regular',
     color: '#FFD700',
     fontSize: 18,
+  },
+  // 8-bit popup styles
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  modalContent: {
+    width: '80%',
+    maxWidth: 300,
+    backgroundColor: '#2A2B2A',
+    borderWidth: 4,
+    borderColor: '#FFD700',
+    borderRadius: 10,
+    overflow: 'hidden',
+    // 8-bit style shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 10,
+  },
+  modalHeader: {
+    padding: 15,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: '#FFD700',
+  },
+  modalHeaderText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 16,
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 0,
+  },
+  modalBody: {
+    padding: 20,
+    alignItems: 'center',
+    backgroundColor: '#1A3C40',
+  },
+  modalMessage: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  modalButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    padding: 15,
+  },
+  modalButton: {
+    marginHorizontal: 10,
+    width: 120,
+    height: 44,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#FFD700',
+  },
+  modalButtonGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+  },
+  modalButtonText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
+    textAlign: 'center',
   }
 });

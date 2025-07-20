@@ -160,10 +160,6 @@ export default function Level6Screen() {
   const COLORS = {
     wall: '#22223b',
     path: '#f2e9e4',
-    player: '#3a86ff',
-    fox: '#e63946',
-    foxEar: '#ffb703',
-    foxTail: '#fff',
   };
 
   // Render maze grid
@@ -173,24 +169,24 @@ export default function Level6Screen() {
         {rowArr.map((cell, colIdx) => {
           let cellStyle = [styles.cell, { backgroundColor: cell === 1 ? COLORS.path : COLORS.wall }];
           let content = null;
-          // Player
+          // Player - replaced with image
           if (player.row === rowIdx && player.col === colIdx) {
             content = (
-              <View style={styles.playerSprite}>
-                <View style={styles.playerFace} />
-                <View style={styles.playerEye} />
-              </View>
+              <Image 
+                source={require('../../../../../assets/images/pets/man.png')}
+                style={styles.playerImage}
+                resizeMode="contain"
+              />
             );
           }
-          // Fox
+          // Fox - replaced with image
           if (FOX_POS.row === rowIdx && FOX_POS.col === colIdx) {
             content = (
-              <View style={styles.foxSprite}>
-                <View style={styles.foxEarLeft} />
-                <View style={styles.foxEarRight} />
-                <View style={styles.foxFace} />
-                <View style={styles.foxTail} />
-              </View>
+              <Image 
+                source={require('../../../../../assets/images/pets/fox.png')}
+                style={styles.foxImage}
+                resizeMode="contain"
+              />
             );
           }
           return (
@@ -225,7 +221,7 @@ export default function Level6Screen() {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.exitButton}>
             <Text style={styles.exitButtonText}>EXIT</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>🦊 Rescue the Red Fox</Text>
+          <Text style={styles.headerTitle}>Rescue the Red Fox</Text>
           <Text style={styles.scoreText}>Time: {timer}s</Text>
         </View>
         {/* Main Content: Controls (left) + Maze (right) */}
@@ -503,79 +499,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  playerSprite: {
-    width: CELL_SIZE * 0.7,
-    height: CELL_SIZE * 0.7,
-    backgroundColor: '#3a86ff',
+  // Player styles removed as we're now using an image
+  playerImage: {
+    width: CELL_SIZE * 0.9,
+    height: CELL_SIZE * 0.9,
     borderRadius: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#22223b',
   },
-  playerFace: {
-    width: '60%',
-    height: '60%',
-    backgroundColor: '#fff',
-    borderRadius: 4,
-    marginBottom: 2,
-  },
-  playerEye: {
-    width: 6,
-    height: 6,
-    backgroundColor: '#222',
-    borderRadius: 3,
-    position: 'absolute',
-    top: '55%',
-    left: '60%',
-  },
-  foxSprite: {
-    width: CELL_SIZE * 0.7,
-    height: CELL_SIZE * 0.7,
-    backgroundColor: '#e63946',
+  // Fox styles removed as we're now using an image
+  foxImage: {
+    width: CELL_SIZE * 0.9,
+    height: CELL_SIZE * 0.9,
     borderRadius: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#fff',
-    position: 'relative',
   },
-  foxEarLeft: {
-    width: 10,
-    height: 10,
-    backgroundColor: '#ffb703',
-    borderRadius: 2,
-    position: 'absolute',
-    top: 0,
-    left: 2,
-    transform: [{ rotate: '-20deg' }],
-  },
-  foxEarRight: {
-    width: 10,
-    height: 10,
-    backgroundColor: '#ffb703',
-    borderRadius: 2,
-    position: 'absolute',
-    top: 0,
-    right: 2,
-    transform: [{ rotate: '20deg' }],
-  },
-  foxFace: {
-    width: '60%',
-    height: '60%',
-    backgroundColor: '#e63946',
+  playerImage: {
+    width: CELL_SIZE * 0.7,
+    height: CELL_SIZE * 0.7,
     borderRadius: 5,
-    marginBottom: 2,
-  },
-  foxTail: {
-    width: 12,
-    height: 8,
-    backgroundColor: '#fff',
-    borderRadius: 4,
-    position: 'absolute',
-    bottom: 2,
-    right: -6,
-    transform: [{ rotate: '30deg' }],
   },
   // 8-bit modal styles
   modalOverlay: {

@@ -255,10 +255,10 @@ export default function Level2Screen() {
     });
     
     // Now check for collisions after positions are updated
-    // This is a separate step to ensure positions are updated first
-    setTimeout(() => {
+    // Instead of using setTimeout, we'll use requestAnimationFrame to ensure we're not in a render cycle
+    requestAnimationFrame(() => {
       checkCollisionsAfterUpdate();
-    }, 0);
+    });
     
     // Update nuts with magnet powerup effect
     if (activePowerups.magnet) {
@@ -319,7 +319,9 @@ export default function Level2Screen() {
       
       // Update score
       if (scoreIncrease > 0) {
-        setScore(s => s + scoreIncrease);
+        requestAnimationFrame(() => {
+          setScore(s => s + scoreIncrease);
+        });
       }
       
       return remainingNuts;
@@ -329,6 +331,7 @@ export default function Level2Screen() {
     setPowerups(prev => {
       if (prev.length === 0) return prev;
       
+      const collectedPowerups = [];
       const remainingPowerups = prev.filter(powerup => {
         // Check if powerup is off screen
         if (powerup.y >= screenHeight) {
@@ -383,7 +386,9 @@ export default function Level2Screen() {
         
         // Apply damage
         if (damageTotal > 0) {
-          setLives(l => Math.max(0, l - damageTotal));
+          requestAnimationFrame(() => {
+            setLives(l => Math.max(0, l - damageTotal));
+          });
         }
         
         return remainingObstacles;
@@ -479,8 +484,11 @@ export default function Level2Screen() {
       });
       
       if (scoreIncrease > 0) {
-        setScore(s => s + scoreIncrease);
-        playSoundEffect('collect');
+        // Update score outside of render using requestAnimationFrame
+        requestAnimationFrame(() => {
+          setScore(s => s + scoreIncrease);
+          playSoundEffect('collect');
+        });
       }
       
       return remainingNuts;
@@ -506,11 +514,11 @@ export default function Level2Screen() {
       });
       
       if (collectedPowerups.length > 0) {
-        playSoundEffect('powerup');
-        // Use setTimeout to avoid state updates during render
-        setTimeout(() => {
+        // Handle powerup activation outside of render using requestAnimationFrame
+        requestAnimationFrame(() => {
+          playSoundEffect('powerup');
           collectedPowerups.forEach(type => activatePowerup(type));
-        }, 0);
+        });
       }
       
       return remainingPowerups;
@@ -537,8 +545,11 @@ export default function Level2Screen() {
         });
         
         if (damageTotal > 0) {
-          setLives(l => Math.max(0, l - damageTotal));
-          playSoundEffect('hit');
+          // Update lives outside of render using requestAnimationFrame
+          requestAnimationFrame(() => {
+            setLives(l => Math.max(0, l - damageTotal));
+            playSoundEffect('hit');
+          });
         }
         
         return remainingObstacles;
@@ -564,7 +575,9 @@ export default function Level2Screen() {
         });
         
         if (hitCount > 0) {
-          playSoundEffect('deflect');
+          requestAnimationFrame(() => {
+            playSoundEffect('deflect');
+          });
         }
         
         return remainingObstacles;
@@ -610,6 +623,11 @@ export default function Level2Screen() {
         ...prev,
         x: newX,
       }));
+
+      // Use setTimeout to ensure state update completes before checking collisions
+      setTimeout(() => {
+        checkCollisionsAfterMovement();
+      }, 0);
     }
   };
   
@@ -659,8 +677,34 @@ export default function Level2Screen() {
   };
   
   const playSoundEffect = (type) => {
-    // You would implement different sound effects here
-    // For example: audioService.playSound(type);
+    // Implement different sound effects
+    try {
+      switch(type) {
+        case 'collect':
+          audioService.playSound('collect');
+          break;
+        case 'hit':
+          audioService.playSound('hit');
+          break;
+        case 'powerup':
+          audioService.playSound('powerup');
+          break;
+        case 'deflect':
+          audioService.playSound('deflect');
+          break;
+        case 'win':
+          audioService.playSound('win');
+          break;
+        case 'lose':
+          audioService.playSound('lose');
+          break;
+        default:
+          // No sound
+          break;
+      }
+    } catch (error) {
+      console.log('Sound effect error:', error);
+    }
   };
   
   const activatePowerup = (powerupType) => {

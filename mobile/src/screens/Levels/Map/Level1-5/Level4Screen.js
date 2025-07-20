@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, Alert, PanResponder, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, PanResponder, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import ApiService from '../../../../services/api.service';
@@ -16,10 +16,13 @@ export default function Level4Screen() {
   const [controlMode, setControlMode] = useState('touch'); // 'touch' or 'joystick'
   const [joystickPosition, setJoystickPosition] = useState({ x: 100, y: screenHeight - 200 });
   const [joystickValue, setJoystickValue] = useState({ x: 0, y: 0 });
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupType, setPopupType] = useState(''); // 'success' or 'failure'
   const timerRef = useRef(null);
   const gameInterval = useRef(null);
   const animationRef = useRef(null);
   const butterflyPos = useRef(new Animated.ValueXY({ x: screenWidth/2, y: screenHeight/2 })).current;
+  const popupAnimation = useRef(new Animated.Value(0)).current;
 
   // Initialize game
   useEffect(() => {
@@ -66,6 +69,20 @@ export default function Level4Screen() {
     }
   }, [joystickValue, controlMode]);
 
+  // Popup animation effect
+  useEffect(() => {
+    if (showPopup) {
+      Animated.spring(popupAnimation, {
+        toValue: 1,
+        friction: 7,
+        tension: 40,
+        useNativeDriver: true
+      }).start();
+    } else {
+      popupAnimation.setValue(0);
+    }
+  }, [showPopup]);
+
   // Pan responder for direct butterfly touch control
   const butterflyPanResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => controlMode === 'touch',
@@ -103,6 +120,7 @@ export default function Level4Screen() {
     setTimer(30);
     setGameComplete(false);
     setButterflySize(80);
+    setShowPopup(false);
     spawnFlowers();
 
     // Start timer
@@ -174,21 +192,87 @@ export default function Level4Screen() {
       ApiService.addPoints(score).catch((err) => {
         console.error('Failed to add points:', err);
       });
-      Alert.alert(
-        "Level Complete!",
-        `Great job! You collected ${score} points worth of nectar!`,
-        [{ text: "Continue", onPress: () => navigation.goBack() }]
-      );
+      
+      // Show success popup
+      setPopupType('success');
+      setShowPopup(true);
     } else {
-      Alert.alert(
-        "Time's Up!",
-        `You collected ${score} points. Try again to reach 100!`,
-        [
-          { text: "Retry", onPress: () => startGame() },
-          { text: "Exit", onPress: () => navigation.goBack() }
-        ]
-      );
+      // Show failure popup
+      setPopupType('failure');
+      setShowPopup(true);
     }
+  };
+
+  const handlePopupAction = (action) => {
+    setShowPopup(false);
+    
+    if (action === 'continue' || action === 'exit') {
+      navigation.goBack();
+    } else if (action === 'retry') {
+      startGame();
+    }
+  };
+
+  // 8-bit style popup component
+  const GamePopup = () => {
+    const popupScale = popupAnimation.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.5, 1]
+    });
+
+    return (
+      <Animated.View 
+        style={[
+          styles.popupOverlay,
+          { 
+            opacity: popupAnimation,
+            transform: [{ scale: popupScale }]
+          }
+        ]}
+      >
+        <View style={styles.popupContainer}>
+          <View style={styles.popupHeader}>
+            <Text style={styles.popupTitle}>
+              {popupType === 'success' ? 'LEVEL COMPLETE!' : 'TIME\'S UP!'}
+            </Text>
+          </View>
+          
+          <View style={styles.popupBody}>
+            <Text style={styles.popupText}>
+              {popupType === 'success' 
+                ? `GREAT JOB! YOU COLLECTED ${score} POINTS WORTH OF NECTAR!`
+                : `YOU COLLECTED ${score} POINTS. TRY AGAIN TO REACH 100!`}
+            </Text>
+          </View>
+          
+          <View style={styles.popupButtons}>
+            {popupType === 'success' ? (
+              <TouchableOpacity 
+                style={styles.popupButton} 
+                onPress={() => handlePopupAction('continue')}
+              >
+                <Text style={styles.popupButtonText}>CONTINUE</Text>
+              </TouchableOpacity>
+            ) : (
+              <>
+                <TouchableOpacity 
+                  style={styles.popupButton} 
+                  onPress={() => handlePopupAction('retry')}
+                >
+                  <Text style={styles.popupButtonText}>RETRY</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.popupButton} 
+                  onPress={() => handlePopupAction('exit')}
+                >
+                  <Text style={styles.popupButtonText}>EXIT</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </View>
+      </Animated.View>
+    );
   };
 
   return (
@@ -279,6 +363,8 @@ export default function Level4Screen() {
             {controlMode === 'touch' ? '👆 Touch' : '🕹️ Joystick'}
           </Text>
         </TouchableOpacity>
+        
+        {showPopup && <GamePopup />}
       </LinearGradient>
     </View>
   );
@@ -401,5 +487,71 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 215, 0, 0.8)',
     borderWidth: 2,
     borderColor: '#FFF',
+  },
+  // 8-bit style popup styles
+  popupOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+  },
+  popupContainer: {
+    width: '80%',
+    backgroundColor: '#0D1B1E',
+    borderWidth: 4,
+    borderColor: '#FFD700',
+    borderRadius: 8,
+    padding: 4,
+    // 8-bit style shadow
+    elevation: 8,
+  },
+  popupHeader: {
+    backgroundColor: '#1A3C40',
+    padding: 10,
+    borderBottomWidth: 4,
+    borderBottomColor: '#FFD700',
+    alignItems: 'center',
+  },
+  popupTitle: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFD700',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  popupBody: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  popupText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  popupButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 15,
+  },
+  popupButton: {
+    backgroundColor: '#1A3C40',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderWidth: 2,
+    borderColor: '#FFD700',
+    borderRadius: 4,
+    minWidth: 100,
+    alignItems: 'center',
+  },
+  popupButtonText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
   }
 });
