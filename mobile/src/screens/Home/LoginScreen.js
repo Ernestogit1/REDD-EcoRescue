@@ -3,11 +3,14 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingVi
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import ApiService from '../../services/api.service';
+import { useBackground, backgrounds } from '../../context/BackgroundContext';
+import { Video } from 'expo-av';
 
 const { height: screenHeight } = Dimensions.get('window');
 
 export default function LoginScreen() {
   const navigation = useNavigation();
+  const { currentBackground } = useBackground();
   const [credentials, setCredentials] = useState({ emailOrUsername: '', password: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -100,107 +103,122 @@ export default function LoginScreen() {
     outputRange: [0, -10],
   });
 
-  return (
-    <LinearGradient colors={["#1a4d2e", "#2d5a3d", "#1a4d2e"]} style={styles.container}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
-        <Animated.View style={[
-          styles.card,
-          {
-            transform: [{ scale: scaleAnim }],
-            opacity: fadeAnim,
-          }
-        ]}>
-          <View style={styles.header}>
-            <Text style={styles.avatar}>👤</Text>
-            <Text style={styles.subtitle}>Login</Text>
-          </View>
-          
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-          
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Username or Email</Text>
-            <TextInput
-              style={styles.input}
-              value={credentials.emailOrUsername}
-              onChangeText={v => handleChange('emailOrUsername', v)}
-              placeholder="Enter username or email"
-              placeholderTextColor="#888"
-              autoCapitalize="none"
-            />
-          </View>
-          
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              value={credentials.password}
-              onChangeText={v => handleChange('password', v)}
-              placeholder="Enter password"
-              placeholderTextColor="#888"
-              secureTextEntry
-            />
-          </View>
-          
-          <TouchableOpacity style={styles.linkContainer} onPress={() => {}}>
-            <Text style={styles.link}>Forgot Password?</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.button, styles.primaryButton, isLoading && styles.disabledButton]}
-            onPress={handleSubmit}
-            disabled={isLoading}
-          >
-            <Text style={styles.buttonText}>{isLoading ? 'LOGGING IN...' : 'LOGIN'}</Text>
-          </TouchableOpacity>
-          
-          <View style={styles.orDivider}>
-            <Text style={styles.orText}>OR</Text>
-          </View>
-          
-          <TouchableOpacity style={[styles.button, styles.googleButton]} onPress={() => {}}>
-            <Text style={styles.googleIcon}>G</Text>
-            <Text style={styles.buttonText}>LOGIN WITH GOOGLE</Text>
-          </TouchableOpacity>
-          
-          <View style={styles.registerLinkContainer}>
-            <Text style={styles.label}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.link}>Register</Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
+  // Render background based on currentBackground
+  const renderBackground = (children) => {
+    if (currentBackground === 0) {
+      return (
+        <LinearGradient colors={["#1a4d2e", "#2d5a3d", "#1a4d2e"]} style={styles.container}>
+          {children}
+        </LinearGradient>
+      );
+    } else {
+      const selectedBg = backgrounds.find(bg => bg.id === currentBackground);
+      return (
+        <View style={styles.container}>
+          <Video 
+            source={selectedBg.source}
+            style={styles.backgroundImage}
+            resizeMode="cover"
+            shouldPlay
+            isLooping
+            isMuted
+          />
+          {children}
+        </View>
+      );
+    }
+  };
 
-        {/* Animated background elements */}
-        <Animated.View style={[
-          styles.backgroundElement,
-          styles.tree1,
-          { transform: [{ translateY: floatingTransform }] }
-        ]} pointerEvents="none">
-          <Text style={styles.backgroundEmoji}>🌲</Text>
-        </Animated.View>
-        <Animated.View style={[
-          styles.backgroundElement,
-          styles.tree2,
-          { transform: [{ translateY: floatingTransform }] }
-        ]} pointerEvents="none">
-          <Text style={styles.backgroundEmoji}>🌳</Text>
-        </Animated.View>
-        <Animated.View style={[
-          styles.backgroundElement,
-          styles.animal1,
-          { transform: [{ translateY: floatingTransform }] }
-        ]} pointerEvents="none">
-          <Text style={styles.backgroundEmoji}>🦁</Text>
-        </Animated.View>
-        <Animated.View style={[
-          styles.backgroundElement,
-          styles.animal2,
-          { transform: [{ translateY: floatingTransform }] }
-        ]} pointerEvents="none">
-          <Text style={styles.backgroundEmoji}>🐘</Text>
-        </Animated.View>
-      </KeyboardAvoidingView>
-    </LinearGradient>
+  return renderBackground(
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
+      <Animated.View style={[
+        styles.card,
+        {
+          transform: [{ scale: scaleAnim }],
+          opacity: fadeAnim,
+        }
+      ]}>
+        <View style={styles.header}>
+          <Text style={styles.avatar}>👤</Text>
+          <Text style={styles.subtitle}>Login</Text>
+        </View>
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Username or Email</Text>
+          <TextInput
+            style={styles.input}
+            value={credentials.emailOrUsername}
+            onChangeText={v => handleChange('emailOrUsername', v)}
+            placeholder="Enter username or email"
+            placeholderTextColor="#888"
+            autoCapitalize="none"
+          />
+        </View>
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            style={styles.input}
+            value={credentials.password}
+            onChangeText={v => handleChange('password', v)}
+            placeholder="Enter password"
+            placeholderTextColor="#888"
+            secureTextEntry
+          />
+        </View>
+        <TouchableOpacity style={styles.linkContainer} onPress={() => {}}>
+          <Text style={styles.link}>Forgot Password?</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, styles.primaryButton, isLoading && styles.disabledButton]}
+          onPress={handleSubmit}
+          disabled={isLoading}
+        >
+          <Text style={styles.buttonText}>{isLoading ? 'LOGGING IN...' : 'LOGIN'}</Text>
+        </TouchableOpacity>
+        <View style={styles.orDivider}>
+          <Text style={styles.orText}>OR</Text>
+        </View>
+        <TouchableOpacity style={[styles.button, styles.googleButton]} onPress={() => {}}>
+          <Text style={styles.googleIcon}>G</Text>
+          <Text style={styles.buttonText}>LOGIN WITH GOOGLE</Text>
+        </TouchableOpacity>
+        <View style={styles.registerLinkContainer}>
+          <Text style={styles.label}>Don't have an account? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+            <Text style={styles.link}>Register</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+      {/* Animated background elements */}
+      <Animated.View style={[
+        styles.backgroundElement,
+        styles.tree1,
+        { transform: [{ translateY: floatingTransform }] }
+      ]} pointerEvents="none">
+        <Text style={styles.backgroundEmoji}>🌲</Text>
+      </Animated.View>
+      <Animated.View style={[
+        styles.backgroundElement,
+        styles.tree2,
+        { transform: [{ translateY: floatingTransform }] }
+      ]} pointerEvents="none">
+        <Text style={styles.backgroundEmoji}>🌳</Text>
+      </Animated.View>
+      <Animated.View style={[
+        styles.backgroundElement,
+        styles.animal1,
+        { transform: [{ translateY: floatingTransform }] }
+      ]} pointerEvents="none">
+        <Text style={styles.backgroundEmoji}>🦁</Text>
+      </Animated.View>
+      <Animated.View style={[
+        styles.backgroundElement,
+        styles.animal2,
+        { transform: [{ translateY: floatingTransform }] }
+      ]} pointerEvents="none">
+        <Text style={styles.backgroundEmoji}>🐘</Text>
+      </Animated.View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -387,5 +405,13 @@ const styles = StyleSheet.create({
   animal2: {
     bottom: '25%',
     right: '10%',
+  },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    opacity: 0.5, // Adjust as needed for overlay effect
   },
 }); 

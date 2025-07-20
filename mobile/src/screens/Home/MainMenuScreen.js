@@ -5,12 +5,13 @@ import { useNavigation } from '@react-navigation/native';
 import { Video } from 'expo-av';
 import ApiService from '../../services/api.service';
 import { useFocusEffect } from '@react-navigation/native';
+import { useBackground, backgrounds } from '../../context/BackgroundContext';
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
 export default function MainMenuScreen() {
   const navigation = useNavigation();
-  const [currentBackground, setCurrentBackground] = useState(0); // 0: LinearGradient, 1-4: GIFs
+  const { currentBackground, setCurrentBackground } = useBackground();
   const [showBackgroundSelector, setShowBackgroundSelector] = useState(false);
   const [user, setUser] = useState(null);
   const [showUserPanel, setShowUserPanel] = useState(false);
@@ -27,15 +28,6 @@ export default function MainMenuScreen() {
   ]).current;
   const selectorAnim = useRef(new Animated.Value(0)).current;
   const userPanelAnim = useRef(new Animated.Value(0)).current;
-
-  // Background options
-  const backgrounds = [
-    { id: 0, name: 'Default', type: 'gradient' },
-    { id: 1, name: 'Forest', type: 'gif', source: require('../../../assets/images/main-menu/main-menu1.mp4') },
-    { id: 2, name: 'Night Camp', type: 'gif', source: require('../../../assets/images/main-menu/main-menu2.mp4') },
-    { id: 3, name: 'Waterfall', type: 'gif', source: require('../../../assets/images/main-menu/main-menu3.mp4') },
-    { id: 4, name: 'Autumn', type: 'gif', source: require('../../../assets/images/main-menu/main-menu4.mp4') },
-  ];
 
   useEffect(() => {
     // Floating animation for background elements
