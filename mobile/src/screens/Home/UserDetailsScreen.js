@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, ScrollView, ActivityIndicator } from 'react-native';
 import ApiService from '../../services/api.service';
+import { useFocusEffect } from '@react-navigation/native';
+import AnimalCard from '../../components/AnimalCard';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -15,6 +17,9 @@ export default function UserDetailsScreen() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cards, setCards] = useState([]);
+  const [cardsLoading, setCardsLoading] = useState(false);
+  const [cardsError, setCardsError] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -22,7 +27,6 @@ export default function UserDetailsScreen() {
       setError(null);
       try {
         const data = await ApiService.getProfile();
-        // The user is at data.data.user
         setUser(data?.data?.user || data.user || data);
       } catch (err) {
         setError(err.message || 'Failed to load user details');
@@ -31,6 +35,39 @@ export default function UserDetailsScreen() {
       }
     })();
   }, []);
+
+  // Fetch collected cards when the cards tab is active
+  useFocusEffect(
+    React.useCallback(() => {
+      if (activeTab === 'cards') {
+        setCardsLoading(true);
+        setCardsError(null);
+        ApiService.getAuthToken().then(token => {
+          if (!token) {
+            setCardsError('Not authenticated');
+            setCardsLoading(false);
+            return;
+          }
+          fetch('http://192.168.1.19:5000/api/collected-cards/user', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+          })
+            .then(res => res.json())
+            .then(data => {
+              setCards(data.cards || []);
+              setCardsLoading(false);
+            })
+            .catch(err => {
+              setCardsError('Failed to fetch cards');
+              setCardsLoading(false);
+            });
+        });
+      }
+    }, [activeTab])
+  );
 
   // Placeholder content for each tab
   const renderTabContent = () => {
@@ -68,11 +105,19 @@ export default function UserDetailsScreen() {
         return (
           <View style={styles.tabContentInner}>
             <Text style={styles.sectionTitle}>Animal Cards Owned</Text>
-            <Text style={styles.card}>🦁 Lion</Text>
-            <Text style={styles.card}>🐘 Elephant</Text>
-            <Text style={styles.card}>🦅 Eagle</Text>
-            <Text style={styles.card}>🦊 Fox</Text>
-            <Text style={styles.card}>✨ More coming soon...</Text>
+            {cardsLoading ? (
+              <ActivityIndicator size="small" color="#FFD700" style={{ marginTop: 20 }} />
+            ) : cardsError ? (
+              <Text style={{ color: 'red', marginTop: 20 }}>{cardsError}</Text>
+            ) : cards.length === 0 ? (
+              <Text style={{ color: '#fff', marginTop: 20 }}>No cards collected yet.</Text>
+            ) : (
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {cards.map((card, idx) => (
+                  <AnimalCard key={card._id || idx} levelId={parseInt(card.levelId)} collectedAt={card.collectedAt} />
+                ))}
+              </View>
+            )}
           </View>
         );
       default:

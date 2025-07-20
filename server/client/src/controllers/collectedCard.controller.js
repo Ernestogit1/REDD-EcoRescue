@@ -38,4 +38,16 @@ const collectCard = async (req, res) => {
   }
 };
 
-module.exports = { collectCard }; 
+// Get all collected cards for the authenticated user
+const getUserCollectedCards = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const cards = await CollectedCard.find({ userId }).sort({ collectedAt: -1 });
+    return res.status(200).json({ cards });
+  } catch (error) {
+    console.error('Error fetching collected cards:', error);
+    return res.status(500).json({ message: 'Error fetching collected cards', error });
+  }
+};
+
+module.exports = { collectCard, getUserCollectedCards }; 
