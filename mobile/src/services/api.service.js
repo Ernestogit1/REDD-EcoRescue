@@ -272,6 +272,26 @@ class ApiService {
     return await this.makeNonMobileRequest('/api/inventory');
   }
 
+  // Consume a food item from inventory (feed animal)
+  async consumeFood(foodId) {
+    const token = await this.getAuthToken();
+    if (!token) throw new Error('Not authenticated');
+    const url = `${API_BASE_URL}/api/inventory/consume`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ foodId }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.message || 'Failed to feed animal');
+    }
+    return response.json();
+  }
+
   // Collected Cards API methods
   async getUserCollectedCards() {
     return await this.makeNonMobileRequest('/api/collected-cards/user');
