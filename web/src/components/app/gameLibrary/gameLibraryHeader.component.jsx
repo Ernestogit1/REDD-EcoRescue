@@ -24,9 +24,7 @@ const GameLibraryHeader = ({ user, onProfileClick, onStoreClick, onLogout, searc
             <button className="pixel-button secondary small" onClick={onProfileClick}>
               👤 PROFILE
             </button>
-            <button className="pixel-button secondary small" onClick={onStoreClick}>
-              🛒 STORE
-            </button>
+        
             <button className="pixel-button danger small" onClick={onLogout}>
               🚪 LOGOUT
             </button>

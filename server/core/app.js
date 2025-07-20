@@ -10,6 +10,7 @@ const colorRoutes = require("../client/src/routes/color.route");
 const collectedCardRoutes = require("../client/src/routes/collectedCard.route");
 const levelCompletionRoutes = require("../client/src/routes/levelCompletion.route");
 const authAdmin = require('../admin/src/routes/auth.route');
+const chartAdmin = require ('../admin/src/routes/chart.route')
 
 
 const app = express();
@@ -47,6 +48,7 @@ app.use(cookieParser());
 // Routes
 app.use('/api/auth',  authClient);
 app.use('/api/admin/auth', authAdmin);
+app.use('/api/admin/charts', chartAdmin);
 
 // game route
 app.use('/api/mobile', mobileRoutes);

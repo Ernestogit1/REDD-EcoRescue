@@ -8,6 +8,7 @@ import {
   Box
 } from '@mui/material';
 import { Dashboard, Logout, People, Settings, Analytics } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../../hooks/auth/auth.hooks';
 import {
   DashboardContainer,
@@ -24,9 +25,24 @@ import {
 
 const DashboardScreen = () => {
   const { logout, user } = useAdminAuth();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
+  };
+
+  const handleNavigateToAnalytics = () => {
+    navigate('/analytics');
+  };
+
+  const handleNavigateToUsers = () => {
+    // TODO: Add user management route
+    console.log('Navigate to users');
+  };
+
+  const handleNavigateToSettings = () => {
+    // TODO: Add settings route
+    console.log('Navigate to settings');
   };
 
   return (
@@ -64,7 +80,10 @@ const DashboardScreen = () => {
                 <DashboardCardDescription>
                   Manage registered users and their activities
                 </DashboardCardDescription>
-                <DashboardButton variant="contained">
+                <DashboardButton 
+                  variant="contained"
+                  onClick={handleNavigateToUsers}
+                >
                   View Users
                 </DashboardButton>
               </CardContent>
@@ -83,7 +102,10 @@ const DashboardScreen = () => {
                 <DashboardCardDescription>
                   View game statistics and user engagement
                 </DashboardCardDescription>
-                <DashboardButton variant="contained">
+                <DashboardButton 
+                  variant="contained"
+                  onClick={handleNavigateToAnalytics}
+                >
                   View Analytics
                 </DashboardButton>
               </CardContent>
@@ -102,7 +124,10 @@ const DashboardScreen = () => {
                 <DashboardCardDescription>
                   Configure system settings and preferences
                 </DashboardCardDescription>
-                <DashboardButton variant="contained">
+                <DashboardButton 
+                  variant="contained"
+                  onClick={handleNavigateToSettings}
+                >
                   Settings
                 </DashboardButton>
               </CardContent>

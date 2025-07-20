@@ -9,6 +9,7 @@ import AdminProtectedRoute from './components/common/protectedRoute.component';
 // Screens
 import AdminLoginScreen from './screens/auth/login.screen';
 import DashboardScreen from './screens/page/dashboard.screen';
+import AnalyticsScreen from './screens/page/analytics.screen';
 
 function App() {
   return (
@@ -29,6 +30,15 @@ function App() {
             element={
               <AdminProtectedRoute>
                 <DashboardScreen />
+              </AdminProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/analytics" 
+            element={
+              <AdminProtectedRoute>
+                <AnalyticsScreen />
               </AdminProtectedRoute>
             } 
           />

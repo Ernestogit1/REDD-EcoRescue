@@ -48,6 +48,8 @@ const registerUser = async (req, res) => {
         firebaseUid: newUser.firebaseUid,
         rank: newUser.rank,
         rescueStars: newUser.rescueStars,
+        points: newUser.point
+
       },
       token,
     });
@@ -90,6 +92,8 @@ const loginUser = async (req, res) => {
           firebaseUid: user.firebaseUid,
           rank: user.rank,
           rescueStars: user.rescueStars,
+          points: user.points
+
         },
       });
     }
@@ -182,6 +186,7 @@ const googleAuth = async (req, res) => {
         avatar: user.avatar,
         rank: user.rank,
         rescueStars: user.rescueStars,
+        points: user.points,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
       },
@@ -241,6 +246,7 @@ const getUserProfile = async (req, res) => {
           avatar: user.avatar,
           rank: user.rank,
           rescueStars: user.rescueStars,
+          points: user.points,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt
         }
@@ -345,6 +351,7 @@ const updateUserProfile = async (req, res) => {
           avatar: savedUser.avatar,
           rank: savedUser.rank,
           rescueStars: savedUser.rescueStars,
+          points: savedUser.points,
           createdAt: savedUser.createdAt,
           updatedAt: savedUser.updatedAt
         }
