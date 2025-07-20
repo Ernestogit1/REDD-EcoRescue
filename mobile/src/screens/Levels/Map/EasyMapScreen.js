@@ -2,13 +2,22 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Animated, ImageBackground } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ApiService from '../../../services/api.service';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function EasyMapScreen() {
     const navigation = useNavigation();
     const [selectedLevel, setSelectedLevel] = useState(null);
-    const [unlockedLevels, setUnlockedLevels] = useState(1); // Only first level unlocked initially
+    const [levels, setLevels] = useState([
+        { id: 1, name: 'Level 1', stars: 0, unlocked: true },
+        { id: 2, name: 'Level 2', stars: 0, unlocked: null },
+        { id: 3, name: 'Level 3', stars: 0, unlocked: null },
+        { id: 4, name: 'Level 4', stars: 0, unlocked: null },
+        { id: 5, name: 'Level 5', stars: 0, unlocked: null },
+    ]);
+    const [userId, setUserId] = useState(null);
     
     // Animation values
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -16,41 +25,36 @@ export default function EasyMapScreen() {
     const levelAnims = useRef([...Array(5)].map(() => new Animated.Value(0))).current;
     const backButtonAnim = useRef(new Animated.Value(0)).current;
 
-    // Level data
-    const levels = [
-        {
-            id: 1,
-            name: 'Level 1',
-            stars: 1, // 0 means not completed yet
-            unlocked: true,
-        },
-        {
-            id: 2,
-            name: 'Level 2',
-            stars: 0,
-            unlocked: true,
-        },
-        {
-            id: 3,
-            name: 'Level 3',
-            stars: 0,
-            unlocked: true,
-        },
-        {
-            id: 4,
-            name: 'Level 4',
-            stars: 0,
-            unlocked: true,
-        },
-        {
-            id: 5,
-            name: 'Level 5',
-            stars: 0,
-            unlocked: true,
-        },
-    ];
-
     useEffect(() => {
+        const fetchProgress = async () => {
+            const user = await ApiService.getUserData();
+            if (!user || !user._id) return;
+            setUserId(user._id);
+            const progressKey = `progress_${user._id}_easy`;
+            let progress = 1;
+            try {
+                const stored = await AsyncStorage.getItem(progressKey);
+                if (stored) progress = parseInt(stored, 10);
+            } catch {}
+            console.log('DEBUG: progress value from AsyncStorage:', progress);
+            setLevels(prev => {
+                const updated = prev.map((lvl, idx) => {
+                    if (idx === 0) return { ...lvl, unlocked: true, stars: progress > 1 ? 1 : 0 };
+                    // Only unlock the next immediate level after the previous one is completed
+                    const unlocked = progress === idx + 1;
+                    return {
+                        ...lvl,
+                        unlocked,
+                        stars: unlocked ? 1 : 0
+                    };
+                });
+                console.log('DEBUG: updated levels array:', updated);
+                return updated;
+            });
+        };
+        fetchProgress();
+        // Listen for screen focus to refresh progress
+        const unsubscribe = navigation.addListener('focus', fetchProgress);
         // Title and map animations
         Animated.parallel([
             Animated.timing(fadeAnim, {
@@ -82,7 +86,10 @@ export default function EasyMapScreen() {
         );
 
         Animated.stagger(200, levelAnimations).start();
-    }, []);
+        return () => {
+            unsubscribe && unsubscribe();
+        };
+    }, [navigation]);
 
     const handleLevelPress = (level) => {
         if (!level.unlocked) return;
@@ -93,7 +100,13 @@ export default function EasyMapScreen() {
             // Navigate to the level details screen
             navigation.navigate('LevelDetails', { 
                 difficulty: 'Easy', 
-                level: level.id 
+                level: level.id,
+                onComplete: async () => {
+                    // This should only be called after card collection, not after level completion
+                    if (!userId) return;
+                    const progressKey = `progress_${userId}_easy`;
+                    await AsyncStorage.setItem(progressKey, String(level.id + 1));
+                }
             });
         }, 300);
     };

@@ -7,6 +7,7 @@ import OptionsScreen from '../screens/Home/OptionsScreen';
 import AboutUsScreen from '../screens/Home/AboutUsScreen';
 import DashboardScreen from '../screens/Dashboard/DashboardScreen'; // adjust path as needed
 import UserDetailsScreen from '../screens/Home/UserDetailsScreen';
+import ShopNavigator from './ShopNavigator';
 import PetGifScreen from '../screens/Home/PetGifScreen';
 
 const Stack = createStackNavigator();
@@ -92,6 +93,10 @@ export default function HomeNavigator() {
       <Stack.Screen 
         name="UserDetails" 
         component={UserDetailsScreen}
+      />
+      <Stack.Screen 
+        name="Shop" 
+        component={ShopNavigator}
       />
       <Stack.Screen
         name="PetGif"

@@ -2,13 +2,22 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Animated, ImageBackground } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ApiService from '../../../services/api.service';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function MediumMapScreen() {
     const navigation = useNavigation();
     const [selectedLevel, setSelectedLevel] = useState(null);
-    const [unlockedLevels, setUnlockedLevels] = useState(1); // Only first level unlocked initially
+    const [levels, setLevels] = useState([
+        { id: 6, name: 'Level 6', stars: 0, unlocked: false },
+        { id: 7, name: 'Level 7', stars: 0, unlocked: false },
+        { id: 8, name: 'Level 8', stars: 0, unlocked: false },
+        { id: 9, name: 'Level 9', stars: 0, unlocked: false },
+        { id: 10, name: 'Level 10', stars: 0, unlocked: false },
+    ]);
+    const [userId, setUserId] = useState(null);
     
     // Animation values
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -16,41 +25,24 @@ export default function MediumMapScreen() {
     const levelAnims = useRef([...Array(5)].map(() => new Animated.Value(0))).current;
     const backButtonAnim = useRef(new Animated.Value(0)).current;
 
-    // Level data
-    const levels = [
-        {
-            id: 6,
-            name: 'Level 6',
-            stars: 0,
-            unlocked: true,
-        },
-        {
-            id: 7,
-            name: 'Level 7',
-            stars: 0,
-            unlocked: true,
-        },
-        {
-            id: 8,
-            name: 'Level 8',
-            stars: 0,
-            unlocked: true,
-        },
-        {
-            id: 9,
-            name: 'Level 9',
-            stars: 0,
-            unlocked: true,
-        },
-        {
-            id: 10,
-            name: 'Level 10',
-            stars: 0,
-            unlocked: true,
-        },
-    ];
-
     useEffect(() => {
+        const fetchProgress = async () => {
+            const user = await ApiService.getUserData();
+            if (!user || !user._id) return;
+            setUserId(user._id);
+            const progressKey = `progress_${user._id}_medium`;
+            let progress = 1;
+            try {
+                const stored = await AsyncStorage.getItem(progressKey);
+                if (stored) progress = parseInt(stored, 10);
+            } catch {}
+            setLevels(prev => prev.map((lvl, idx) => ({
+                ...lvl,
+                unlocked: idx === 0 || idx < progress,
+                stars: idx < progress ? 1 : 0
+            })));
+        };
+        fetchProgress();
         // Title and map animations
         Animated.parallel([
             Animated.timing(fadeAnim, {
@@ -93,7 +85,13 @@ export default function MediumMapScreen() {
             // Navigate to the level details screen
             navigation.navigate('LevelDetails', { 
                 difficulty: 'Medium', 
-                level: level.id 
+                level: level.id,
+                onComplete: async () => {
+                    if (!userId) return;
+                    const progressKey = `progress_${userId}_medium`;
+                    const nextLevel = Math.max(level.id + 1, levels.filter(l => l.unlocked).length + 1);
+                    await AsyncStorage.setItem(progressKey, String(nextLevel));
+                }
             });
         }, 300);
     };

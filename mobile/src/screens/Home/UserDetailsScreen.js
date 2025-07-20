@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, ScrollView
 import ApiService from '../../services/api.service';
 import { useFocusEffect } from '@react-navigation/native';
 import AnimalCard from '../../components/AnimalCard';
+import animalData from '../../constants/animalData';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -140,6 +141,7 @@ export default function UserDetailsScreen({ navigation }) {
                     key={card._id || idx}
                     levelId={parseInt(card.levelId)}
                     collectedAt={card.collectedAt}
+                    image={animalData[parseInt(card.levelId)]?.image}
                     onPress={levelId => navigation.navigate('PetGif', { levelId })}
                   />
                 ))}
@@ -179,7 +181,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#3d2914',
-    paddingTop: 40,
   },
   tabBar: {
     flexDirection: 'row',
