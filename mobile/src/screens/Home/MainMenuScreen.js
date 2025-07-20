@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Animated, Image }
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Video } from 'expo-av';
+import ApiService from '../../services/api.service';
+import { useFocusEffect } from '@react-navigation/native';
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
@@ -10,6 +12,8 @@ export default function MainMenuScreen() {
   const navigation = useNavigation();
   const [currentBackground, setCurrentBackground] = useState(0); // 0: LinearGradient, 1-4: GIFs
   const [showBackgroundSelector, setShowBackgroundSelector] = useState(false);
+  const [user, setUser] = useState(null);
+  const [showUserPanel, setShowUserPanel] = useState(false);
 
   // Animation values using built-in Animated API
   const floatAnim = useRef(new Animated.Value(0)).current;
@@ -22,6 +26,7 @@ export default function MainMenuScreen() {
     new Animated.Value(0),
   ]).current;
   const selectorAnim = useRef(new Animated.Value(0)).current;
+  const userPanelAnim = useRef(new Animated.Value(0)).current;
 
   // Background options
   const backgrounds = [
@@ -95,27 +100,62 @@ export default function MainMenuScreen() {
     }
   }, [showBackgroundSelector]);
 
-  const handleMenuAction = (action) => {
-    switch (action) {
-      case 'play':
-        navigation.navigate('GameRoot');
-        break;
-      case 'about':
-        navigation.navigate('AboutUs');
-        break;
-      case 'options':
-        navigation.navigate('Options');
-        break;
-      case 'login':
-        navigation.navigate('Login');
-        break;
-      default:
-        break;
+  useEffect(() => {
+    // Animation for user panel
+    if (showUserPanel) {
+      Animated.spring(userPanelAnim, {
+        toValue: 1,
+        tension: 70,
+        friction: 7,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(userPanelAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
     }
+  }, [showUserPanel]);
+
+  // Load user data on mount
+  useEffect(() => {
+    (async () => {
+      const userData = await ApiService.getUserData();
+      setUser(userData);
+    })();
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      (async () => {
+        try {
+          // Fetch latest profile from backend
+          const profile = await ApiService.getProfile();
+          const userData = profile?.data?.user || profile.user || profile;
+          setUser(userData);
+          // Update local storage for consistency
+          await ApiService.setUserData(userData);
+        } catch (err) {
+          // fallback to local if offline
+          const userData = await ApiService.getUserData();
+          setUser(userData);
+        }
+      })();
+    }, [])
+  );
+
+  // Logout handler
+  const handleLogout = async () => {
+    await ApiService.logout();
+    setUser(null);
   };
 
   const toggleBackgroundSelector = () => {
-    setShowBackgroundSelector(!showBackgroundSelector);
+    setShowBackgroundSelector((prev) => {
+      if (!prev) setShowUserPanel(false); // Close user panel if opening background selector
+      return !prev;
+    });
   };
 
   const selectBackground = (backgroundId) => {
@@ -132,14 +172,74 @@ export default function MainMenuScreen() {
     { id: 'play', title: 'PLAY', icon: '🎮', color: '#4ade80' },
     { id: 'about', title: 'ABOUT US', icon: '📖', color: '#60a5fa' },
     { id: 'options', title: 'OPTIONS', icon: '⚙️', color: '#fbbf24' },
-    { id: 'login', title: 'LOGIN', icon: '👤', color: '#f87171' },
+    // Show login if not logged in, else show logout
+    ...(!user
+      ? [{ id: 'login', title: 'LOGIN', icon: '👤', color: '#f87171' }]
+      : [{ id: 'logout', title: 'LOGOUT', icon: '🚪', color: '#f87171' }]),
   ];
 
-  // Render the appropriate background
+  const handleMenuAction = (action) => {
+    switch (action) {
+      case 'play':
+        navigation.navigate('GameRoot');
+        break;
+      case 'about':
+        navigation.navigate('AboutUs');
+        break;
+      case 'options':
+        navigation.navigate('Options');
+        break;
+      case 'login':
+        navigation.navigate('Login');
+        break;
+      case 'logout':
+        handleLogout();
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Add avatar button if user is logged in
+  const renderAvatarButton = () => {
+    console.log(user);
+    if (!user) return null;
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', top: 20, left: 20, zIndex: 10 }}>
+        <TouchableOpacity
+          style={[styles.avatarButton, { left: 0, right: undefined, position: 'relative' }]}
+          onPress={() => {
+            navigation.navigate('UserDetails');
+            setShowBackgroundSelector(false); // Close background selector if open
+          }}
+          activeOpacity={0.8}
+        >
+          <Image
+            source={{ uri: user.avatar }}
+            style={styles.avatarImage}
+          />
+        </TouchableOpacity>
+        <View style={{ marginLeft: 12 }}>
+          <Text style={{ color: '#FFD700', fontFamily: 'PressStart2P_400Regular', fontSize: 13, textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 0 }}>
+            {user.username}
+          </Text>
+          <Text style={{ color: '#4ade80', fontFamily: 'PressStart2P_400Regular', fontSize: 10, textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 0 }}>
+            {user.rank}
+          </Text>
+          <Text style={{ color: '#fbbf24', fontFamily: 'PressStart2P_400Regular', marginTop: 5, fontSize: 11, textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 0 }}>
+            ⭐ {user.points} pts
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  // Update renderAvatarButton to navigate to UserDetailsScreen
   const renderBackground = () => {
     if (currentBackground === 0) {
       return (
         <LinearGradient colors={["#1a4d2e", "#2d5a3d", "#1a4d2e"]} style={styles.container}>
+          {renderAvatarButton()}
           {renderContent()}
         </LinearGradient>
       );
@@ -147,6 +247,7 @@ export default function MainMenuScreen() {
       const selectedBg = backgrounds.find(bg => bg.id === currentBackground);
       return (
         <View style={styles.container}>
+          {renderAvatarButton()}
           <Video 
             source={selectedBg.source}
             style={styles.backgroundImage}
@@ -559,5 +660,77 @@ const styles = StyleSheet.create({
   plant1: {
     bottom: '35%',
     right: '15%',
+  },
+  avatarButton: {
+    position: 'absolute',
+    right: 70,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    width: 40,
+    height: 40,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    borderWidth: 2,
+    borderColor: '#4ade80',
+    width: 60,
+    height: 60,
+  },
+  avatarImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 40,
+    borderWidth: 1,
+    borderColor: '#fff',
+  },
+  userPanelContainer: {
+    position: 'absolute',
+    top: 60, // match bgSelectorContainer
+    left: 20, // match bgSelectorContainer
+    backgroundColor: '#3d2914',
+    borderRadius: 8,
+    padding: 15, // match bgSelectorContainer
+    width: screenWidth * 0.8, // match bgSelectorContainer
+    minWidth: 600, // match bgSelectorContainer
+    borderWidth: 3,
+    borderColor: '#FFD700', // match bgSelectorContainer
+    zIndex: 100,
+    minHeight: 300,
+  },
+  userPanelHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20, // match bgSelectorHeader
+    borderBottomWidth: 2,
+    borderBottomColor: '#FFD700', // match bgSelectorHeader
+    paddingBottom: 10, // match bgSelectorHeader
+  },
+  userPanelTitle: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFD700', // match bgSelectorTitle
+    fontSize: 12, // match bgSelectorTitle
+  },
+  userPanelContent: {
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  userPanelAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 2,
+    borderColor: '#fff',
+    marginBottom: 10,
+  },
+  userPanelText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#fff',
+    fontSize: 9,
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  userPanelLabel: {
+    color: '#4ade80',
   },
 });

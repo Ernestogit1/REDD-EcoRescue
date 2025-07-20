@@ -1,14 +1,57 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { logoutUser } from '../../store/api/auth.api';
+import { useGameLibrary } from '../../hooks/app/gameLibrary.hook';
+import GameLibraryHeader from '../../components/app/gameLibrary/gameLibraryHeader.component';
+import GameCard from '../../components/app/gameLibrary/gameCard.component';
+import GameDetails from '../../components/app/gameLibrary/gameDetails.component';
+import Loading from '../../components/common/loading.component';
+import '../../styles/app/gameLibrary.style.css';
 
 const AppScreen = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
+  
+  const {
+    games,
+    selectedGame,
+    searchTerm,
+    selectedFilter,
+    isLoading,
+    setSearchTerm,
+    setSelectedFilter,
+    handleGameSelect,
+    handlePlayGame,
+    handleCloseModal,
+    handleBackdropClick
+  } = useGameLibrary();
 
-  const handleLogout = () => {
-    console.log('Logout functionality to be implemented');
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
     navigate('/');
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
+  };
+
+  const handleStoreClick = () => {
+    console.log('Store coming soon!');
+  };
+
+  const handlePlay = (game) => {
+    const route = handlePlayGame(game);
+    
+    // Only navigate if there's a route (internal games)
+    if (route) {
+      handleCloseModal(); // Close modal before navigation
+      navigate(route);
+    } else {
+      // For external games, just close the modal
+      handleCloseModal();
+    }
   };
 
   if (!isAuthenticated) {
@@ -16,56 +59,57 @@ const AppScreen = () => {
     return null;
   }
 
+  if (isLoading) {
+    return <Loading message="Loading your game library..." />;
+  }
+
   return (
     <div className="app-screen">
-      <div className="app-container">
-        <div className="welcome-header">
-          <h1 className="pixel-text">🎮 WELCOME TO THE GAME!</h1>
-          <h2 className="pixel-text">Login Successful!</h2>
-        </div>
-
-        <div className="user-info">
-          <div className="user-card">
-            <h3 className="pixel-text">Player Information</h3>
-            <div className="info-item">
-              <span className="label">Username:</span>
-              <span className="value">{user?.username || 'Unknown'}</span>
-            </div>
-            <div className="info-item">
-              <span className="label">Email:</span>
-              <span className="value">{user?.email || 'Unknown'}</span>
-            </div>
-            <div className="info-item">
-              <span className="label">Rank:</span>
-              <span className="value">{user?.rank || 'Novice'}</span>
-            </div>
-            <div className="info-item">
-              <span className="label">Rescue Stars:</span>
-              <span className="value">⭐ {user?.rescueStars || 0}</span>
-            </div>
+      <div className="game-library-container">
+        <GameLibraryHeader
+          user={user}
+          onProfileClick={handleProfileClick}
+          onStoreClick={handleStoreClick}
+          onLogout={handleLogout}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          selectedFilter={selectedFilter}
+          onFilterChange={setSelectedFilter}
+        />
+        
+        <div className="library-content">
+          <div className="games-grid full-width">
+            {games.length === 0 ? (
+              <div className="no-games-message">
+                <div className="empty-state">
+                  <div className="empty-icon">🎮</div>
+                  <h3 className="pixel-text">No Games Found</h3>
+                  <p>Try adjusting your search or filter criteria</p>
+                </div>
+              </div>
+            ) : (
+              games.map(game => (
+                <GameCard
+                  key={game.id}
+                  game={game}
+                  onGameSelect={handleGameSelect}
+                  isSelected={selectedGame?.id === game.id}
+                />
+              ))
+            )}
           </div>
         </div>
-
-        <div className="action-buttons">
-          <button className="pixel-button primary" onClick={() => navigate('/game')}>
-            🌲 START FOREST ADVENTURE
-          </button>
-          <button className="pixel-button secondary" onClick={() => navigate('/calculator')}>
-            📊 CARBON CALCULATOR
-          </button>
-          <button className="pixel-button secondary" onClick={() => navigate('/settings')}>
-            ⚙️ SETTINGS
-          </button>
-          <button className="pixel-button danger" onClick={handleLogout}>
-            🚪 LOGOUT
-          </button>
-        </div>
-
-        <div className="success-animation">
-          <div className="pixel-character">🧒</div>
-          <div className="floating-text">Ready to save the forest!</div>
-        </div>
       </div>
+      
+      {/* Modal rendered outside main container */}
+      {selectedGame && (
+        <GameDetails
+          selectedGame={selectedGame}
+          onPlay={handlePlay}
+          onClose={handleCloseModal}
+          onBackdropClick={handleBackdropClick}
+        />
+      )}
     </div>
   );
 };

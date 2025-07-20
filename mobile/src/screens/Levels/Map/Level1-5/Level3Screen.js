@@ -1,10 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, Alert, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import ApiService from '../../../../services/api.service';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+
+// Bug types with their respective images
+const BUG_TYPES = {
+  LADYBUG: require('../../../../../assets/images/levels/Level3/bug.png'),
+  GREEN_BUG: require('../../../../../assets/images/levels/Level3/bug2.png'),
+};
 
 export default function Level3Screen() {
   const navigation = useNavigation();
@@ -12,12 +19,15 @@ export default function Level3Screen() {
   const [timer, setTimer] = useState(30);
   const [gameComplete, setGameComplete] = useState(false);
   const [activeHoles, setActiveHoles] = useState(new Array(8).fill(false));
+  const [bugTypes, setBugTypes] = useState(new Array(8).fill(null));
   const timerRef = useRef(null);
   const gameInterval = useRef(null);
   const fadeAnims = useRef(activeHoles.map(() => new Animated.Value(0))).current;
+  const rotateAnims = useRef(activeHoles.map(() => new Animated.Value(0))).current;
 
   const spawnInsect = useCallback(() => {
     const randomIndex = Math.floor(Math.random() * 8);
+    const randomBug = Math.random() < 0.5 ? 'LADYBUG' : 'GREEN_BUG';
     
     // Update state first
     setActiveHoles(prev => {
@@ -26,8 +36,14 @@ export default function Level3Screen() {
       return newHoles;
     });
 
-    // Handle animation separately
-    const animation = Animated.sequence([
+    setBugTypes(prev => {
+      const newTypes = [...prev];
+      newTypes[randomIndex] = randomBug;
+      return newTypes;
+    });
+
+    // Handle animations
+    const fadeAnimation = Animated.sequence([
       Animated.timing(fadeAnims[randomIndex], {
         toValue: 1,
         duration: 300,
@@ -41,38 +57,67 @@ export default function Level3Screen() {
       }),
     ]);
 
-    animation.start(() => {
+    const rotateAnimation = Animated.sequence([
+      Animated.timing(rotateAnims[randomIndex], {
+        toValue: 1,
+        duration: 1200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(rotateAnims[randomIndex], {
+        toValue: 0,
+        duration: 0,
+        useNativeDriver: true,
+      }),
+    ]);
+
+    Animated.parallel([fadeAnimation, rotateAnimation]).start(() => {
       setActiveHoles(prev => {
         const updatedHoles = [...prev];
         updatedHoles[randomIndex] = false;
         return updatedHoles;
       });
+      setBugTypes(prev => {
+        const updatedTypes = [...prev];
+        updatedTypes[randomIndex] = null;
+        return updatedTypes;
+      });
     });
 
-    return () => animation.stop();
-  }, [fadeAnims]);
+    return () => {
+      fadeAnimation.stop();
+      rotateAnimation.stop();
+    };
+  }, [fadeAnims, rotateAnims]);
 
   const handleTap = useCallback((index) => {
     if (activeHoles[index] && !gameComplete) {
       setScore(prev => prev + 10);
       fadeAnims[index].setValue(0);
+      rotateAnims[index].setValue(0); // Reset rotation on tap
       
       setActiveHoles(prev => {
         const newHoles = [...prev];
         newHoles[index] = false;
         return newHoles;
       });
+      setBugTypes(prev => {
+        const newTypes = [...prev];
+        newTypes[index] = null;
+        return newTypes;
+      });
     }
-  }, [activeHoles, gameComplete]);
+  }, [activeHoles, gameComplete, fadeAnims, rotateAnims]);
 
   const startGame = useCallback(() => {
     setScore(0);
     setTimer(30);
     setGameComplete(false);
     setActiveHoles(new Array(8).fill(false));
+    setBugTypes(new Array(8).fill(null));
     
     // Reset animations
     fadeAnims.forEach(anim => anim.setValue(0));
+    rotateAnims.forEach(anim => anim.setValue(0));
 
     // Clear existing intervals
     if (timerRef.current) clearInterval(timerRef.current);
@@ -106,6 +151,10 @@ export default function Level3Screen() {
     setGameComplete(true);
 
     if (score >= 100) {
+      // Send points to backend
+      ApiService.addPoints(score).catch((err) => {
+        console.error('Failed to add points:', err);
+      });
       Alert.alert(
         "Level Complete!",
         `Great job! You scored ${score} points!`,
@@ -156,13 +205,27 @@ export default function Level3Screen() {
               onPress={() => handleTap(index)}
               activeOpacity={0.8}
             >
-              {isActive && (
+              {isActive && bugTypes[index] && (
                 <Animated.View
                   style={[
-                    styles.insect,
-                    { opacity: fadeAnims[index] }
+                    styles.insectContainer,
+                    {
+                      opacity: fadeAnims[index],
+                      transform: [{
+                        rotate: rotateAnims[index].interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '360deg']
+                        })
+                      }]
+                    }
                   ]}
-                />
+                >
+                  <Image
+                    source={BUG_TYPES[bugTypes[index]]}
+                    style={styles.insectImage}
+                    resizeMode="contain"
+                  />
+                </Animated.View>
               )}
             </TouchableOpacity>
           ))}
@@ -241,8 +304,8 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   hole: {
-    width: screenWidth * 0.20,
-    height: screenWidth * 0.10,
+    width: screenWidth * 0.18,
+    height: screenWidth * 0.10, // Made holes square and larger
     margin: 10,
     backgroundColor: '#2A2B2A',
     borderRadius: 10,
@@ -250,16 +313,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#52B69A',
+    overflow: 'hidden',
   },
-  insect: {
+  insectContainer: {
     width: '60%',
     height: '60%',
-    backgroundColor: '#FF6B6B',
-    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  insectImage: {
+    width: '100%',
+    height: '100%',
   },
   controlButton: {
     alignSelf: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
     borderRadius: 8,
     overflow: 'hidden',
   },

@@ -20,9 +20,10 @@ export const useProfile = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
-    username: profile?.username || '',
-    email: profile?.email || ''
+    username: profile?.username || ''
   });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
   // Mock user stats - replace with real data later
   const userStats = {
@@ -51,8 +52,7 @@ export const useProfile = () => {
   useEffect(() => {
     if (profile) {
       setEditData({
-        username: profile.username || '',
-        email: profile.email || ''
+        username: profile.username || ''
       });
     }
   }, [profile]);
@@ -60,6 +60,8 @@ export const useProfile = () => {
   useEffect(() => {
     if (updateSuccess) {
       setIsEditing(false);
+      setSelectedFile(null);
+      setPreviewImage(null);
       dispatch(clearUpdateSuccess());
     }
   }, [updateSuccess, dispatch]);
@@ -90,7 +92,16 @@ export const useProfile = () => {
 
   const handleSave = async () => {
     try {
-      await dispatch(updateUserProfile(editData)).unwrap();
+      const updateData = {
+        username: editData.username
+      };
+
+      // Add file if selected
+      if (selectedFile) {
+        updateData.avatarFile = selectedFile;
+      }
+
+      await dispatch(updateUserProfile(updateData)).unwrap();
     } catch (error) {
       console.error('Profile update failed:', error);
     }
@@ -98,9 +109,10 @@ export const useProfile = () => {
 
   const handleCancel = () => {
     setEditData({
-      username: profile?.username || '',
-      email: profile?.email || ''
+      username: profile?.username || ''
     });
+    setSelectedFile(null);
+    setPreviewImage(null);
     setIsEditing(false);
     dispatch(clearError());
   };
@@ -114,8 +126,27 @@ export const useProfile = () => {
   };
 
   const handleAvatarUpload = () => {
-    // TODO: Implement avatar upload functionality
-    console.log('Avatar upload clicked');
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        // Check file size (limit to 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('File size too large. Please select an image under 5MB.');
+          return;
+        }
+        
+        setSelectedFile(file);
+        const reader = new FileReader();
+        reader.onload = () => {
+          setPreviewImage(reader.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
   };
 
   return {
@@ -127,6 +158,7 @@ export const useProfile = () => {
     isEditing,
     editData,
     userStats,
+    previewImage,
     handleBack,
     handleLogout,
     handleEdit,

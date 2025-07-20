@@ -32,11 +32,20 @@ const UserSchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
+    points:{
+      type: Number,
+      default: 0
+    },
     pushToken: {
        type: String,
         default: '' 
       },
+    isAdmin:{
+      type: Boolean,
+      default:false
+    }
   },
+  
   { 
     timestamps: true 
   }

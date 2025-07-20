@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import audioService from '../../../../services/audio.service';
+import ApiService from '../../../../services/api.service';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -26,7 +27,9 @@ export default function Level1Screen() {
   const [gameComplete, setGameComplete] = useState(false);
   const [score, setScore] = useState(0);
   const [timer, setTimer] = useState(60); // 60 seconds game time
+  const [isPreviewPhase, setIsPreviewPhase] = useState(false);
   const timerRef = useRef(null);
+  const previewTimerRef = useRef(null);
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -57,12 +60,13 @@ export default function Level1Screen() {
     
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (previewTimerRef.current) clearTimeout(previewTimerRef.current);
     };
   }, []);
   
   // Start game timer
   useEffect(() => {
-    if (timer > 0 && !gameComplete) {
+    if (timer > 0 && !gameComplete && !isPreviewPhase) {
       timerRef.current = setInterval(() => {
         setTimer(prevTime => {
           if (prevTime <= 1) {
@@ -78,11 +82,11 @@ export default function Level1Screen() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [gameComplete]);
+  }, [gameComplete, isPreviewPhase]);
   
   // Check for matches when two cards are flipped
   useEffect(() => {
-    if (flipped.length === 2) {
+    if (flipped.length === 2 && !isPreviewPhase) {
       const [first, second] = flipped;
       
       if (cards[first].id === cards[second].id) {
@@ -100,7 +104,7 @@ export default function Level1Screen() {
       
       setMoves(prev => prev + 1);
     }
-  }, [flipped]);
+  }, [flipped, isPreviewPhase]);
   
   // Check if game is complete
   useEffect(() => {
@@ -124,9 +128,24 @@ export default function Level1Screen() {
     setScore(0);
     
     if (timerRef.current) clearInterval(timerRef.current);
+    
+    // Start preview phase - show all cards
+    setIsPreviewPhase(true);
+    // Show all cards by setting all indices as flipped
+    const allCardIndices = Array.from({ length: duplicatedCards.length }, (_, i) => i);
+    setFlipped(allCardIndices);
+    
+    // After 3 seconds, hide all cards and start the game
+    previewTimerRef.current = setTimeout(() => {
+      setFlipped([]);
+      setIsPreviewPhase(false);
+    }, 3000);
   };
   
   const handleCardPress = (index) => {
+    // Ignore card presses during preview phase
+    if (isPreviewPhase) return;
+    
     // Ignore if card is already flipped or matched
     if (flipped.includes(index) || matched.includes(index) || flipped.length >= 2) {
       return;
@@ -138,6 +157,7 @@ export default function Level1Screen() {
   
   const handleGameOver = (isWin) => {
     clearInterval(timerRef.current);
+    if (previewTimerRef.current) clearTimeout(previewTimerRef.current);
     setGameComplete(true);
     
     if (isWin) {
@@ -147,6 +167,11 @@ export default function Level1Screen() {
       const movesPenalty = Math.max(0, moves - cards.length/2) * 10;
       const finalScore = score + timeBonus - movesPenalty;
       setScore(finalScore);
+      
+      // Send points to backend
+      ApiService.addPoints(finalScore).catch((err) => {
+        console.error('Failed to add points:', err);
+      });
       
       setTimeout(() => {
         Alert.alert(
@@ -221,7 +246,9 @@ export default function Level1Screen() {
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>TIME</Text>
-              <Text style={[styles.statValue, timer < 10 ? styles.lowTime : {}]}>{timer}</Text>
+              <Text style={[styles.statValue, timer < 10 ? styles.lowTime : {}]}>
+                {isPreviewPhase ? "LOOK!" : timer}
+              </Text>
             </View>
             
             <View style={styles.statItem}>
@@ -283,6 +310,13 @@ export default function Level1Screen() {
             </LinearGradient>
           </TouchableOpacity>
         </View>
+        
+        {/* Preview Phase Overlay */}
+        {isPreviewPhase && (
+          <View style={styles.previewOverlay}>
+            <Text style={styles.previewText}>MEMORIZE!</Text>
+          </View>
+        )}
       </LinearGradient>
     </View>
   );
@@ -415,4 +449,19 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 10,
   },
+  previewOverlay: {
+    position: 'absolute',
+    bottom: 160,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    padding: 15,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#FFD700',
+  },
+  previewText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFD700',
+    fontSize: 18,
+  }
 });

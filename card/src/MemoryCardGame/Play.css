@@ -1,0 +1,396 @@
+/* Import 8-bit inspired fonts */
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+
+/* General styling */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: "Press Start 2P", cursive;
+}
+
+/* Modal styling */
+.ReactModal__Overlay {
+    opacity: 0;
+    transition: opacity 200ms ease-in-out;
+}
+
+.ReactModal__Overlay--after-open {
+    opacity: 1;
+}
+
+.ReactModal__Overlay--before-close {
+    opacity: 0;
+}
+
+.ReactModal__Content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(30, 30, 46, 0.95);
+  border: 2px solid #4a4e69;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  width: 400px;
+  padding: 20px;
+  z-index: 1000;
+  color: #fff;
+}
+
+/* Volume control */
+.volume-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.volume-icon {
+  font-size: 40px;
+  margin-right: 15px;
+}
+
+.volume-slider {
+  width: 200px;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  background: linear-gradient(90deg, #2d5016, #4a7c59);
+  border-radius: 10px;
+  outline: none;
+  cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(45deg, #7fb069, #a7c957);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(127, 176, 105, 0.5);
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(45deg, #7fb069, #a7c957);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 10px rgba(127, 176, 105, 0.5);
+}
+
+/* Modal header styling */
+.modal-h2 {
+  font-family: "Press Start 2P", sans-serif;
+  font-size: 18px;
+  color: #fff;
+  text-shadow: 
+    0 0 10px #4a7c59,
+    0 0 20px #2d5016,
+    0 0 30px rgba(74, 124, 89, 0.6);
+  margin-bottom: 20px;
+  animation: forestGlow 3s infinite;
+}
+
+@keyframes forestGlow {
+  0%, 100% {
+    text-shadow: 
+      0 0 10px #4a7c59,
+      0 0 20px #2d5016,
+      0 0 30px rgba(74, 124, 89, 0.6);
+    transform: scale(1);
+  }
+  50% {
+    text-shadow: 
+      0 0 20px #5d8a3a,
+      0 0 40px #4a7c59,
+      0 0 60px rgba(93, 138, 58, 0.9);
+    transform: scale(1.02);
+  }
+}
+
+/* Background container */
+.background-container {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Game title styling - 8-bit theme */
+.game-title {
+  font-family: "Press Start 2P", cursive;
+  font-size: 80px;
+  color: #a7c957;
+  text-shadow: 
+    4px 4px 0 #2d5016,
+    8px 8px 0 #1a3409,
+    0 0 20px #7fb069,
+    0 0 40px #4a7c59,
+    0 0 60px rgba(127, 176, 105, 0.8);
+  margin-top: 20px;
+  z-index: 10;
+  animation: retro8BitPulse 3s infinite ease-in-out;
+  letter-spacing: 10px;
+  line-height: 4.2;
+  text-transform: uppercase;
+  -webkit-text-stroke: 2px #2d5016;
+  text-stroke: 2px #2d5016;
+}
+
+@keyframes retro8BitPulse {
+  0%, 100% {
+    text-shadow: 
+      4px 4px 0 #2d5016,
+      8px 8px 0 #1a3409,
+      0 0 20px #7fb069,
+      0 0 40px #4a7c59,
+      0 0 60px rgba(127, 176, 105, 0.8);
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    text-shadow: 
+      6px 6px 0 #2d5016,
+      12px 12px 0 #1a3409,
+      0 0 30px #a7c957,
+      0 0 60px #7fb069,
+      0 0 90px rgba(167, 201, 87, 1);
+    transform: scale(1.05);
+    filter: brightness(1.2);
+  }
+}
+
+/* Button container */
+.button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 100px;
+  z-index: 20;
+}
+
+/* Game button styling */
+.game-button {
+  width: 400px;
+  height: 100px;
+  margin: 12px;
+  font-family: "Press Start 2P", sans-serif;
+  font-size: 40px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #4a7c59, #2d5016, #1a3409);
+  border: 3px solid #7fb069;
+  border-radius: 15px;
+  box-shadow: 
+    0 0 15px rgba(127, 176, 105, 0.4),
+    0 8px 16px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.game-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent, rgba(167, 201, 87, 0.1), transparent);
+  border-radius: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.game-button:hover {
+  background: linear-gradient(135deg, #5d8a3a, #4a7c59, #2d5016);
+  border-color: #a7c957;
+  box-shadow: 
+    0 0 25px rgba(167, 201, 87, 0.6),
+    0 12px 24px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.game-button:hover::before {
+  opacity: 1;
+}
+
+.game-button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Difficulty button styling */
+.difficulty-selection {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.difficulty-button {
+  padding: 15px 25px;
+  background: linear-gradient(135deg, #4a7c59, #2d5016);
+  color: #fff;
+  font-family: "Press Start 2P", sans-serif;
+  font-size: 14px;
+  border: 2px solid #7fb069;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  min-width: 120px;
+}
+
+.difficulty-button:hover {
+  background: linear-gradient(135deg, #5d8a3a, #4a7c59);
+  box-shadow: 
+    0 0 20px rgba(127, 176, 105, 0.4),
+    0 8px 16px rgba(0, 0, 0, 0.6);
+  transform: translateY(-2px) scale(1.05);
+}
+
+.difficulty-button.selected {
+  border-color: #a7c957;
+  background: linear-gradient(135deg, #7fb069, #5d8a3a);
+  transform: scale(1.1);
+  box-shadow: 
+    0 0 20px rgba(167, 201, 87, 0.8),
+    0 8px 16px rgba(0, 0, 0, 0.6);
+  animation: selectedForestGlow 2s infinite;
+}
+
+@keyframes selectedForestGlow {
+  0%, 100% {
+    box-shadow: 
+      0 0 20px rgba(167, 201, 87, 0.8),
+      0 8px 16px rgba(0, 0, 0, 0.6);
+  }
+  50% {
+    box-shadow: 
+      0 0 30px rgba(167, 201, 87, 1),
+      0 8px 16px rgba(0, 0, 0, 0.8);
+  }
+}
+
+.difficulty-button.green {
+  background: linear-gradient(135deg, #7fb069, #6b9b37);
+}
+
+.difficulty-button.yellow {
+  background: linear-gradient(135deg, #a7c957, #8fbc8f);
+}
+
+.difficulty-button.red {
+  background: linear-gradient(135deg, #8b4513, #a0522d);
+  border-color: #d2691e;
+}
+
+/* Play/Accept button styling */
+.play-button {
+  margin-top: 20px;
+  padding: 15px 40px;
+  background: linear-gradient(135deg, #7fb069, #4a7c59, #2d5016);
+  color: #fff;
+  font-family: "Press Start 2P", sans-serif;
+  font-size: 16px;
+  border: 3px solid #a7c957;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  box-shadow: 
+    0 0 15px rgba(167, 201, 87, 0.4),
+    0 8px 16px rgba(0, 0, 0, 0.6);
+}
+
+.play-button:hover {
+  background: linear-gradient(135deg, #a7c957, #7fb069, #5d8a3a);
+  box-shadow: 
+    0 0 25px rgba(167, 201, 87, 0.7),
+    0 12px 24px rgba(0, 0, 0, 0.7);
+  transform: translateY(-3px) scale(1.05);
+}
+
+.play-button:active {
+  transform: translateY(-1px) scale(1.02);
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+  .game-title {
+    font-size: 70px;
+    letter-spacing: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .game-title {
+    font-size: 50px;
+    margin-top: 20px;
+    letter-spacing: 6px;
+  }
+  
+  .game-button {
+    width: 300px;
+    height: 80px;
+    font-size: 30px;
+  }
+  
+  .difficulty-selection {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .difficulty-button {
+    width: 200px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-title {
+    font-size: 35px;
+    letter-spacing: 4px;
+  }
+  
+  .game-button {
+    width: 250px;
+    height: 70px;
+    font-size: 25px;
+  }
+  
+  .difficulty-button {
+    width: 180px;
+    font-size: 10px;
+  }
+}
