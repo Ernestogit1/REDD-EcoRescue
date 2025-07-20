@@ -34,7 +34,7 @@ const CELL_SIZE = Math.min(
 );
 const GRID_PIXEL_WIDTH = CELL_SIZE * GRID_WIDTH;
 const GRID_PIXEL_HEIGHT = CELL_SIZE * GRID_HEIGHT;
-
+import ApiService from '../../../../services/api.service';
 // Directions for swipe and D-pad navigation
 const DIRECTIONS = {
   UP: { x: 0, y: -1 },
@@ -106,6 +106,11 @@ const Level15Screen = () => {
     setGameState((prev) => {
       if (showDebug) console.log(`Game ended, final score: ${finalScore}`);
       return { ...prev, gameOver: true, gameStarted: false, showInstructions: false };
+    });
+
+    // Add points to backend
+    ApiService.addPoints(finalScore).catch((err) => {
+      console.error('Failed to add points:', err);
     });
 
     if (gameLoopRef.current) clearInterval(gameLoopRef.current);

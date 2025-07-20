@@ -34,6 +34,7 @@ const DIRECTIONS = {
   LEFT: { x: -1, y: 0 },
   RIGHT: { x: 1, y: 0 },
 };
+import ApiService from '../../../../services/api.service';
 
 const Level13Screen = () => {
   const navigation = useNavigation();
@@ -239,6 +240,11 @@ const Level13Screen = () => {
       return { ...prev, gameOver: true, gameStarted: false };
     });
     if (gameLoopRef.current) clearInterval(gameLoopRef.current);
+
+    // Add points to backend
+    ApiService.addPoints(finalScore).catch((err) => {
+      console.error('Failed to add points:', err);
+    });
 
     const funFacts = [
       "Sea turtles return to the same beach where they were born to lay eggs",

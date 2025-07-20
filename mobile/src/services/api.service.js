@@ -175,6 +175,14 @@ class ApiService {
   async healthCheck() {
     return await this.makeRequest('/health');
   }
+
+  // Add points to user
+  async addPoints(points) {
+    return await this.makeRequest('/points/add', {
+      method: 'POST',
+      body: JSON.stringify({ points }),
+    });
+  }
 }
 
 export default new ApiService();

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { PixelRatio } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import ApiService from '../../../../services/api.service';
 
 // Get window dimensions
 const { width, height } = Dimensions.get('window');
@@ -206,6 +207,11 @@ const Level14Screen = () => {
     setGameState((prev) => {
       if (showDebug) console.log(`Game ended, final score: ${finalScore}`);
       return { ...prev, gameOver: true, gameStarted: false };
+    });
+
+    // Add points to backend
+    ApiService.addPoints(finalScore).catch((err) => {
+      console.error('Failed to add points:', err);
     });
 
     const funFacts = [

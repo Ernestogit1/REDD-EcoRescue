@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import audioService from '../../../../services/audio.service';
+import ApiService from '../../../../services/api.service';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -166,6 +167,11 @@ export default function Level1Screen() {
       const movesPenalty = Math.max(0, moves - cards.length/2) * 10;
       const finalScore = score + timeBonus - movesPenalty;
       setScore(finalScore);
+      
+      // Send points to backend
+      ApiService.addPoints(finalScore).catch((err) => {
+        console.error('Failed to add points:', err);
+      });
       
       setTimeout(() => {
         Alert.alert(

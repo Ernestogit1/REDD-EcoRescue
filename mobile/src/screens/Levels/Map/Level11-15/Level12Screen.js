@@ -13,8 +13,8 @@ import {
 } from 'react-native';
 import { PixelRatio } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import ApiService from '../../../../services/api.service';
 
-// Get window dimensions and adjust for landscape
 const { width, height } = Dimensions.get('window');
 const pixelRatio = PixelRatio.get();
 const scale = Math.min(width, height) / 400;
@@ -352,6 +352,11 @@ const Level12Screen = () => {
 
     setGameState((prev) => ({ ...prev, gameOver: true, gameStarted: false }));
     cleanupTimers();
+
+    // Add points to backend
+    ApiService.addPoints(gameState.score).catch((err) => {
+      console.error('Failed to add points:', err);
+    });
 
     const fruitsSlashed = gameState.fruits.filter((fruit) => fruit.slashed).length;
     const debrisSlashed = gameState.debris.filter((item) => item.slashed).length;

@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { PanGestureHandler, State, GestureHandlerRootView } from 'react-native-gesture-handler';
 import audioService from '../../../../services/audio.service';
+import ApiService from '../../../../services/api.service';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -614,13 +615,21 @@ export default function Level2Screen() {
   
   const handleGameOver = (isWin) => {
     setGameOver(true);
-    
+
+    // Calculate the final score to send
+    const finalScore = score; // If you want to add bonuses, do it here
+
+    // Always add points, win or lose
+    ApiService.addPoints(finalScore).catch((err) => {
+      console.error('Failed to add points:', err);
+    });
+
     if (isWin) {
       playSoundEffect('win');
       setTimeout(() => {
         Alert.alert(
           "Level Complete!",
-          `Great job! You collected enough nuts!\nScore: ${score}`,
+          `Great job! You collected enough nuts!\nScore: ${finalScore}`,
           [
             { text: "Continue", onPress: () => navigation.goBack() }
           ]
@@ -631,10 +640,9 @@ export default function Level2Screen() {
       setTimeout(() => {
         Alert.alert(
           "Game Over",
-          `You ran out of lives. Try again?\nFinal Score: ${score}`,
+          `You ran out of lives. \nFinal Score: ${finalScore}`,
           [
-            { text: "Retry", onPress: () => startGame() },
-            { text: "Exit", onPress: () => navigation.goBack() }
+            { text: "Continue", onPress: () => navigation.goBack() }
           ]
         );
       }, 1000);
