@@ -7,18 +7,40 @@ const ProfileHeader = ({
   editData, 
   isUpdating, 
   onInputChange, 
-  onAvatarUpload 
+  onAvatarUpload,
+  previewImage 
 }) => {
+  const getAvatarSrc = () => {
+    // 1. Show preview image if user selected a new one
+    if (previewImage) return previewImage;
+    
+    // 2. Show Cloudinary image if it exists (after successful upload)
+    if (profile?.avatar) return profile.avatar;
+    
+    // 3. Fallback to generated avatar with user's name
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.username || 'User')}&background=4ade80&color=1a4d2e&size=200`;
+  };
+
   return (
     <div className="profile-header">
       <div className="avatar-section">
         <div className="avatar-frame">
-          <div className="user-avatar">
-            {profile?.avatar || '🌲'}
-          </div>
-          <button className="avatar-upload-btn" onClick={onAvatarUpload}>
-            📷
-          </button>
+          <img
+            src={getAvatarSrc()}
+            alt="User Avatar"
+            className="user-avatar"
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'cover',
+              borderRadius: '50%'
+            }}
+          />
+          {isEditing && (
+            <button className="avatar-upload-btn" onClick={onAvatarUpload}>
+              📷
+            </button>
+          )}
         </div>
         <div className="user-title">
           <h2 className="pixel-text username">
@@ -30,6 +52,7 @@ const ProfileHeader = ({
                 onChange={onInputChange}
                 className="pixel-input-small"
                 disabled={isUpdating}
+                placeholder="Enter username"
               />
             ) : (
               profile?.username || 'Eco Warrior'

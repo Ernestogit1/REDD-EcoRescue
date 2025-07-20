@@ -38,10 +38,9 @@ export const getUserProfile = createAsyncThunk(
       return rejectWithValue(error.message || 'Network error');
     }
   }
-  
 );
 
-//update profile
+// Update profile with FormData for file upload
 export const updateUserProfile = createAsyncThunk(
   'user/updateProfile',
   async (profileData, { rejectWithValue }) => {
@@ -52,20 +51,32 @@ export const updateUserProfile = createAsyncThunk(
         return rejectWithValue('No authentication token found');
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+      // Create FormData for file upload
+      const formData = new FormData();
+      
+      // Add username if provided
+      if (profileData.username) {
+        formData.append('username', profileData.username);
+      }
+      
+      // Add avatar file if provided
+      if (profileData.avatarFile) {
+        formData.append('avatar', profileData.avatarFile);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
+          // Don't set Content-Type for FormData, let browser set it
         },
-        body: JSON.stringify(profileData),
+        body: formData,
       });
 
       const data = await response.json();
 
       if (!response.ok) {
         if (response.status === 401) {
-          // Token is invalid, remove it
           localStorage.removeItem('authToken');
         }
         return rejectWithValue(data.message || 'Failed to update profile');

@@ -22,7 +22,8 @@ const ProfileLayout = ({
   onCancel,
   onLogout,
   onBack,
-  userStats 
+  userStats,
+  previewImage 
 }) => {
   return (
     <div className="profile-container">
@@ -52,19 +53,14 @@ const ProfileLayout = ({
           isUpdating={isUpdating}
           onInputChange={onInputChange}
           onAvatarUpload={onAvatarUpload}
+          previewImage={previewImage}
         />
 
         {/* Profile Stats */}
         <ProfileStats userStats={userStats} />
 
         {/* Profile Info */}
-        <ProfileInfo
-          profile={profile}
-          isEditing={isEditing}
-          editData={editData}
-          isUpdating={isUpdating}
-          onInputChange={onInputChange}
-        />
+        <ProfileInfo profile={profile} />
 
         {/* Achievements */}
         <ProfileAchievements achievements={userStats.achievements} />
