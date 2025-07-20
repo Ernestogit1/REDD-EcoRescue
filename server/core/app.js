@@ -10,7 +10,8 @@ const colorRoutes = require("../client/src/routes/color.route");
 const collectedCardRoutes = require("../client/src/routes/collectedCard.route");
 const levelCompletionRoutes = require("../client/src/routes/levelCompletion.route");
 const authAdmin = require('../admin/src/routes/auth.route');
-
+const shopRoutes = require('../mobile/src/routes/shop.route');
+const inventoryRoutes = require('../mobile/src/routes/inventory.route');
 
 const app = express();
 
@@ -56,6 +57,7 @@ app.use('/api/match', matchRoutes);
 app.use('/api/color', colorRoutes);
 app.use('/api/collected-cards', collectedCardRoutes);
 app.use('/api/levels', levelCompletionRoutes);
-
+app.use('/api/shop', shopRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 module.exports = app;
