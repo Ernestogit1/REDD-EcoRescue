@@ -35,7 +35,6 @@ const DIRECTIONS = {
   LEFT: { x: -1, y: 0 },
   RIGHT: { x: 1, y: 0 },
 };
-import ApiService from '../../../../services/api.service';
 
 const Level13Screen = () => {
   const navigation = useNavigation();

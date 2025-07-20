@@ -35,7 +35,6 @@ const CELL_SIZE = Math.min(
 );
 const GRID_PIXEL_WIDTH = CELL_SIZE * GRID_WIDTH;
 const GRID_PIXEL_HEIGHT = CELL_SIZE * GRID_HEIGHT;
-import ApiService from '../../../../services/api.service';
 // Directions for swipe and D-pad navigation
 const DIRECTIONS = {
   UP: { x: 0, y: -1 },
