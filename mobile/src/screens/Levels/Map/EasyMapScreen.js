@@ -45,7 +45,7 @@ export default function EasyMapScreen() {
             id: 5,
             name: 'Level 5',
             stars: 0,
-            unlocked: false,
+            unlocked: true,
         },
     ];
 
