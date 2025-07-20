@@ -213,3 +213,147 @@ export const DifficultyPerformanceChart = ({ data }) => {
     </Card>
   );
 };
+
+// NEW CHART: Top Players by Points (Horizontal Bar Chart)
+export const TopPlayersChart = ({ data }) => {
+  const chartData = data && data.labels && data.datasets ? data : {
+    labels: ['No Data Available'],
+    datasets: [{
+      label: 'Points',
+      data: [0],
+      backgroundColor: '#3B82F6',
+      borderColor: '#1E40AF',
+      borderWidth: 1,
+      borderRadius: 8
+    }]
+  };
+
+  const horizontalBarOptions = {
+    ...chartOptions,
+    indexAxis: 'y', // This makes it horizontal
+    plugins: {
+      ...chartOptions.plugins,
+      legend: {
+        display: false // Hide legend for cleaner look
+      },
+      tooltip: {
+        ...chartOptions.plugins.tooltip,
+        callbacks: {
+          label: function(context) {
+            return `Points: ${context.parsed.x.toLocaleString()}`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)'
+        },
+        ticks: {
+          font: {
+            size: 11
+          },
+          callback: function(value) {
+            return value.toLocaleString();
+          }
+        }
+      },
+      y: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          font: {
+            size: 11
+          }
+        }
+      }
+    }
+  };
+
+  return (
+    <Card sx={{ height: '100%', boxShadow: 3 }}>
+      <CardContent>
+        <Typography variant="h6" gutterBottom color="primary" fontWeight="bold">
+          🏆 Top Players by Points
+        </Typography>
+        <Box sx={{ height: 300 }}>
+          <Bar data={chartData} options={horizontalBarOptions} />
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
+
+// NEW CHART: Most Active Players (Horizontal Bar Chart) - Based on Points
+export const MostActivePlayersChart = ({ data }) => {
+  const chartData = data && data.labels && data.datasets ? data : {
+    labels: ['No Data Available'],
+    datasets: [{
+      label: 'Total Points',
+      data: [0],
+      backgroundColor: '#10B981',
+      borderColor: '#059669',
+      borderWidth: 1,
+      borderRadius: 8
+    }]
+  };
+
+  const horizontalBarOptions = {
+    ...chartOptions,
+    indexAxis: 'y', // This makes it horizontal
+    plugins: {
+      ...chartOptions.plugins,
+      legend: {
+        display: false // Hide legend for cleaner look
+      },
+      tooltip: {
+        ...chartOptions.plugins.tooltip,
+        callbacks: {
+          label: function(context) {
+            return `Points: ${context.parsed.x.toLocaleString()}`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)'
+        },
+        ticks: {
+          font: {
+            size: 11
+          },
+          callback: function(value) {
+            return value.toLocaleString();
+          }
+        }
+      },
+      y: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          font: {
+            size: 11
+          }
+        }
+      }
+    }
+  };
+
+  return (
+    <Card sx={{ height: '100%', boxShadow: 3 }}>
+      <CardContent>
+        <Typography variant="h6" gutterBottom color="primary" fontWeight="bold">
+          🎮 Most Active Players 
+        </Typography>
+        <Box sx={{ height: 300 }}>
+          <Bar data={chartData} options={horizontalBarOptions} />
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};

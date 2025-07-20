@@ -205,72 +205,23 @@ exports.getOverallAnalytics = async (req, res) => {
                       await Match.countDocuments() + 
                       await Color.countDocuments();
 
-    // Most active users
-    const activeUsers = await User.aggregate([
-      {
-        $lookup: {
-          from: 'cards',
-          localField: '_id',
-          foreignField: 'userId',
-          as: 'cardGames'
-        }
-      },
-      {
-        $lookup: {
-          from: 'puzs',
-          localField: '_id',
-          foreignField: 'userId',
-          as: 'puzGames'
-        }
-      },
-      {
-        $lookup: {
-          from: 'matches',
-          localField: '_id',
-          foreignField: 'userId',
-          as: 'matchGames'
-        }
-      },
-      {
-        $lookup: {
-          from: 'colors',
-          localField: '_id',
-          foreignField: 'userId',
-          as: 'colorGames'
-        }
-      },
-      {
-        $addFields: {
-          totalGames: {
-            $add: [
-              { $size: '$cardGames' },
-              { $size: '$puzGames' },
-              { $size: '$matchGames' },
-              { $size: '$colorGames' }
-            ]
-          }
-        }
-      },
-      {
-        $sort: { totalGames: -1 }
-      },
-      {
-        $limit: 10
-      },
-      {
-        $project: {
-          username: 1,
-          points: 1,
-          rank: 1,
-          totalGames: 1
-        }
-      }
-    ]);
+    // Most active users based on points (instead of total games)
+    const activeUsers = await User.find({})
+      .sort({ points: -1 }) // Sort by points in descending order
+      .limit(10)
+      .select('username points rank avatar')
+      .lean(); // Use lean() for better performance
+
+    // Add totalPoints as an alias for consistency with frontend
+    const activeUsersFormatted = activeUsers.map(user => ({
+      ...user,
+      totalPoints: user.points // Add this for chart compatibility
+    }));
 
     res.json({
       totalUsers,
       totalGames,
-      activeUsers
+      activeUsers: activeUsersFormatted
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

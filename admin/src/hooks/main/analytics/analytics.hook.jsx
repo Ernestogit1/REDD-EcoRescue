@@ -9,6 +9,8 @@ export const useAnalytics = () => {
     gamePopularity: { labels: [], datasets: [] },
     rankDistribution: { labels: [], datasets: [] },
     difficultyPerformance: { labels: [], datasets: [] },
+    topPlayers: { labels: [], datasets: [] },
+    mostActivePlayers: { labels: [], datasets: [] },
     colors: {}
   });
   
@@ -117,11 +119,72 @@ export const useAnalytics = () => {
       ]
     };
 
+    // TOP PLAYERS BY POINTS CHART DATA
+    const topPlayersData = {
+      labels: userStats?.topUsers?.slice(0, 10).map(user => user.username) || ['No Data'],
+      datasets: [{
+        label: 'Points',
+        data: userStats?.topUsers?.slice(0, 10).map(user => user.points) || [0],
+        backgroundColor: [
+          '#FFD700', // Gold for 1st place
+          '#C0C0C0', // Silver for 2nd place
+          '#CD7F32', // Bronze for 3rd place
+          colors.primary,
+          colors.secondary,
+          colors.accent,
+          colors.purple,
+          colors.pink,
+          colors.indigo,
+          colors.teal
+        ],
+        borderColor: [
+          '#FFA500',
+          '#A8A8A8',
+          '#A0522D',
+          '#1E40AF',
+          '#059669',
+          '#D97706',
+          '#7C3AED',
+          '#DB2777',
+          '#4F46E5',
+          '#0D9488'
+        ],
+        borderWidth: 2,
+        borderRadius: 8
+      }]
+    };
+
+    // MOST ACTIVE PLAYERS CHART DATA (Based on Points instead of Games)
+    const mostActivePlayersData = {
+      labels: overallStats?.activeUsers?.slice(0, 10).map(user => user.username) || ['No Data'],
+      datasets: [{
+        label: 'Total Points',
+        data: overallStats?.activeUsers?.slice(0, 10).map(user => user.points || user.totalPoints || 0) || [0],
+        backgroundColor: [
+          colors.secondary,
+          '#16A085',
+          '#27AE60',
+          '#2ECC71',
+          '#58D68D',
+          '#82E0AA',
+          '#A9DFBF',
+          '#D5F0DB',
+          '#E8F8F5',
+          '#F0FFF4'
+        ],
+        borderColor: colors.secondary,
+        borderWidth: 2,
+        borderRadius: 8
+      }]
+    };
+
     setChartData({
       userRegistration: userRegistrationData,
       gamePopularity: gamePopularityData,
       rankDistribution: rankData,
       difficultyPerformance: difficultyData,
+      topPlayers: topPlayersData,
+      mostActivePlayers: mostActivePlayersData,
       colors
     });
   };

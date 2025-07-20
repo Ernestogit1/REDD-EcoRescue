@@ -28,7 +28,9 @@ import {
   UserRegistrationChart,
   GamePopularityChart,
   RankDistributionChart,
-  DifficultyPerformanceChart
+  DifficultyPerformanceChart,
+  TopPlayersChart,
+  MostActivePlayersChart
 } from '../../components/page/analytics/charts.component';
 import {
   AnalyticsContainer,
@@ -134,11 +136,21 @@ const AnalyticsScreen = () => {
               <DifficultyPerformanceChart data={chartData?.difficultyPerformance} />
             </Grid>
 
-            {/* Top Users */}
+            {/* TOP PLAYERS CHART */}
+            <Grid item xs={12} lg={6}>
+              <TopPlayersChart data={chartData?.topPlayers} />
+            </Grid>
+
+            {/* MOST ACTIVE PLAYERS CHART */}
+            <Grid item xs={12} lg={6}>
+              <MostActivePlayersChart data={chartData?.mostActivePlayers} />
+            </Grid>
+
+            {/* Top Users List (Keep as fallback or additional view) */}
             <Grid item xs={12} lg={6}>
               <ChartContainer>
                 <Typography variant="h6" gutterBottom color="primary" fontWeight="bold">
-                  🏆 Top Players by Points
+                  🏆 Top Players Details
                 </Typography>
                 <List>
                   {userStats?.topUsers?.length > 0 ? (
@@ -181,11 +193,11 @@ const AnalyticsScreen = () => {
               </ChartContainer>
             </Grid>
 
-            {/* Most Active Users */}
-            <Grid item xs={12} lg={6}>
+            {/* Most Active Users List (Keep as fallback or additional view) */}
+            {/* <Grid item xs={12} lg={6}>
               <ChartContainer>
                 <Typography variant="h6" gutterBottom color="primary" fontWeight="bold">
-                  🎮 Most Active Players
+                  🎮 Most Active Players Details
                 </Typography>
                 <List>
                   {overallStats?.activeUsers?.length > 0 ? (
@@ -223,7 +235,7 @@ const AnalyticsScreen = () => {
                   )}
                 </List>
               </ChartContainer>
-            </Grid>
+            </Grid> */}
           </Grid>
         </Container>
       </AnalyticsContainer>
