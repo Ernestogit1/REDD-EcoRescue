@@ -18,7 +18,7 @@ const cardImages = [
   { id: '6', image: require('../../../../../assets/images/levels/Level1/no-pesticides.png') },
 ];
 
-export default function Level1Screen() {
+export default function Level1Screen({ route }) {
   const navigation = useNavigation();
   const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState([]);
@@ -178,7 +178,15 @@ export default function Level1Screen() {
           "Level Complete!",
           `You matched all the cards!\nScore: ${finalScore}\nTime left: ${timer}s\nMoves: ${moves}`,
           [
-            { text: "Continue", onPress: () => navigation.goBack() }
+            { text: "Continue", onPress: async () => {
+                try {
+                  await ApiService.markLevelComplete(1);
+                } catch (err) {
+                  console.error('Failed to mark level as complete:', err);
+                }
+                navigation.goBack();
+              }
+            }
           ]
         );
       }, 1000);
