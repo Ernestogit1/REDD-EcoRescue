@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, PanResponder, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, Alert, PanResponder, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-const Level4Screen = () => {
+export default function Level4Screen() {
   const navigation = useNavigation();
   const [score, setScore] = useState(0);
   const [timer, setTimer] = useState(30);
   const [gameComplete, setGameComplete] = useState(false);
   const [flowers, setFlowers] = useState([]);
-  const [butterflySize, setButterflySize] = useState(30);
+  const [butterflySize, setButterflySize] = useState(120);
   const [controlMode, setControlMode] = useState('touch'); // 'touch' or 'joystick'
-  const [joystickPosition, setJoystickPosition] = useState({ x: 100, y: screenHeight - 100 });
+  const [joystickPosition, setJoystickPosition] = useState({ x: 100, y: screenHeight - 200 });
   const [joystickValue, setJoystickValue] = useState({ x: 0, y: 0 });
   const timerRef = useRef(null);
   const gameInterval = useRef(null);
@@ -101,7 +101,7 @@ const Level4Screen = () => {
     setScore(0);
     setTimer(30);
     setGameComplete(false);
-    setButterflySize(30);
+    setButterflySize(80);
     spawnFlowers();
 
     // Start timer
@@ -152,8 +152,7 @@ const Level4Screen = () => {
     ));
     setScore(prev => {
       const newScore = prev + 10;
-      // Increase butterfly size as score increases
-      const newSize = Math.min(30 + (newScore / 5), 120); // Start at 30px, max 60px
+      const newSize = 80;
       setButterflySize(newSize);
       return newScore;
     });
@@ -217,7 +216,13 @@ const Level4Screen = () => {
             <View
               key={flower.id}
               style={[styles.flower, { left: flower.x, top: flower.y }]}
-            />
+            >
+              <Image 
+                source={require('../../../../../assets/images/levels/Level4/nectar.png')}
+                style={styles.flowerImage}
+                resizeMode="contain"
+              />
+            </View>
           ))}
           
           <Animated.View
@@ -227,23 +232,26 @@ const Level4Screen = () => {
               {
                 width: butterflySize,
                 height: butterflySize,
-                borderRadius: butterflySize / 2,
                 transform: [
                   { translateX: butterflyPos.x },
-                  { translateY: butterflyPos.y }
+                  { translateY: butterflyPos.y },
+                  { rotate: joystickValue ? 
+                    `${Math.atan2(joystickValue.y, joystickValue.x)}rad` : '0deg'
+                  }
                 ]
               }
             ]}
-          />
+          >
+            <Image 
+              source={require('../../../../../assets/images/levels/Level4/butterfly.png')}
+              style={styles.butterflyImage}
+              resizeMode="contain"
+            />
+          </Animated.View>
           
           {controlMode === 'joystick' && (
             <View style={[styles.joystickContainer, { left: joystickPosition.x - 50, top: joystickPosition.y - 50 }]}>
-              <View 
-                style={[
-                  styles.joystickBase,
-                  { left: 50, top: 50 }
-                ]} 
-              />
+              <View style={styles.joystickBase} />
               <View 
                 {...joystickPanResponder.panHandlers}
                 style={[
@@ -331,18 +339,24 @@ const styles = StyleSheet.create({
   },
   flower: {
     position: 'absolute',
-    width: 20,
-    height: 20,
-    backgroundColor: '#FFB6C1',
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#52B69A',
+    width: 100,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  flowerImage: {
+    width: '100%',
+    height: '100%',
   },
   butterfly: {
     position: 'absolute',
-    backgroundColor: '#FFD700',
-    borderWidth: 2,
-    borderColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'visible',
+  },
+  butterflyImage: {
+    width: '100%',
+    height: '100%',
   },
   controlToggle: {
     position: 'absolute',
@@ -384,5 +398,3 @@ const styles = StyleSheet.create({
     borderColor: '#FFF',
   }
 });
-
-export default Level4Screen;

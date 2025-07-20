@@ -12,6 +12,7 @@ import Level1Screen from '../screens/Levels/Map/Level1-5/Level1Screen';
 import Level2Screen from '../screens/Levels/Map/Level1-5/Level2Screen';
 import Level3Screen from '../screens/Levels/Map/Level1-5/Level3Screen';
 import Level4Screen from '../screens/Levels/Map/Level1-5/Level4Screen';
+import Level5Screen from '../screens/Levels/Map/Level1-5/Level5Screen';
 import Level11Screen from '../screens/Levels/Map/Level11-15/Level11Screen';
 import Level12Screen from '../screens/Levels/Map/Level11-15/Level12Screen';
 import Level13Screen from '../screens/Levels/Map/Level11-15/Level13Screen';
@@ -95,6 +96,8 @@ export default function GameNavigator() {
               return <Level3Screen />;
             case 4:
               return <Level4Screen />;
+            case 5:
+              return <Level5Screen />;
             case 11:
               return <Level11Screen />;
             case 12:

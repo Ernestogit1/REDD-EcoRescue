@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
     borderRadius: normalize(5),
   },
   instructionTitle: {
-    fontSize: normalize(12),
+    fontSize: normalize(20),
     fontFamily: 'monospace',
     fontWeight: 'bold',
     color: '#FFF',
@@ -583,7 +583,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   instructionText: {
-    fontSize: normalize(9),
+    fontSize: normalize(15),
     fontFamily: 'monospace',
     color: '#FFF',
     marginBottom: normalize(2),

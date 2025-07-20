@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import { API_URL } from '@env';
 
@@ -14,34 +15,35 @@ const API_BASE_URL = getBaseURL();
 class ApiService {
   constructor() {
     this.baseURL = `${API_BASE_URL}/api/mobile`;
+    this.TOKEN_KEY = 'authToken';
     console.log('API Base URL:', this.baseURL);
   }
 
-  // Get auth token from storage
+  // Get auth token from Secure Store
   async getAuthToken() {
     try {
-      return await AsyncStorage.getItem('authToken');
+      return await SecureStore.getItemAsync(this.TOKEN_KEY);
     } catch (error) {
-      console.error('Error getting auth token:', error);
+      console.error('Error getting auth token from Secure Store:', error);
       return null;
     }
   }
 
-  // Set auth token in storage
+  // Set auth token in Secure Store
   async setAuthToken(token) {
     try {
-      await AsyncStorage.setItem('authToken', token);
+      await SecureStore.setItemAsync(this.TOKEN_KEY, token);
     } catch (error) {
-      console.error('Error setting auth token:', error);
+      console.error('Error setting auth token in Secure Store:', error);
     }
   }
 
-  // Remove auth token from storage
+  // Remove auth token from Secure Store
   async removeAuthToken() {
     try {
-      await AsyncStorage.removeItem('authToken');
+      await SecureStore.deleteItemAsync(this.TOKEN_KEY);
     } catch (error) {
-      console.error('Error removing auth token:', error);
+      console.error('Error removing auth token from Secure Store:', error);
     }
   }
 

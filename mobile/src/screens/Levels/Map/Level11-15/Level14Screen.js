@@ -333,7 +333,6 @@ const Level14Screen = () => {
             <Text style={styles.instructionText}>👆 Tap a cell, then a number to place it</Text>
             <Text style={styles.instructionText}>🔢 Correct: +10 pts, Incorrect: -5 pts</Text>
             <Text style={styles.instructionText}>🎯 Complete puzzle: +100 pts</Text>
-            <Text style={styles.instructionText}>🌊 Use swipe or D-pad to navigate</Text>
             <Text style={styles.instructionText}>🐠 No repeats in row, column, or 3x3</Text>
             <Text style={styles.instructionText}>🌍 Protect oceans: Reduce plastic!</Text>
           </View>
@@ -430,7 +429,7 @@ const styles = StyleSheet.create({
     height: HEADER_HEIGHT,
   },
   backButton: {
-    padding: normalize(8),
+    padding: normalize(1),
     borderWidth: normalize(2),
     borderColor: '#FFF',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -527,7 +526,7 @@ const styles = StyleSheet.create({
     borderRadius: normalize(5),
   },
   instructionTitle: {
-    fontSize: normalize(12),
+    fontSize: normalize(25),
     fontFamily: 'monospace',
     fontWeight: 'bold',
     color: '#FFF',
@@ -535,7 +534,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   instructionText: {
-    fontSize: normalize(9),
+    fontSize: normalize(15),
     fontFamily: 'monospace',
     color: '#FFF',
     marginBottom: normalize(2),
