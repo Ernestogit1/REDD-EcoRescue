@@ -11,7 +11,8 @@ import {
   BackHandler,
 } from 'react-native';
 import { PixelRatio } from 'react-native';
-import { useNavigation } from '@react-navigation/native'; // Add this import
+import { useNavigation } from '@react-navigation/native';
+import ApiService from '../../../../services/api.service';
 
 // Get window dimensions and adjust for landscape
 const { width, height } = Dimensions.get('window');
@@ -227,9 +228,21 @@ const Level11Screen = ({ navigation: navigationProp }) => { // Rename prop to av
   };
 
   // Update endGame function to use safe navigation
-  const endGame = () => {
+  const endGame = async () => {
     setGameOver(true);
     setGameStarted(false);
+
+    // Add points to backend
+    ApiService.addPoints(score).catch((err) => {
+      console.error('Failed to add points:', err);
+    });
+
+    // Mark level as completed on backend
+    try {
+      await ApiService.markLevelComplete(11);
+    } catch (err) {
+      console.error('Failed to mark level 11 as completed:', err);
+    }
 
     const treesPlanted = trees.filter((tree) => tree.planted).length;
     const pollutionCleaned = pollution.filter((item) => item.cleaned).length;

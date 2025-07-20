@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { PixelRatio } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import ApiService from '../../../../services/api.service';
 
 // Get window dimensions
 const { width, height } = Dimensions.get('window');
@@ -230,7 +231,7 @@ const Level13Screen = () => {
   );
 
   // End game function with parameters for score and turtle
-  const endGame = useCallback((finalScore, finalTurtle) => {
+  const endGame = async (finalScore, finalTurtle) => {
     if (gameState.gameOver || endGameRef.current) return;
     endGameRef.current = true;
 
@@ -239,6 +240,18 @@ const Level13Screen = () => {
       return { ...prev, gameOver: true, gameStarted: false };
     });
     if (gameLoopRef.current) clearInterval(gameLoopRef.current);
+
+    // Add points to backend
+    ApiService.addPoints(finalScore).catch((err) => {
+      console.error('Failed to add points:', err);
+    });
+
+    // Mark level as completed on backend
+    try {
+      await ApiService.markLevelComplete(13);
+    } catch (err) {
+      console.error('Failed to mark level 13 as completed:', err);
+    }
 
     const funFacts = [
       "Sea turtles return to the same beach where they were born to lay eggs",
@@ -273,7 +286,7 @@ const Level13Screen = () => {
       ],
       { cancelable: false }
     );
-  }, [initializeGame, navigation]);
+  };
 
   const startGame = useCallback(() => {
     initializeGame();

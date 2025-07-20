@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { PixelRatio } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import ApiService from '../../../../services/api.service';
 
 // Get window dimensions
 const { width, height } = Dimensions.get('window');
@@ -208,6 +209,18 @@ const Level14Screen = () => {
       return { ...prev, gameOver: true, gameStarted: false };
     });
 
+    // Add points to backend
+    ApiService.addPoints(finalScore).catch((err) => {
+      console.error('Failed to add points:', err);
+    });
+
+    // Mark level as completed on backend
+    try {
+      ApiService.markLevelComplete(14);
+    } catch (err) {
+      console.error('Failed to mark level 14 as completed:', err);
+    }
+
     const funFacts = [
       "Coral reefs support 25% of marine life but are threatened by pollution",
       "Oceans absorb 30% of global CO2 emissions",
@@ -215,31 +228,17 @@ const Level14Screen = () => {
     ];
     const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
 
-    let message = `Game Over!\nScore: ${finalScore}\nFun Fact: ${randomFact}`;
-    if (finalScore >= 910) { // 81 correct placements (810) + 100 bonus
-      message += '\n🌊 Victory! You solved the puzzle!\nProtect oceans: Reduce plastic pollution!';
+    let message = `Game Over!\nScore: ${finalScore}`;
+    if (finalScore >= 100) {
+      message += '\n🌟 Victory! You won!';
     } else {
-      message += '\n🐠 Try again to solve the puzzle!\nProtect oceans: Reduce plastic pollution!';
+      message += '\n💪 Try again to reach 100 points!';
     }
 
-    Alert.alert(
-      'Level 14: Ocean Sudoku',
-      message,
-      [
-        {
-          text: 'Play Again',
-          onPress: () => {
-            initializeGame();
-            setGameState((prev) => ({ ...prev, gameStarted: true, gameOver: false, selectedCell: { x: 0, y: 0 } }));
-          },
-        },
-        {
-          text: 'Main Menu',
-          onPress: () => navigation.goBack(),
-        },
-      ],
-      { cancelable: false }
-    );
+    Alert.alert('Level 14 Complete', message, [
+      { text: 'Play Again', onPress: initializeGame },
+      { text: 'Main Menu', onPress: () => navigation.goBack() },
+    ]);
   }, [initializeGame, navigation]);
 
   // Start game

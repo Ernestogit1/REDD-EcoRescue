@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Video } from 'expo-av';
 import ApiService from '../../services/api.service';
+import { useFocusEffect } from '@react-navigation/native';
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
@@ -125,6 +126,25 @@ export default function MainMenuScreen() {
     })();
   }, []);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      (async () => {
+        try {
+          // Fetch latest profile from backend
+          const profile = await ApiService.getProfile();
+          const userData = profile?.data?.user || profile.user || profile;
+          setUser(userData);
+          // Update local storage for consistency
+          await ApiService.setUserData(userData);
+        } catch (err) {
+          // fallback to local if offline
+          const userData = await ApiService.getUserData();
+          setUser(userData);
+        }
+      })();
+    }, [])
+  );
+
   // Logout handler
   const handleLogout = async () => {
     await ApiService.logout();
@@ -182,6 +202,7 @@ export default function MainMenuScreen() {
 
   // Add avatar button if user is logged in
   const renderAvatarButton = () => {
+    console.log(user);
     if (!user) return null;
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center', position: 'absolute', top: 20, left: 20, zIndex: 10 }}>
@@ -205,8 +226,8 @@ export default function MainMenuScreen() {
           <Text style={{ color: '#4ade80', fontFamily: 'PressStart2P_400Regular', fontSize: 10, textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 0 }}>
             {user.rank}
           </Text>
-          <Text style={{ color: '#fbbf24', fontFamily: 'PressStart2P_400Regular', fontSize: 11, textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 0 }}>
-            ⭐ {user.rescueStars} pts
+          <Text style={{ color: '#fbbf24', fontFamily: 'PressStart2P_400Regular', marginTop: 5, fontSize: 11, textShadowColor: '#000', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 0 }}>
+            ⭐ {user.points} pts
           </Text>
         </View>
       </View>

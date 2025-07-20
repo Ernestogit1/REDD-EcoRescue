@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, Alert, PanResponder, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import ApiService from '../../../../services/api.service';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -169,6 +170,10 @@ export default function Level4Screen() {
     setGameComplete(true);
 
     if (score >= 100) {
+      // Send points to backend
+      ApiService.addPoints(score).catch((err) => {
+        console.error('Failed to add points:', err);
+      });
       Alert.alert(
         "Level Complete!",
         `Great job! You collected ${score} points worth of nectar!`,

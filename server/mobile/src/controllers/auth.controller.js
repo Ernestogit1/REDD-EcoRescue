@@ -66,7 +66,8 @@ const registerUser = async (req, res) => {
       firebaseUid: `mobile_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=4ade80&color=1a4d2e&size=200`,
       rank: 'Novice',
-      rescueStars: 0
+      rescueStars: 0,
+      points: 0
     });
 
     // Generate token
@@ -83,7 +84,8 @@ const registerUser = async (req, res) => {
           avatar: user.avatar,
           rank: user.rank,
           rescueStars: user.rescueStars,
-          createdAt: user.createdAt
+          createdAt: user.createdAt,
+          points: user.points
         },
         token
       }
@@ -158,7 +160,8 @@ const loginUser = async (req, res) => {
           avatar: user.avatar,
           rank: user.rank,
           rescueStars: user.rescueStars,
-          createdAt: user.createdAt
+          createdAt: user.createdAt,
+          points: user.points
         },
         token
       }
@@ -198,7 +201,8 @@ const getUserProfile = async (req, res) => {
           rank: user.rank,
           rescueStars: user.rescueStars,
           createdAt: user.createdAt,
-          updatedAt: user.updatedAt
+          updatedAt: user.updatedAt,
+          points: user.points
         }
       }
     });
@@ -281,7 +285,8 @@ const updateUserProfile = async (req, res) => {
           rank: user.rank,
           rescueStars: user.rescueStars,
           createdAt: user.createdAt,
-          updatedAt: user.updatedAt
+          updatedAt: user.updatedAt,
+          points: user.points
         }
       }
     });

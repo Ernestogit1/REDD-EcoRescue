@@ -14,7 +14,8 @@ import {
 import { PixelRatio } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-// Get window dimensions and adjust for landscape
+import ApiService from '../../../../services/api.service';
+
 const { width, height } = Dimensions.get('window');
 const pixelRatio = PixelRatio.get();
 const scale = Math.min(width, height) / 400;
@@ -346,12 +347,24 @@ const Level12Screen = () => {
     [gameState.gameStarted, gameState.gameOver, handleSlash]
   );
 
-  const endGame = useCallback(() => {
+  const endGame = useCallback(async () => {
     if (gameState.gameOver || endGameRef.current) return;
     endGameRef.current = true;
 
     setGameState((prev) => ({ ...prev, gameOver: true, gameStarted: false }));
     cleanupTimers();
+
+    // Add points to backend
+    ApiService.addPoints(gameState.score).catch((err) => {
+      console.error('Failed to add points:', err);
+    });
+
+    // Mark level as completed on backend
+    try {
+      await ApiService.markLevelComplete(12);
+    } catch (err) {
+      console.error('Failed to mark level 12 as completed:', err);
+    }
 
     const fruitsSlashed = gameState.fruits.filter((fruit) => fruit.slashed).length;
     const debrisSlashed = gameState.debris.filter((item) => item.slashed).length;

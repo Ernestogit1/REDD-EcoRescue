@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { PixelRatio } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import ApiService from '../../../../services/api.service';
 
 // Get window dimensions
 const { width, height } = Dimensions.get('window');
@@ -34,7 +35,6 @@ const CELL_SIZE = Math.min(
 );
 const GRID_PIXEL_WIDTH = CELL_SIZE * GRID_WIDTH;
 const GRID_PIXEL_HEIGHT = CELL_SIZE * GRID_HEIGHT;
-
 // Directions for swipe and D-pad navigation
 const DIRECTIONS = {
   UP: { x: 0, y: -1 },
@@ -99,7 +99,7 @@ const Level15Screen = () => {
   }, []);
 
   // End game function (moved before useEffect)
-  const endGame = useCallback((finalScore) => {
+  const endGame = useCallback(async (finalScore) => {
     if (gameState.gameOver || endGameRef.current) return;
     endGameRef.current = true;
 
@@ -108,8 +108,20 @@ const Level15Screen = () => {
       return { ...prev, gameOver: true, gameStarted: false, showInstructions: false };
     });
 
+    // Add points to backend
+    ApiService.addPoints(finalScore).catch((err) => {
+      console.error('Failed to add points:', err);
+    });
+
     if (gameLoopRef.current) clearInterval(gameLoopRef.current);
     clearAllSinkTimers();
+
+    // Mark level as completed on backend
+    try {
+      await ApiService.markLevelComplete(15);
+    } catch (err) {
+      console.error('Failed to mark level 15 as completed:', err);
+    }
 
     const funFacts = [
       "Frogs absorb water through their skin, making them sensitive to pollution",
