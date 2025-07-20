@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, Image, Modal } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,6 +29,8 @@ export default function Level3Screen() {
   const fadeAnims = useRef(activeHoles.map(() => new Animated.Value(0))).current;
   const rotateAnims = useRef(activeHoles.map(() => new Animated.Value(0))).current;
   const popupAnim = useRef(new Animated.Value(0)).current;
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [cardAnim] = useState(new Animated.Value(0));
 
   const spawnInsect = useCallback(() => {
     const randomIndex = Math.floor(Math.random() * 8);
@@ -199,30 +201,43 @@ export default function Level3Screen() {
     clearInterval(timerRef.current);
     clearInterval(gameInterval.current);
     setGameComplete(true);
-
-    if (score >= 100) {
-      // Send points to backend
-      ApiService.addPoints(score).catch((err) => {
-        console.error('Failed to add points:', err);
-      });
-      // Show success popup
-      setPopupTitle('LEVEL COMPLETE!');
-      setPopupMessage(`GREAT JOB! YOU SCORED ${score} POINTS!`);
-      setPopupButtons([
-        { text: 'PLAY AGAIN', onPress: handlePlayAgain },
-        { text: 'EXIT', onPress: handleExit }
-      ]);
-      setShowPopup(true);
-    } else {
-      // Show failure popup
-      setPopupTitle('TIME\'S UP!');
-      setPopupMessage(`YOU SCORED ${score} POINTS. TRY AGAIN TO REACH 100!`);
-      setPopupButtons([
-        { text: 'PLAY AGAIN', onPress: handlePlayAgain },
-        { text: 'EXIT', onPress: handleExit }
-      ]);
-      setShowPopup(true);
-    }
+    // Always award the card and show the modal
+    ApiService.addPoints(score).catch((err) => {
+      console.error('Failed to add points:', err);
+    });
+    setPopupTitle('LEVEL COMPLETE!');
+    setPopupMessage(`GREAT JOB! YOU SCORED ${score} POINTS!`);
+    setPopupButtons([
+      { text: 'PLAY AGAIN', onPress: handlePlayAgain },
+      { text: 'EXIT', onPress: handleExit }
+    ]);
+    setShowPopup(true);
+    setTimeout(async () => {
+      try {
+        await ApiService.markLevelComplete(3);
+        await ApiService.awardCollectibleCard({ level: 3 });
+        setShowCardModal(true);
+        Animated.sequence([
+          Animated.timing(cardAnim, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true
+          }),
+          Animated.timing(cardAnim, {
+            toValue: 0.8,
+            duration: 200,
+            useNativeDriver: true
+          }),
+          Animated.timing(cardAnim, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true
+          })
+        ]).start();
+      } catch (err) {
+        navigation.goBack();
+      }
+    }, 1000);
   };
 
   // Memoize button handlers to prevent recreation on each render
@@ -289,6 +304,56 @@ export default function Level3Screen() {
           </View>
         </Animated.View>
       </View>
+    );
+  };
+
+  const renderCardModal = () => {
+    if (!showCardModal) return null;
+    return (
+      <Modal
+        transparent={true}
+        visible={showCardModal}
+        animationType="none"
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View 
+            style={[
+              styles.modalContent,
+              {
+                transform: [
+                  { scale: cardAnim }
+                ]
+              }
+            ]}
+          >
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalHeaderText}>🎴 COLLECTIBLE CARD UNLOCKED!</Text>
+            </View>
+            <View style={styles.modalBody}>
+              <Image
+                source={require('../../../../../assets/images/pets/Beaver.png')}
+                style={{ width: 120, height: 120, marginBottom: 16 }}
+                resizeMode="contain"
+              />
+              <Text style={styles.modalMessage}>Hedgehog Card\nCongratulations! You collected a new card for Level 3.</Text>
+              <TouchableOpacity 
+                style={styles.modalButton}
+                onPress={() => {
+                  setShowCardModal(false);
+                  navigation.goBack();
+                }}
+              >
+                <LinearGradient
+                  colors={['#FFB703', '#FB8500']}
+                  style={styles.modalButtonGradient}
+                >
+                  <Text style={styles.modalButtonText}>CONTINUE</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
     );
   };
 
@@ -359,6 +424,7 @@ export default function Level3Screen() {
       </LinearGradient>
       
       {renderPopup()}
+      {renderCardModal()}
     </View>
   );
 }
@@ -535,5 +601,69 @@ const styles = StyleSheet.create({
     fontFamily: 'PressStart2P_400Regular',
     color: '#FFF',
     fontSize: 10,
+  },
+  // Add modal styles if not present
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#1A3C40',
+    borderRadius: 10,
+    borderWidth: 4,
+    borderColor: '#FFD700',
+    shadowColor: '#000',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 10,
+  },
+  modalHeader: {
+    padding: 12,
+    alignItems: 'center',
+    borderBottomWidth: 4,
+    borderBottomColor: '#FFD700',
+  },
+  modalHeaderText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 16,
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 0,
+  },
+  modalBody: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalMessage: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  modalButton: {
+    marginTop: 10,
+    borderRadius: 4,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#FFD700',
+  },
+  modalButtonGradient: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButtonText: {
+    fontFamily: 'PressStart2P_400Regular',
+    color: '#FFF',
+    fontSize: 12,
   },
 });
