@@ -13,7 +13,12 @@ import Level2Screen from '../screens/Levels/Map/Level1-5/Level2Screen';
 import Level3Screen from '../screens/Levels/Map/Level1-5/Level3Screen';
 import Level4Screen from '../screens/Levels/Map/Level1-5/Level4Screen';
 import Level5Screen from '../screens/Levels/Map/Level1-5/Level5Screen';
-
+import Level11Screen from '../screens/Levels/Map/Level11-15/Level11Screen';
+import Level12Screen from '../screens/Levels/Map/Level11-15/Level12Screen';
+import Level13Screen from '../screens/Levels/Map/Level11-15/Level13Screen';
+import Level14Screen from '../screens/Levels/Map/Level11-15/Level14Screen';
+import Level15Screen from '../screens/Levels/Map/Level11-15/Level15Screen';
+// Create stack navigator
 const Stack = createStackNavigator();
 
 export default function GameNavigator() {
@@ -93,6 +98,16 @@ export default function GameNavigator() {
               return <Level4Screen />;
             case 5:
               return <Level5Screen />;
+            case 11:
+              return <Level11Screen />;
+            case 12:
+              return <Level12Screen />;
+            case 13:
+              return <Level13Screen />;
+            case 14:
+              return <Level14Screen />;
+            case 15:
+              return <Level15Screen />;
             // Add more level screens as you create them
             default:
               return <DifficultyScreen />;

@@ -3,9 +3,18 @@ const User = require('../../../database/models/user.model');
 
 const authMiddleware = async (req, res, next) => {
   try {
-    // Get token from Authorization header
+    let token;
+
+    // Try to get token from Authorization header first
     const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1]; 
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+    
+    // If no token in header, try to get from cookies
+    if (!token && req.cookies && req.cookies.authToken) {
+      token = req.cookies.authToken;
+    }
 
     if (!token) {
       return res.status(401).json({
@@ -17,7 +26,7 @@ const authMiddleware = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    // Get user from database
+    // Get user from database using the correct field name
     const user = await User.findById(decoded.userId);
     if (!user) {
       return res.status(401).json({
@@ -28,6 +37,7 @@ const authMiddleware = async (req, res, next) => {
 
     // Add user to request object
     req.user = {
+      _id: user._id, // Make sure to include _id as that's what your controller expects
       userId: user._id,
       firebaseUid: user.firebaseUid,
       email: user.email,

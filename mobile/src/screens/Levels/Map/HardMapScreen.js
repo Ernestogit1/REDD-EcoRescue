@@ -27,25 +27,25 @@ export default function HardMapScreen() {
             id: 12,
             name: 'Level 12',
             stars: 0,
-            unlocked: false,
+            unlocked: true,
         },
         {
             id: 13,
             name: 'Level 13',
             stars: 0,
-            unlocked: false,
+            unlocked: true,
         },
         {
             id: 14,
             name: 'Level 14',
             stars: 0,
-            unlocked: false,
+            unlocked: true,
         },
         {
             id: 15,
             name: 'Level 15',
             stars: 0,
-            unlocked: false,
+            unlocked: true,
         },
     ];
 

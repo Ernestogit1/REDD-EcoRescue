@@ -52,6 +52,7 @@ export const loginUser = createAsyncThunk(
       const preLoginRes = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',
         body: JSON.stringify({ emailOrUsername, password }),
       });
 
@@ -71,6 +72,7 @@ export const loginUser = createAsyncThunk(
       const verifyRes = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',
         body: JSON.stringify({ idToken }),
       });
 

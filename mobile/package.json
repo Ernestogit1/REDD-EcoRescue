@@ -10,7 +10,11 @@
   },
   "dependencies": {
     "@expo-google-fonts/press-start-2p": "^0.4.0",
+<<<<<<< HEAD
     "@korsolutions/react-native-joystick": "^2.0.1",
+=======
+    "@expo/vector-icons": "^14.1.0",
+>>>>>>> 45404c820bc5a90d27380585fd7028c10e44edd1
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/slider": "^4.5.7",
     "@react-navigation/native": "^7.1.14",
@@ -30,6 +34,7 @@
     "react-native-dotenv": "^3.4.11",
     "react-native-gesture-handler": "^2.27.1",
     "react-native-gif": "^1.0.3",
+    "react-native-haptic-feedback": "^2.3.3",
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "^5.5.1",
     "react-native-screens": "^4.11.1"
