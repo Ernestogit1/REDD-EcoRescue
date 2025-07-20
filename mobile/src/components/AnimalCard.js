@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, Animated } from 'react-native';
+import { View, Text, Image, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 // Copy animalData and getConservationStars from LevelDetailsScreen
@@ -30,7 +30,7 @@ const getConservationStars = (status) => {
   return 6;
 };
 
-export default function AnimalCard({ levelId, collectedAt }) {
+export default function AnimalCard({ levelId, collectedAt, onPress }) {
   const animal = animalData[levelId];
   if (!animal) return (
     <View style={{ width: 120, height: 120, margin: 6, backgroundColor: '#333', alignItems: 'center', justifyContent: 'center', borderRadius: 10 }}>
@@ -48,7 +48,7 @@ export default function AnimalCard({ levelId, collectedAt }) {
     }
   };
 
-  return (
+  const CardContent = (
     <View style={styles.cardContainer}>
       <LinearGradient colors={getDifficultyColor()} style={styles.cardHeader}>
         <Text style={styles.animalName}>{animal.animalName}</Text>
@@ -76,6 +76,15 @@ export default function AnimalCard({ levelId, collectedAt }) {
       </View>
     </View>
   );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity onPress={() => onPress(levelId)} activeOpacity={0.8}>
+        {CardContent}
+      </TouchableOpacity>
+    );
+  }
+  return CardContent;
 }
 
 const styles = StyleSheet.create({

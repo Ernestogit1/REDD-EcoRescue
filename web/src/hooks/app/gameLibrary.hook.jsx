@@ -14,8 +14,8 @@ const MOCK_GAMES = [
     difficulty: 'Beginner',
     duration: '15-30 min',
     ageRange: '6-16 years',
-    image: '/games/memory-card-game.jpg',
-    banner: '/games/memory-card-banner.jpg',
+    image: '/image/memorycard.jpg',
+    banner: '/image/forest.png',
     features: [
       'Multiple difficulty levels',
       'Forest conservation education',

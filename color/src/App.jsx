@@ -1,8 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Box, Grid, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
-import bg from './assets/bg.png';
+import bg from './assets/bg.gif';
 import board from './assets/board.png';
-import logo from './assets/logo_w.png';
 
 import bgMusic from './assets/bg-music.mp3'
 import PaletteContainer from './components/PaletteContainer';
@@ -29,7 +28,6 @@ import palette18 from './assets/palette/fed700.png';
 import palette19 from './assets/palette/ff6ab2.png';
 import palette20 from './assets/palette/foe78c.png';
 
-import Logo from './components/Logo';
 import PaletteColumn from './components/PaletteColumn';
 import DrawingBoard from './components/DrawingBoard';
 import ControlPanel from './components/ControlPanel';
@@ -115,7 +113,7 @@ const App = () => {
         position: 'relative',
       }}
     >
-      <Logo logo={logo} />
+     
       <Grid container spacing={1} sx={{ width: '90%', margin: '0 auto' }}>
         <Grid item xs={2} sx={{ display: 'flex', justifyContent: 'center' }}>
           <PaletteContainer 

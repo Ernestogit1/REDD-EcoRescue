@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getUserProfile} from '../api/user.api';
+import { getUserProfile, updateUserProfile } from '../api/user.api';
 
 const initialState = {
   profile: null,
@@ -16,7 +16,7 @@ const userSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
- setCredentials: (state, action) => {
+    setCredentials: (state, action) => {
       state.user = action.payload;
       state.isAuthenticated = true;
     },
@@ -53,11 +53,24 @@ const userSlice = createSlice({
       .addCase(getUserProfile.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
+      })
+      // Update User Profile
+      .addCase(updateUserProfile.pending, (state) => {
+        state.isUpdating = true;
+        state.error = null;
+        state.updateSuccess = false;
+      })
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+        state.isUpdating = false;
+        state.profile = action.payload.data.user;
+        state.updateSuccess = true;
+        state.error = null;
+      })
+      .addCase(updateUserProfile.rejected, (state, action) => {
+        state.isUpdating = false;
+        state.error = action.payload;
+        state.updateSuccess = false;
       });
-      
-   
-    
-   
   }
 });
 

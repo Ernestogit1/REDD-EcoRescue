@@ -12,19 +12,18 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Configure Multer Storage to Upload Directly to Cloudinary
-// color folder
-
-
-// acatar folder
+// Avatar folder storage
 const avatarStorage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: 'avatars', 
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [
+      { width: 200, height: 200, crop: 'fill', gravity: 'face' }
+    ]
   },
 });
 
-const upload = multer({ avatarStorage });
+const upload = multer({ storage: avatarStorage });
 
 module.exports = { cloudinary, upload };

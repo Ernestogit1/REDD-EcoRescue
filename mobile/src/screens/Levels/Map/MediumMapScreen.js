@@ -27,25 +27,25 @@ export default function MediumMapScreen() {
             id: 7,
             name: 'Level 7',
             stars: 0,
-            unlocked: false,
+            unlocked: true,
         },
         {
             id: 8,
             name: 'Level 8',
             stars: 0,
-            unlocked: false,
+            unlocked: true,
         },
         {
             id: 9,
             name: 'Level 9',
             stars: 0,
-            unlocked: false,
+            unlocked: true,
         },
         {
             id: 10,
             name: 'Level 10',
             stars: 0,
-            unlocked: false,
+            unlocked: true,
         },
     ];
 
