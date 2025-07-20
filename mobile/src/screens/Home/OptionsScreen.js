@@ -4,11 +4,14 @@ import Slider from '@react-native-community/slider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import audioService from '../../services/audio.service';
+import { useBackground, backgrounds } from '../../context/BackgroundContext';
+import { Video } from 'expo-av';
 
 const { height: screenHeight } = Dimensions.get('window');
 
 export default function OptionsScreen() {
   const navigation = useNavigation();
+  const { currentBackground } = useBackground();
   const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [volume, setVolume] = useState(50);
 
@@ -73,8 +76,34 @@ export default function OptionsScreen() {
     outputRange: [0, -10],
   });
 
-  return (
-    <LinearGradient colors={["#1a4d2e", "#2d5a3d", "#1a4d2e"]} style={styles.container}>
+  // Render background based on currentBackground
+  const renderBackground = (children) => {
+    if (currentBackground === 0) {
+      return (
+        <LinearGradient colors={["#1a4d2e", "#2d5a3d", "#1a4d2e"]} style={styles.container}>
+          {children}
+        </LinearGradient>
+      );
+    } else {
+      const selectedBg = backgrounds.find(bg => bg.id === currentBackground);
+      return (
+        <View style={styles.container}>
+          <Video 
+            source={selectedBg.source}
+            style={styles.backgroundImage}
+            resizeMode="cover"
+            shouldPlay
+            isLooping
+            isMuted
+          />
+          {children}
+        </View>
+      );
+    }
+  };
+
+  return renderBackground(
+    <>
       <View style={styles.mainContent}>
         <Animated.View style={[
           styles.header,
@@ -195,7 +224,7 @@ export default function OptionsScreen() {
       ]} pointerEvents="none">
         <Text style={styles.backgroundEmoji}>🐘</Text>
       </Animated.View>
-    </LinearGradient>
+    </>
   );
 }
 
@@ -369,5 +398,13 @@ const styles = StyleSheet.create({
   animal2: {
     bottom: '25%',
     right: '6%',
+  },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    opacity: 0.5, // Match AboutUsScreen/LoginScreen overlay
   },
 });

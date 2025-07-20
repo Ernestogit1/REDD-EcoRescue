@@ -13,6 +13,7 @@ import { useEffect } from 'react';
 import audioService from './src/services/audio.service';
 import 'expo-dev-client';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { BackgroundProvider } from './src/context/BackgroundContext';
 
 const Stack = createNativeStackNavigator();
 
@@ -86,19 +87,21 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName="Home"
-          screenOptions={screenOptions}
-        >
-          <Stack.Screen name="Home" component={HomeNavigator} />
-          <Stack.Screen name="GameRoot" component={GameNavigator} />
-          <Stack.Screen name="Shop" component={ShopNavigator} />
-          <Stack.Screen name="Dashboard" component={DashboardScreen} />
-        </Stack.Navigator>
-        <StatusBar hidden={true} />
-      </NavigationContainer>
-    </SafeAreaProvider>
+    <BackgroundProvider>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <Stack.Navigator
+            initialRouteName="Home"
+            screenOptions={screenOptions}
+          >
+            <Stack.Screen name="Home" component={HomeNavigator} />
+            <Stack.Screen name="GameRoot" component={GameNavigator} />
+            <Stack.Screen name="Shop" component={ShopNavigator} />
+            <Stack.Screen name="Dashboard" component={DashboardScreen} />
+          </Stack.Navigator>
+          <StatusBar hidden={true} />
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </BackgroundProvider>
   );
 }

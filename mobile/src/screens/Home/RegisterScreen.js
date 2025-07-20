@@ -3,11 +3,14 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingVi
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import ApiService from '../../services/api.service';
+import { useBackground, backgrounds } from '../../context/BackgroundContext';
+import { Video } from 'expo-av';
 
 const { height: screenHeight } = Dimensions.get('window');
 
 export default function RegisterScreen() {
   const navigation = useNavigation();
+  const { currentBackground } = useBackground();
   const [credentials, setCredentials] = useState({ username: '', email: '', password: '', confirmPassword: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -116,140 +119,153 @@ export default function RegisterScreen() {
     outputRange: [0, -12],
   });
 
-  return (
-    <LinearGradient colors={["#1a4d2e", "#2d5a3d", "#1a4d2e"]} style={styles.container}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
-        <Animated.View style={[
-          styles.card,
-          {
-            transform: [{ scale: scaleAnim }],
-            opacity: fadeAnim,
-          }
-        ]}>
-          <View style={styles.header}>
-            <Text style={styles.title}>REDD-EcoRescue</Text>
-            <Text style={styles.avatar}>🌳</Text>
-            <Text style={styles.subtitle}>Register</Text>
-          </View>
-          
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-          
-          <View style={styles.formRow}>
-            <View style={[styles.formGroup, styles.halfWidth]}>
-              <Text style={styles.label}>Username</Text>
-              <TextInput
-                style={styles.input}
-                value={credentials.username}
-                onChangeText={v => handleChange('username', v)}
-                placeholder="Enter username"
-                placeholderTextColor="#888"
-                autoCapitalize="none"
-              />
-            </View>
-            
-            <View style={[styles.formGroup, styles.halfWidth]}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                value={credentials.email}
-                onChangeText={v => handleChange('email', v)}
-                placeholder="Enter email"
-                placeholderTextColor="#888"
-                autoCapitalize="none"
-                keyboardType="email-address"
-              />
-            </View>
-          </View>
-          
-          <View style={styles.formRow}>
-            <View style={[styles.formGroup, styles.halfWidth]}>
-              <Text style={styles.label}>Password</Text>
-              <TextInput
-                style={styles.input}
-                value={credentials.password}
-                onChangeText={v => handleChange('password', v)}
-                placeholder="Enter password"
-                placeholderTextColor="#888"
-                secureTextEntry
-              />
-            </View>
-            
-            <View style={[styles.formGroup, styles.halfWidth]}>
-              <Text style={styles.label}>Confirm Password</Text>
-              <TextInput
-                style={styles.input}
-                value={credentials.confirmPassword}
-                onChangeText={v => handleChange('confirmPassword', v)}
-                placeholder="Confirm password"
-                placeholderTextColor="#888"
-                secureTextEntry
-              />
-            </View>
-          </View>
-          
-          <TouchableOpacity
-            style={[styles.button, styles.primaryButton, isLoading && styles.disabledButton]}
-            onPress={handleSubmit}
-            disabled={isLoading}
-          >
-            <Text style={styles.buttonText}>{isLoading ? 'REGISTERING...' : 'REGISTER'}</Text>
-          </TouchableOpacity>
+  // Render background based on currentBackground
+  const renderBackground = (children) => {
+    if (currentBackground === 0) {
+      return (
+        <LinearGradient colors={["#1a4d2e", "#2d5a3d", "#1a4d2e"]} style={styles.container}>
+          {children}
+        </LinearGradient>
+      );
+    } else {
+      const selectedBg = backgrounds.find(bg => bg.id === currentBackground);
+      return (
+        <View style={styles.container}>
+          <Video 
+            source={selectedBg.source}
+            style={styles.backgroundImage}
+            resizeMode="cover"
+            shouldPlay
+            isLooping
+            isMuted
+          />
+          {children}
+        </View>
+      );
+    }
+  };
 
-          <TouchableOpacity
-            style={[styles.button, styles.testButton]}
-            onPress={testConnection}
-          >
-            <Text style={styles.buttonText}>TEST CONNECTION</Text>
-          </TouchableOpacity>
-          
-          <View style={styles.orDivider}>
-            <Text style={styles.orText}>OR</Text>
+  return renderBackground(
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
+      <Animated.View style={[
+        styles.card,
+        {
+          transform: [{ scale: scaleAnim }],
+          opacity: fadeAnim,
+        }
+      ]}>
+        <View style={styles.header}>
+          <Text style={styles.title}>REDD-EcoRescue</Text>
+          <Text style={styles.avatar}>👤</Text>
+          <Text style={styles.subtitle}>Register</Text>
+        </View>
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+        <View style={styles.formRow}>
+          <View style={[styles.formGroup, styles.halfWidth]}>
+            <Text style={styles.label}>Username</Text>
+            <TextInput
+              style={styles.input}
+              value={credentials.username}
+              onChangeText={v => handleChange('username', v)}
+              placeholder="Enter username"
+              placeholderTextColor="#888"
+              autoCapitalize="none"
+            />
           </View>
-          
-          <TouchableOpacity style={[styles.button, styles.googleButton]} onPress={() => {}}>
-            <Text style={styles.googleIcon}>G</Text>
-            <Text style={styles.buttonText}>REGISTER WITH GOOGLE</Text>
-          </TouchableOpacity>
-          
-          <View style={styles.registerLinkContainer}>
-            <Text style={styles.label}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.link}>Login</Text>
-            </TouchableOpacity>
+          <View style={[styles.formGroup, styles.halfWidth]}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              value={credentials.email}
+              onChangeText={v => handleChange('email', v)}
+              placeholder="Enter email"
+              placeholderTextColor="#888"
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
           </View>
-        </Animated.View>
-
-        {/* Animated background elements */}
-        <Animated.View style={[
-          styles.backgroundElement,
-          styles.tree1,
-          { transform: [{ translateY: floatingTransform }] }
-        ]} pointerEvents="none">
-          <Text style={styles.backgroundEmoji}>🌲</Text>
-        </Animated.View>
-        <Animated.View style={[
-          styles.backgroundElement,
-          styles.tree2,
-          { transform: [{ translateY: floatingTransform }] }
-        ]} pointerEvents="none">
-          <Text style={styles.backgroundEmoji}>🌳</Text>
-        </Animated.View>
-        <Animated.View style={[
-          styles.backgroundElement,
-          styles.animal1,
-          { transform: [{ translateY: floatingTransform }] }
-        ]} pointerEvents="none">
-          <Text style={styles.backgroundEmoji}>🦁</Text>
-        </Animated.View>
-        <Animated.View style={[
-          styles.backgroundElement,
-          styles.animal2,
-          { transform: [{ translateY: floatingTransform }] }
-        ]} pointerEvents="none">
-          <Text style={styles.backgroundEmoji}>🐘</Text>
-        </Animated.View>
-      </KeyboardAvoidingView>
-    </LinearGradient>
+        </View>
+        <View style={styles.formRow}>
+          <View style={[styles.formGroup, styles.halfWidth]}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              style={styles.input}
+              value={credentials.password}
+              onChangeText={v => handleChange('password', v)}
+              placeholder="Enter password"
+              placeholderTextColor="#888"
+              secureTextEntry
+            />
+          </View>
+          <View style={[styles.formGroup, styles.halfWidth]}>
+            <Text style={styles.label}>Confirm Password</Text>
+            <TextInput
+              style={styles.input}
+              value={credentials.confirmPassword}
+              onChangeText={v => handleChange('confirmPassword', v)}
+              placeholder="Confirm password"
+              placeholderTextColor="#888"
+              secureTextEntry
+            />
+          </View>
+        </View>
+        <TouchableOpacity
+          style={[styles.button, styles.primaryButton, isLoading && styles.disabledButton]}
+          onPress={handleSubmit}
+          disabled={isLoading}
+        >
+          <Text style={styles.buttonText}>{isLoading ? 'REGISTERING...' : 'REGISTER'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, styles.testButton]}
+          onPress={testConnection}
+        >
+          <Text style={styles.buttonText}>TEST CONNECTION</Text>
+        </TouchableOpacity>
+        <View style={styles.orDivider}>
+          <Text style={styles.orText}>OR</Text>
+        </View>
+        <TouchableOpacity style={[styles.button, styles.googleButton]} onPress={() => {}}>
+          <Text style={styles.googleIcon}>G</Text>
+          <Text style={styles.buttonText}>REGISTER WITH GOOGLE</Text>
+        </TouchableOpacity>
+        <View style={styles.registerLinkContainer}>
+          <Text style={styles.label}>Already have an account? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <Text style={styles.link}>Login</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+      {/* Animated background elements */}
+      <Animated.View style={[
+        styles.backgroundElement,
+        styles.tree1,
+        { transform: [{ translateY: floatingTransform }] }
+      ]} pointerEvents="none">
+        <Text style={styles.backgroundEmoji}>🌲</Text>
+      </Animated.View>
+      <Animated.View style={[
+        styles.backgroundElement,
+        styles.tree2,
+        { transform: [{ translateY: floatingTransform }] }
+      ]} pointerEvents="none">
+        <Text style={styles.backgroundEmoji}>🌳</Text>
+      </Animated.View>
+      <Animated.View style={[
+        styles.backgroundElement,
+        styles.animal1,
+        { transform: [{ translateY: floatingTransform }] }
+      ]} pointerEvents="none">
+        <Text style={styles.backgroundEmoji}>🦁</Text>
+      </Animated.View>
+      <Animated.View style={[
+        styles.backgroundElement,
+        styles.animal2,
+        { transform: [{ translateY: floatingTransform }] }
+      ]} pointerEvents="none">
+        <Text style={styles.backgroundEmoji}>🐘</Text>
+      </Animated.View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -446,5 +462,13 @@ const styles = StyleSheet.create({
   animal2: {
     bottom: '22%',
     right: '8%',
+  },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    opacity: 0.5, // Match AboutUsScreen/LoginScreen overlay
   },
 });
