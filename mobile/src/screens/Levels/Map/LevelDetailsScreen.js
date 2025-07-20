@@ -345,6 +345,20 @@ export default function LevelDetailsScreen({ route }) {
         useNativeDriver: true,
       })
     ).start();
+
+    // Check if card is already collected
+    const checkCollected = async () => {
+      try {
+        const data = await ApiService.getUserCollectedCards();
+        if (data && data.cards && Array.isArray(data.cards)) {
+          const alreadyCollected = data.cards.some(card => String(card.levelId) === String(level));
+          if (alreadyCollected) setCollected(true);
+        }
+      } catch (err) {
+        // Optionally handle error
+      }
+    };
+    checkCollected();
   }, []);
 
   const handleStartLevel = () => {
