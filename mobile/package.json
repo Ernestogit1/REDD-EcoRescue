@@ -30,6 +30,7 @@
     "react": "19.0.0",
     "react-native": "0.79.4",
     "react-native-dotenv": "^3.4.11",
+    "react-native-fast-image": "^8.6.3",
     "react-native-gesture-handler": "^2.27.1",
     "react-native-gif": "^1.0.3",
     "react-native-haptic-feedback": "^2.3.3",
