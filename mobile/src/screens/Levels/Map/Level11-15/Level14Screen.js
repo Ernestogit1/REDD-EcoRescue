@@ -200,25 +200,26 @@ const Level14Screen = () => {
   );
 
   // End game function
-  const endGame = async (finalScore) => {
-    setGameState((prev) => ({ ...prev, gameOver: true, gameStarted: false }));
+  const endGame = useCallback((finalScore) => {
+    if (gameState.gameOver || endGameRef.current) return;
+    endGameRef.current = true;
 
-    // Mark level as completed on backend
-    try {
-      const token = await ApiService.getAuthToken();
-      if (token) {
-        await fetch('http://192.168.1.19:5000/api/levels/complete', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({ levelId: '14' }),
-        });
-      }
-    } catch (err) {
-      console.error('Failed to mark level 14 as completed:', err);
-    }
+    setGameState((prev) => {
+      if (showDebug) console.log(`Game ended, final score: ${finalScore}`);
+      return { ...prev, gameOver: true, gameStarted: false };
+    });
+
+    // Add points to backend
+    ApiService.addPoints(finalScore).catch((err) => {
+      console.error('Failed to add points:', err);
+    });
+
+    const funFacts = [
+      "Coral reefs support 25% of marine life but are threatened by pollution",
+      "Oceans absorb 30% of global CO2 emissions",
+      "Over 8 million tons of plastic enter the oceans annually",
+    ];
+    const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
 
     let message = `Game Over!\nScore: ${finalScore}`;
     if (finalScore >= 100) {
@@ -231,7 +232,7 @@ const Level14Screen = () => {
       { text: 'Play Again', onPress: initializeGame },
       { text: 'Main Menu', onPress: () => navigation.goBack() },
     ]);
-  };
+  }, [initializeGame, navigation]);
 
   // Start game
   const startGame = useCallback(() => {

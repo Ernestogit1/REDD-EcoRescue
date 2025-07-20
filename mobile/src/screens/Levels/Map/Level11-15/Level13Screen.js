@@ -241,6 +241,11 @@ const Level13Screen = () => {
     });
     if (gameLoopRef.current) clearInterval(gameLoopRef.current);
 
+    // Add points to backend
+    ApiService.addPoints(finalScore).catch((err) => {
+      console.error('Failed to add points:', err);
+    });
+
     // Mark level as completed on backend
     try {
       const token = await ApiService.getAuthToken();

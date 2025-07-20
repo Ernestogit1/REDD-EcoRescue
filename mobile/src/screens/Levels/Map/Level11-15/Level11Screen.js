@@ -11,7 +11,7 @@ import {
   BackHandler,
 } from 'react-native';
 import { PixelRatio } from 'react-native';
-import { useNavigation } from '@react-navigation/native'; // Add this import
+import { useNavigation } from '@react-navigation/native';
 import ApiService from '../../../../services/api.service';
 
 // Get window dimensions and adjust for landscape
@@ -231,6 +231,11 @@ const Level11Screen = ({ navigation: navigationProp }) => { // Rename prop to av
   const endGame = async () => {
     setGameOver(true);
     setGameStarted(false);
+
+    // Add points to backend
+    ApiService.addPoints(score).catch((err) => {
+      console.error('Failed to add points:', err);
+    });
 
     // Mark level as completed on backend
     try {
