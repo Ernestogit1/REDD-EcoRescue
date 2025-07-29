@@ -426,7 +426,7 @@ const Level12Screen = () => {
     // Mark level as completed on backend only if victorious
     if (isVictory) {
       try {
-        await ApiService.markLevelComplete(12);
+        await ApiService.markLevelComplete(12, gameState.score);
       } catch (err) {
         console.error('Failed to mark level 12 as completed:', err);
       }

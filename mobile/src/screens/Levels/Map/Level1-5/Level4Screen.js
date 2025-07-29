@@ -196,7 +196,7 @@ export default function Level4Screen() {
     setShowPopup(true);
     setTimeout(async () => {
       try {
-        await ApiService.markLevelComplete(4);
+        await ApiService.markLevelComplete(4, score);
         await ApiService.awardCollectibleCard({ level: 4 });
         setShowCardModal(true);
         Animated.sequence([

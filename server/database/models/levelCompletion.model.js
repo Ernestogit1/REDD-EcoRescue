@@ -14,6 +14,10 @@ const levelCompletionSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  points: {
+    type: Number,
+    default: 0,
+  },
 });
 
 levelCompletionSchema.index({ userId: 1, levelId: 1 }, { unique: true });

@@ -640,7 +640,7 @@ export default function Level2Screen() {
     // Always award the card and show the modal
     setTimeout(async () => {
       try {
-        await ApiService.markLevelComplete(2);
+        await ApiService.markLevelComplete(2, score);
         setShowCardModal(true);
         Animated.sequence([
           Animated.timing(cardAnim, {

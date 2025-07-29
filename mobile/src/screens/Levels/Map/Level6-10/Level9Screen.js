@@ -55,7 +55,7 @@ const Level9Screen = () => {
       (async () => {
         try {
           await ApiService.addPoints(score);
-          await ApiService.markLevelComplete(9);
+          await ApiService.markLevelComplete(9, score);
           // Removed collectCard call
         } catch (err) {
           console.error('Failed to update backend:', err);
@@ -83,7 +83,7 @@ const Level9Screen = () => {
       if (row === startRow && col === startCol) {
         newClicked[key] = isTrail(row, col) ? 'log' : 'bomb';
         setBeaverPos([startRow, startCol]);
-        setScore(isTrail(row, col) ? score + 1 : score);
+        setScore(isTrail(row, col) ? score + 50 : score);
         if (!isTrail(row, col)) {
           setGameOver(true);
           setShowGameOverModal(true);
@@ -94,7 +94,7 @@ const Level9Screen = () => {
     }
     if (isTrail(row, col)) {
       newClicked[key] = 'log';
-      setScore(score + 1);
+      setScore(score + 50);
       const next = getNextTrailPos(beaverPos);
       if (next && next[0] === row && next[1] === col) {
         setBeaverPos(next);
