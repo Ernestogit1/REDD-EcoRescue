@@ -313,7 +313,7 @@ export default function Level5Screen() {
 
       setTimeout(async () => {
         try {
-          await ApiService.markLevelComplete(5);
+          await ApiService.markLevelComplete(5, score);
           await ApiService.awardCollectibleCard({ level: 5 });
           setShowCardModal(true);
           Animated.sequence([

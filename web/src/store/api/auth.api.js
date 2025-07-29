@@ -3,7 +3,6 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithP
 import { auth, GoogleProvider} from "../../config/firebase";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-
 // Get token from localStorage
 const getToken = () => localStorage.getItem('authToken');
 
@@ -18,7 +17,7 @@ export const registerUser = createAsyncThunk(
   "auth/register",
   async (userData, { rejectWithValue }) => {
     try {
-      const { email, password, username } = userData;
+      const { email, password, username, age, grade } = userData; // ADD age, grade here
 
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUid = userCredential.user.uid;
@@ -26,7 +25,13 @@ export const registerUser = createAsyncThunk(
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, username, firebaseUid }),
+        body: JSON.stringify({ 
+          email, 
+          username, 
+          firebaseUid, 
+          age,    // ADD THIS
+          grade   // ADD THIS
+        }),
       });
 
       const data = await response.json();
@@ -43,7 +48,7 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// Login user
+// Login user - KEEP EXACTLY THE SAME
 export const loginUser = createAsyncThunk(
   "auth/login",
   async ({ emailOrUsername, password }, { rejectWithValue }) => {
@@ -93,8 +98,7 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// google login 
-
+// google login - KEEP EXACTLY THE SAME
 export const googleAuth = createAsyncThunk(
   "auth/googleAuth",
   async (_, { rejectWithValue }) => {
@@ -138,10 +142,7 @@ export const googleAuth = createAsyncThunk(
   }
 );
 
-
-
-
-// Logout user
+// Logout user - KEEP EXACTLY THE SAME
 export const logoutUser = createAsyncThunk(
   'auth/logout',
   async (_, { rejectWithValue }) => {
@@ -172,13 +173,13 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
-// Check if user is authenticated
+// Check if user is authenticated - KEEP EXACTLY THE SAME
 export const checkAuth = () => {
   const token = getToken();
   return !!token;
 };
 
-// Get current user from token
+// Get current user from token - KEEP EXACTLY THE SAME
 export const getCurrentUser = () => {
   const token = getToken();
   if (!token) return null;

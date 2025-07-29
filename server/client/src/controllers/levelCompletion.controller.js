@@ -8,15 +8,25 @@ const completeLevel = async (req, res) => {
     if (!levelId) {
       return res.status(400).json({ message: 'Missing levelId' });
     }
-    // Try to create a new completion record
-    const completion = new LevelCompletion({ userId, levelId });
-    await completion.save();
-    return res.status(201).json({ message: 'Level marked as completed', completion });
-  } catch (error) {
-    // Duplicate key error (already completed)
-    if (error.code === 11000) {
-      return res.status(200).json({ message: 'Level already marked as completed' });
+    const points = req.body.points || 0; // Default to 0 if not provided
+
+    // Check if completion already exists
+    let completion = await LevelCompletion.findOne({ userId, levelId });
+    if (completion) {
+      // Update points if already exists
+      if (points > completion.points) {
+        // Only update if new points are greater
+        completion.points = points;
+        await completion.save();
+        return res.status(200).json({ message: 'Level already marked as completed, points updated', completion });
+      }
+    } else {
+      // Create new completion record
+      completion = new LevelCompletion({ userId, levelId, points });
+      await completion.save();
+      return res.status(201).json({ message: 'Level marked as completed', completion });
     }
+  } catch (error) {
     console.error('Error marking level as completed:', error);
     return res.status(500).json({ message: 'Error marking level as completed', error });
   }
@@ -36,4 +46,4 @@ const getCompletedLevels = async (req, res) => {
   }
 };
 
-module.exports = { completeLevel, getCompletedLevels }; 
+module.exports = { completeLevel, getCompletedLevels };

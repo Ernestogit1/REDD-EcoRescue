@@ -50,7 +50,7 @@ export default function Level8Screen() {
       (async () => {
         try {
           await ApiService.addPoints(score);
-          await ApiService.markLevelComplete(8);
+          await ApiService.markLevelComplete(8, score);
           // Removed collectCard call
         } catch (err) {
           console.error('Failed to update backend:', err);

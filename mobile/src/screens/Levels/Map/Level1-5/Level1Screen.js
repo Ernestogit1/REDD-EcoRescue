@@ -203,9 +203,7 @@ export default function Level1Screen({ route }) {
       
       setTimeout(async () => {
         try {
-          await ApiService.markLevelComplete(1);
-          // Award collectible card
-          await ApiService.awardCollectibleCard({ level: 1 });
+          await ApiService.markLevelComplete(1, finalScore);
           setShowCardModal(true);
           Animated.sequence([
             Animated.timing(cardAnim, {

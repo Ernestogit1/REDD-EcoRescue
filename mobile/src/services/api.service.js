@@ -229,7 +229,7 @@ class ApiService {
   }
 
   // Mark a level as completed for the user
-  async markLevelComplete(levelId) {
+  async markLevelComplete(levelId, points) {
     const token = await this.getAuthToken();
     if (!token) throw new Error('Not authenticated');
     const url = `${API_BASE_URL}/api/levels/complete`;
@@ -239,7 +239,7 @@ class ApiService {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ levelId: String(levelId) }),
+      body: JSON.stringify({ levelId: String(levelId), points: points}),
     });
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));

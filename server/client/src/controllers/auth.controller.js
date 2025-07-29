@@ -1,16 +1,40 @@
 const admin = require('../../../config/firebase-admin');
 const User = require('../../../database/models/user.model');
 const { generateAuthToken, setCookieOptions } = require('../utils/cookies.util'); 
-const { cloudinary } = require('../../../config/cloudinary'); // Add this import
+const { cloudinary } = require('../../../config/cloudinary');
 
 const registerUser = async (req, res) => {
   try {
-    const { username, email, firebaseUid } = req.body;
+    const { username, email, firebaseUid, age, grade } = req.body; // ADD age, grade
 
     if (!username || !email || !firebaseUid) {
       return res.status(400).json({
         success: false,
         message: "Username, email, and firebaseUid are required",
+      });
+    }
+
+    // ADD VALIDATION FOR AGE AND GRADE
+    if (!age || !grade) {
+      return res.status(400).json({
+        success: false,
+        message: "Age and grade are required",
+      });
+    }
+
+    // Validate age range
+    if (age < 5 || age > 99) {
+      return res.status(400).json({
+        success: false,
+        message: "Age must be between 5 and 99",
+      });
+    }
+
+    // Validate grade range
+    if (grade < 1 || grade > 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Grade must be between 1 and 6",
       });
     }
 
@@ -27,6 +51,8 @@ const registerUser = async (req, res) => {
       email,
       firebaseUid,
       password: "firebase-manage",
+      age, // ADD THIS
+      grade, // ADD THIS
     });
 
     await newUser.save();
@@ -46,10 +72,11 @@ const registerUser = async (req, res) => {
         username: newUser.username,
         email: newUser.email,
         firebaseUid: newUser.firebaseUid,
+        age: newUser.age, // ADD THIS
+        grade: newUser.grade, // ADD THIS
         rank: newUser.rank,
         rescueStars: newUser.rescueStars,
-        points: newUser.point
-
+        points: newUser.points
       },
       token,
     });

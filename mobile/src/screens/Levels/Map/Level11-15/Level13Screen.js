@@ -260,7 +260,7 @@ const Level13Screen = () => {
 
     // Mark level as completed on backend
     try {
-      await ApiService.markLevelComplete(13);
+      await ApiService.markLevelComplete(13, finalScore);
     } catch (err) {
       console.error('Failed to mark level 13 as completed:', err);
     }

@@ -343,7 +343,7 @@ const Level11Screen = ({ navigation: navigationProp }) => { // Rename prop to av
 
     // Mark level as completed on backend
     try {
-      await ApiService.markLevelComplete(11);
+      await ApiService.markLevelComplete(11, score);
     } catch (err) {
       console.error('Failed to mark level 11 as completed:', err);
     }

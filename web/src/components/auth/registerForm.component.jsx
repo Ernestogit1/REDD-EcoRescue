@@ -11,11 +11,24 @@ const RegisterForm = () => {
     username: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    age: '', // ADD THIS
+    grade: '' // ADD THIS
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [localError, setLocalError] = useState('');
+
+  // Grade options for dropdown
+  const gradeOptions = [
+    { value: '', label: 'Select Grade Level' },
+    { value: 1, label: 'Grade 1' },
+    { value: 2, label: 'Grade 2' },
+    { value: 3, label: 'Grade 3' },
+    { value: 4, label: 'Grade 4' },
+    { value: 5, label: 'Grade 5' },
+    { value: 6, label: 'Grade 6' }
+  ];
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -50,6 +63,21 @@ const RegisterForm = () => {
       setLocalError('Passwords do not match');
       return false;
     }
+    // ADD AGE VALIDATION
+    if (!formData.age) {
+      setLocalError('Age is required');
+      return false;
+    }
+    const ageNum = parseInt(formData.age);
+    if (isNaN(ageNum) || ageNum < 5 || ageNum > 99) {
+      setLocalError('Age must be between 5 and 99');
+      return false;
+    }
+    // ADD GRADE VALIDATION
+    if (!formData.grade) {
+      setLocalError('Grade level is required');
+      return false;
+    }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setLocalError('Please enter a valid email address');
@@ -66,7 +94,9 @@ const RegisterForm = () => {
     const userData = {
       username: formData.username,
       email: formData.email,
-      password: formData.password
+      password: formData.password,
+      age: parseInt(formData.age), // ADD THIS
+      grade: parseInt(formData.grade) // ADD THIS
     };
 
     const result = await dispatch(registerUser(userData));
@@ -76,7 +106,9 @@ const RegisterForm = () => {
         username: '',
         email: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        age: '', // RESET THIS
+        grade: '' // RESET THIS
       });
     }
   };
@@ -127,6 +159,42 @@ const RegisterForm = () => {
           required
           disabled={isLoading}
         />
+      </div>
+
+      {/* ADD AGE FIELD */}
+      <div className="form-group">
+        <label className="pixel-label">AGE</label>
+        <input
+          type="number"
+          name="age"
+          value={formData.age}
+          onChange={handleInputChange}
+          className="pixel-input"
+          placeholder="Enter your age "
+          min="5"
+          max="99"  
+          required
+          disabled={isLoading}
+        />
+      </div>
+
+      {/* ADD GRADE DROPDOWN */}
+      <div className="form-group">
+        <label className="pixel-label">GRADE LEVEL</label>
+        <select
+          name="grade"
+          value={formData.grade}
+          onChange={handleInputChange}
+          className="pixel-select"
+          required
+          disabled={isLoading}
+        >
+          {gradeOptions.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="form-group">

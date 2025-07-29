@@ -27,7 +27,6 @@ const MAZE = [
 const MAZE_ROWS = MAZE.length;
 const MAZE_COLS = MAZE[0].length;
 const CELL_SIZE = Math.floor(Math.min(screenWidth, screenHeight * 0.7) / Math.max(MAZE_ROWS, MAZE_COLS));
-
 const PLAYER_START = { row: 0, col: 0 };
 const FOX_POS = { row: MAZE_ROWS - 1, col: MAZE_COLS - 1 };
 
@@ -91,8 +90,8 @@ export default function Level6Screen() {
       clearInterval(timerRef.current);
       
       // Calculate score based on time remaining
-      const timeBonus = timer * 10; // 10 points per second remaining
-      const newScore = 1000 + timeBonus; // Base score + time bonus
+      const timeBonus = timer; // 1 point per second remaining
+      const newScore = 100 + timeBonus; // Base score + time bonus
       setScore(newScore);
       
       // Update high score if needed
@@ -123,7 +122,7 @@ export default function Level6Screen() {
         (async () => {
           try {
             await ApiService.addPoints(score);
-            await ApiService.markLevelComplete(6);
+            await ApiService.markLevelComplete(6, score);
           } catch (err) {
             console.error('Failed to update backend:', err);
           }
