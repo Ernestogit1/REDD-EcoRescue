@@ -11,9 +11,10 @@ const { height: screenHeight } = Dimensions.get('window');
 export default function RegisterScreen() {
   const navigation = useNavigation();
   const { currentBackground } = useBackground();
-  const [credentials, setCredentials] = useState({ username: '', email: '', password: '', confirmPassword: '' });
+  const [credentials, setCredentials] = useState({ username: '', email: '', password: '', confirmPassword: '', age: '', grade: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showGradeDropdown, setShowGradeDropdown] = useState(false);
 
   // Animation values using built-in Animated API
   const floatAnim = useRef(new Animated.Value(0)).current;
@@ -58,7 +59,7 @@ export default function RegisterScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!credentials.username || !credentials.email || !credentials.password || !credentials.confirmPassword) {
+    if (!credentials.username || !credentials.email || !credentials.password || !credentials.confirmPassword || !credentials.age || !credentials.grade) {
       setError('Please fill in all fields');
       return;
     }
@@ -75,7 +76,9 @@ export default function RegisterScreen() {
         username: credentials.username,
         email: credentials.email,
         password: credentials.password,
-        confirmPassword: credentials.confirmPassword
+        confirmPassword: credentials.confirmPassword,
+        age: credentials.age,
+        grade: credentials.grade
       });
 
       if (response.success) {
@@ -183,6 +186,41 @@ export default function RegisterScreen() {
               autoCapitalize="none"
               keyboardType="email-address"
             />
+          </View>
+        </View>
+        <View style={styles.formRow}>
+          <View style={[styles.formGroup, styles.halfWidth]}>
+            <Text style={styles.label}>Age</Text>
+            <TextInput
+              style={styles.input}
+              value={credentials.age}
+              onChangeText={v => handleChange('age', v.replace(/[^0-9]/g, ''))}
+              placeholder="Enter age"
+              placeholderTextColor="#888"
+              keyboardType="numeric"
+              maxLength={2}
+            />
+          </View>
+          <View style={[styles.formGroup, styles.halfWidth]}>
+            <Text style={styles.label}>Grade</Text>
+            <View style={[styles.input, {padding: 0, height: 28, justifyContent: 'center'}]}>
+              <Text
+                style={{color: credentials.grade ? '#000' : '#888', fontFamily: 'PressStart2P_400Regular', fontSize: 8}}
+                onPress={() => setShowGradeDropdown(true)}
+              >
+                {credentials.grade ? `Grade ${credentials.grade}` : 'Select grade'}
+              </Text>
+            </View>
+            {/* Simple dropdown replacement */}
+            {showGradeDropdown && (
+              <View style={{position: 'absolute', top: 28, left: 0, right: 0, backgroundColor: '#F5F5DC', borderWidth: 1, borderColor: '#3d2914', zIndex: 100}}>
+                {[1,2,3,4,5,6].map(g => (
+                  <TouchableOpacity key={g} onPress={() => { handleChange('grade', String(g)); setShowGradeDropdown(false); }} style={{padding: 6}}>
+                    <Text style={{fontFamily: 'PressStart2P_400Regular', fontSize: 8, color: '#000'}}>{`Grade ${g}`}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
         </View>
         <View style={styles.formRow}>

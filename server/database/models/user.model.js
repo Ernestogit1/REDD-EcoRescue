@@ -20,6 +20,18 @@ const UserSchema = new mongoose.Schema(
       type: String, 
       required: true, 
     }, 
+    age: {
+      type: Number,
+      min: 5,
+      max: 99,
+      required: false
+    },
+    grade: {
+      type: Number,
+      min: 1,
+      max: 6,
+      required: false
+    },
     avatar: {
        type: String, 
        default: '',

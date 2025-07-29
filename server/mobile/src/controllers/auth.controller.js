@@ -14,7 +14,7 @@ const generateToken = (userId) => {
 // @access  Public
 const registerUser = async (req, res) => {
   try {
-    const { username, email, password, confirmPassword } = req.body;
+    const { username, email, password, confirmPassword, age, grade } = req.body;
 
     // Validation
     if (!username || !email || !password || !confirmPassword) {
@@ -67,7 +67,9 @@ const registerUser = async (req, res) => {
       avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=4ade80&color=1a4d2e&size=200`,
       rank: 'Novice',
       rescueStars: 0,
-      points: 0
+      points: 0,
+      ...(age && { age }),
+      ...(grade && { grade })
     });
 
     // Generate token
