@@ -5,7 +5,7 @@ const { cloudinary } = require('../../../config/cloudinary'); // Add this import
 
 const registerUser = async (req, res) => {
   try {
-    const { username, email, firebaseUid, age, grade } = req.body;
+    const { username, email, firebaseUid } = req.body;
 
     if (!username || !email || !firebaseUid) {
       return res.status(400).json({
@@ -27,8 +27,6 @@ const registerUser = async (req, res) => {
       email,
       firebaseUid,
       password: "firebase-manage",
-      ...(age && { age }),
-      ...(grade && { grade })
     });
 
     await newUser.save();
