@@ -6,5 +6,6 @@ const authMiddleware = require('../middlewares/auth.middleware');
 router.get('/user-stats', authMiddleware, chartController.getUserStats);
 router.get('/game-stats', authMiddleware, chartController.getGameStats);
 router.get('/overall-analytics', authMiddleware, chartController.getOverallAnalytics);
+router.get('/level-leaderboard/:levelId', authMiddleware, chartController.getLevelLeaderboard);
 
 module.exports = router;
