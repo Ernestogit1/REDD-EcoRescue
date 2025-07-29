@@ -60,7 +60,7 @@ const StyledGameContainer = styled(Box)(({ mouseDisabled }) => ({
   backgroundRepeat: "no-repeat",
   backgroundAttachment: "fixed",
   position: "relative",
-  overflow: "auto", // Changed from hidden to auto for better responsiveness
+  overflow: "auto",
   pointerEvents: mouseDisabled ? "none" : "auto",
   margin: 0,
   padding: "20px",
@@ -141,7 +141,7 @@ const PixelButton = styled(Box)({
 
 // FIXED: Info boxes - now as regular components instead of absolutely positioned
 const PixelBox = styled(Box)({
-  backgroundColor: "rgba(74, 124, 89, 0.95)", // More opaque for better visibility
+  backgroundColor: "rgba(74, 124, 89, 0.95)",
   color: "#ffffff",
   padding: "12px 24px",
   border: "3px solid #a7c957",
@@ -158,23 +158,35 @@ const PixelBox = styled(Box)({
   minWidth: "150px",
 });
 
-const PixelTimerBox = styled(Box)({
-  backgroundColor: "rgba(45, 80, 22, 0.95)", // More opaque for better visibility
+// UPDATED: Timer box with warning colors when time is low
+const PixelTimerBox = styled(Box)(({ timeWarning }) => ({
+  backgroundColor: timeWarning ? "rgba(239, 68, 68, 0.95)" : "rgba(45, 80, 22, 0.95)",
   color: "#ffffff",
   padding: "12px 24px",
-  border: "3px solid #7fb069",
+  border: timeWarning ? "3px solid #f87171" : "3px solid #7fb069",
   borderRadius: "10px",
-  boxShadow: `
-    0 0 20px rgba(127, 176, 105, 0.4),
-    0 8px 16px rgba(0, 0, 0, 0.6)
-  `,
+  boxShadow: timeWarning 
+    ? `0 0 20px rgba(248, 113, 113, 0.6), 0 8px 16px rgba(0, 0, 0, 0.6)`
+    : `0 0 20px rgba(127, 176, 105, 0.4), 0 8px 16px rgba(0, 0, 0, 0.6)`,
   fontFamily: '"Press Start 2P", cursive',
   fontSize: "12px",
   textAlign: "center",
   textShadow: "2px 2px 0 #1a3409",
   backdropFilter: "blur(5px)",
   minWidth: "150px",
-});
+  animation: timeWarning ? "pulse 1s infinite" : "none",
+  "@keyframes pulse": {
+    "0%": {
+      transform: "scale(1)",
+    },
+    "50%": {
+      transform: "scale(1.05)",
+    },
+    "100%": {
+      transform: "scale(1)",
+    },
+  },
+}));
 
 // FIXED: Game content container with better centering
 const GameContentContainer = styled(Box)({
@@ -396,7 +408,8 @@ const MemoryCardGame = () => {
   const [flippedCards, setFlippedCards] = useState([]);
   const [matchedCards, setMatchedCards] = useState([]);
   const [failedAttempts, setFailedAttempts] = useState(0);
-  const [timer, setTimer] = useState(0);
+  // UPDATED: Timer now counts down from 30 seconds
+  const [timer, setTimer] = useState(30);
   const [timerActive, setTimerActive] = useState(false);
   const [initialReveal, setInitialReveal] = useState(true);
   const [musicStarted, setMusicStarted] = useState(false);
@@ -406,6 +419,8 @@ const MemoryCardGame = () => {
   const audioRef = useRef(null);
   const [audioIndex, setAudioIndex] = useState(0);
   const [openModal, setOpenModal] = useState(false);
+  // NEW: Modal for time up
+  const [timeUpModal, setTimeUpModal] = useState(false);
   const saveGameData = useCardStore(state => state.saveGameData);
 
   const handleSaveNewGame = () => {
@@ -414,9 +429,25 @@ const MemoryCardGame = () => {
       failed: failedAttempts,
       difficulty: defaultDifficulty,
       completed: 0,
-      timeTaken: timer,
+      timeTaken: 30 - timer, // Calculate actual time taken
     };
     console.log("Starting new game with previous stats:", gameData);
+  };
+
+  // NEW: Function to save current progress
+  const saveCurrentProgress = async () => {
+    try {
+      await saveGameData({
+        gameDate: new Date(),
+        failed: failedAttempts,
+        difficulty: defaultDifficulty,
+        completed: 0, // Not completed since time ran out
+        timeTaken: 30 - timer, // Time actually used
+      });
+      console.log("Progress saved successfully");
+    } catch (error) {
+      console.error("Error saving progress:", error);
+    }
   };
 
   const handleNewGame = () => {  
@@ -424,7 +455,8 @@ const MemoryCardGame = () => {
     setMatchedCards([]);
     setFlippedCards([]);
     setFailedAttempts(0);
-    setTimer(0);
+    // UPDATED: Reset timer to 30 seconds
+    setTimer(30);
     setTimerActive(false);
     setInitialReveal(true);
     setAudioIndex(0);
@@ -454,6 +486,20 @@ const MemoryCardGame = () => {
   const handleModalNo = () => {
     setOpenModal(false);
   };
+
+  // NEW: Handle time up modal actions
+  const handleTimeUpContinue = async () => {
+    await saveCurrentProgress();
+    setTimeUpModal(false);
+    handleNewGame(); // Start a new game
+  };
+
+  const handleTimeUpExit = async () => {
+    await saveCurrentProgress();
+    setTimeUpModal(false);
+    localStorage.removeItem("gameCompleted");
+    navigate("/play");
+  };
    
   useEffect(() => {
     handleNewGame();
@@ -469,13 +515,23 @@ const MemoryCardGame = () => {
     return () => document.removeEventListener("click", handleFirstClick);
   }, []);
 
+  // UPDATED: Timer effect now counts down and shows modal at 0
   useEffect(() => {
     let interval;
-    if (timerActive) {
-      interval = setInterval(() => setTimer((prev) => prev + 1), 1000);
+    if (timerActive && timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => {
+          if (prev <= 1) {
+            setTimerActive(false);
+            setTimeUpModal(true); // Show time up modal
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     }
     return () => clearInterval(interval);
-  }, [timerActive]);
+  }, [timerActive, timer]);
 
   useEffect(() => {
     if (flippedCards.length === 2) {
@@ -512,7 +568,7 @@ const MemoryCardGame = () => {
                     failed: failedAttempts,
                     difficulty: defaultDifficulty,
                     completed: 1,  
-                    timeTaken: timer,
+                    timeTaken: 30 - timer, // Calculate actual time taken
                 });
                 localStorage.setItem("gameCompleted", "true");
                 setTimeout(() => navigate("/congratulations"), 1000);
@@ -526,6 +582,9 @@ const MemoryCardGame = () => {
 }, [matchedCards, cards.length, navigate, sfxVolume, failedAttempts, timer, saveGameData]);
 
   const handleCardClick = (card) => {
+    // Don't allow clicks if timer is 0 or game is paused
+    if (timer === 0 || !timerActive) return;
+    
     if (!matchedCards.includes(card.id) && flippedCards.length < 2 && !flippedCards.some((c) => c.id === card.id)) {
       setFlippedCards((prev) => [...prev, card]);
     }
@@ -545,7 +604,10 @@ const MemoryCardGame = () => {
         </PixelButton>
         
         <StatsContainer>
-          <PixelTimerBox>Timer: {timer}s</PixelTimerBox>
+          {/* UPDATED: Timer with warning styling when time is low */}
+          <PixelTimerBox timeWarning={timer <= 10}>
+            Timer: {timer}s
+          </PixelTimerBox>
           <PixelBox>Failed Attempts: {failedAttempts}</PixelBox>
         </StatsContainer>
       </HeaderContainer>
@@ -561,16 +623,18 @@ const MemoryCardGame = () => {
             maxWidth: 800, 
             margin: "20px auto",
             padding: "30px",
-            // FIXED: Solid background instead of transparent
-            background: "rgba(45, 80, 22, 0.9)", // Much more opaque
+            background: "rgba(45, 80, 22, 0.9)",
             borderRadius: "20px",
-            border: "3px solid #a7c957", // Thicker border
+            border: "3px solid #a7c957",
             backdropFilter: "blur(10px)",
             boxShadow: `
               0 0 30px rgba(167, 201, 87, 0.6),
               0 16px 32px rgba(0, 0, 0, 0.8),
               inset 0 2px 0 rgba(255, 255, 255, 0.1)
             `,
+            // Disable interactions when timer is 0
+            pointerEvents: timer === 0 ? "none" : "auto",
+            opacity: timer === 0 ? 0.7 : 1,
           }}
         >
           {cards.map((card) => (
@@ -601,6 +665,7 @@ const MemoryCardGame = () => {
         </Box>
       </GameContentContainer>
 
+      {/* Existing back button modal */}
       <Modal open={openModal} onClose={handleModalNo}>
         <Box sx={modalStyle}>
           <PixelTypography variant="h6">
@@ -612,6 +677,26 @@ const MemoryCardGame = () => {
             </PixelButtonModal>
             <PixelButtonModal onClick={handleModalNo} variant="contained">
               No
+            </PixelButtonModal>
+          </Box>
+        </Box>
+      </Modal>
+
+      {/* NEW: Time Up Modal */}
+      <Modal open={timeUpModal} onClose={() => {}} disableEscapeKeyDown>
+        <Box sx={modalStyle}>
+          <PixelTypography variant="h6">
+            Time's Up! Do you want to continue playing?
+          </PixelTypography>
+          <PixelTypography variant="body2" sx={{ fontSize: '12px', marginBottom: '20px' }}>
+            Your progress will be saved automatically.
+          </PixelTypography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, marginTop: 2 }}>
+            <PixelButtonModal onClick={handleTimeUpContinue} variant="contained">
+              Yes, Continue
+            </PixelButtonModal>
+            <PixelButtonModal onClick={handleTimeUpExit} variant="contained">
+              No, Exit Game
             </PixelButtonModal>
           </Box>
         </Box>

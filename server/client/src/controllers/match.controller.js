@@ -72,8 +72,48 @@ const getUserStats = async (req, res) => {
     }
 };
 
+// ADD THIS NEW FUNCTION
+const getLeaderboard = async (req, res) => {
+    try {
+        console.log('Fetching match leaderboard...');
+        
+        const leaderboard = await Match.aggregate([
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            { $unwind: '$user' },
+            {
+                $group: {
+                    _id: '$userId',
+                    username: { $first: '$user.username' },
+                    rank: { $first: '$user.rank' },
+                    totalGames: { $sum: 1 },
+                    averageScore: { $avg: '$score' },
+                    highestScore: { $max: '$score' },
+                    averageTime: { $avg: '$timeSpent' },
+                    bestTime: { $min: '$timeSpent' }
+                }
+            },
+            { $sort: { highestScore: -1, averageScore: -1 } },
+            { $limit: 50 }
+        ]);
+
+        console.log('Match leaderboard data:', leaderboard);
+        res.status(200).json(leaderboard);
+    } catch (error) {
+        console.error('Error fetching match leaderboard:', error);
+        res.status(500).json({ message: 'Error fetching leaderboard', error });
+    }
+};
+
 module.exports = {
     createMatch,
     getUserGames,
-    getUserStats
+    getUserStats,
+    getLeaderboard // ADD THIS
 };

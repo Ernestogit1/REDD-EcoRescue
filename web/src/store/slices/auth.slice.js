@@ -45,6 +45,14 @@ const authSlice = createSlice({
         state.user = null;
       }
     },
+    handleTokenExpired: (state) => {
+      console.log('Token expired, logging out...');
+      state.user = null;
+      state.isAuthenticated = false;
+      state.error = 'Your session has expired. Please login again.';
+      // Remove token from localStorage
+      tokenUtils.removeToken();
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -128,5 +136,14 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError, clearSuccess, clearMessages, logout, setCredentials, checkAuthStatus } = authSlice.actions;
+export const { 
+  clearError, 
+  clearSuccess, 
+  clearMessages, 
+  logout, 
+  setCredentials, 
+  checkAuthStatus,
+  handleTokenExpired 
+} = authSlice.actions;
+
 export default authSlice.reducer;

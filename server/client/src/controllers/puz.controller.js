@@ -95,8 +95,48 @@ const getUserStats = async (req, res) => {
     }
 };
 
+// Add this function to puz.controller.js
+const getLeaderboard = async (req, res) => {
+    try {
+        console.log('Fetching puzzle leaderboard...');
+        
+        const leaderboard = await Puz.aggregate([
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            { $unwind: '$user' },
+            {
+                $group: {
+                    _id: '$userId',
+                    username: { $first: '$user.username' },
+                    rank: { $first: '$user.rank' },
+                    completedGames: { $sum: { $cond: ['$isCompleted', 1, 0] } },
+                    totalGames: { $sum: 1 },
+                    averageTime: { $avg: '$timeSpent' },
+                    bestTime: { $min: '$timeSpent' }
+                }
+            },
+            { $sort: { completedGames: -1, averageTime: 1 } },
+            { $limit: 50 }
+        ]);
+
+        console.log('Puzzle leaderboard data:', leaderboard);
+        res.status(200).json(leaderboard);
+    } catch (error) {
+        console.error('Error fetching puzzle leaderboard:', error);
+        res.status(500).json({ message: 'Error fetching leaderboard', error });
+    }
+};
+
+// Update the module.exports
 module.exports = { 
     saveGameData,
     getUserGameData,
-    getUserStats
+    getUserStats,
+    getLeaderboard
 };

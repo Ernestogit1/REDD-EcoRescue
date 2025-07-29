@@ -41,6 +41,10 @@ const AppScreen = () => {
     console.log('Store coming soon!');
   };
 
+  const handleLeaderboardClick = () => {
+    navigate('/leaderboards'); // Navigate to leaderboard screen
+  };
+
   const handlePlay = (game) => {
     const route = handlePlayGame(game);
     
@@ -70,6 +74,7 @@ const AppScreen = () => {
           user={user}
           onProfileClick={handleProfileClick}
           onStoreClick={handleStoreClick}
+          onLeaderboardClick={handleLeaderboardClick}
           onLogout={handleLogout}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}

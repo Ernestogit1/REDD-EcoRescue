@@ -1,6 +1,16 @@
 import React from 'react';
 
-const GameLibraryHeader = ({ user, onProfileClick, onStoreClick, onLogout, searchTerm, onSearchChange, selectedFilter, onFilterChange }) => {
+const GameLibraryHeader = ({ 
+  user, 
+  onProfileClick, 
+  onStoreClick, 
+  onLogout, 
+  onLeaderboardClick,
+  searchTerm, 
+  onSearchChange, 
+  selectedFilter, 
+  onFilterChange 
+}) => {
   const filters = [
     { value: 'all', label: 'All Games' },
     { value: 'available', label: 'Available' },
@@ -18,11 +28,13 @@ const GameLibraryHeader = ({ user, onProfileClick, onStoreClick, onLogout, searc
         </div>
         
         <div className="user-menu">
-      
-          
           <div className="menu-buttons">
             <button className="pixel-button secondary small" onClick={onProfileClick}>
               👤 PROFILE
+            </button>
+            
+            <button className="pixel-button primary small" onClick={onLeaderboardClick}>
+              🏆 LEADERBOARDS
             </button>
         
             <button className="pixel-button danger small" onClick={onLogout}>

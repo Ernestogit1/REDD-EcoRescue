@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
 import './styles/App.css';
+import './utils/axiosInterceptor';
 
 // Providers
 import { AudioProvider } from './hooks/useAudio.hook';
@@ -25,6 +26,7 @@ import RegisterScreen from './screens/auth/register.screen';
 // App screens
 import MenuScreen from './screens/app/app.screen';
 import ProfileScreen from './screens/app/profile.screen';
+import LeaderboardScreen from './screens/app/Leaderboard.screen';
 
 // Layout
 import AppLayout from './layouts/app.layout';
@@ -139,6 +141,17 @@ function App() {
                 <ProtectedRoute>
                   <AppLayout showAudioControls={false}>
                     <ProfileScreen />
+                  </AppLayout>
+                </ProtectedRoute>
+              } 
+            />
+
+            <Route 
+              path="/leaderboards" 
+              element={
+                <ProtectedRoute>
+                  <AppLayout showAudioControls={false}>
+                    <LeaderboardScreen />
                   </AppLayout>
                 </ProtectedRoute>
               } 

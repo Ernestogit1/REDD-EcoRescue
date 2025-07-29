@@ -23,41 +23,44 @@ const uploadImage = async (req, res) => {
         let uploadResponse;
         try {
             uploadResponse = await cloudinary.uploader.upload(imageData, {
-                folder: 'colorbook',
-                resource_type: 'image',
-                format: 'png'
+                resource_type: "image",
+                folder: "redd_game_colors",
+                quality: "auto",
+                fetch_format: "auto"
             });
         } catch (cloudinaryError) {
-            console.error('Cloudinary Upload Error:', cloudinaryError);
+            console.error('Cloudinary upload error:', cloudinaryError);
             return res.status(500).json({
                 success: false,
-                message: "Failed to upload image to cloud storage",
-                error: cloudinaryError.message
+                message: "Failed to upload image to cloud storage"
             });
         }
 
         // Save to database
-        const image = await Color.create({
+        const newColorImage = new Color({
             userId: req.user._id,
             imageUrl: uploadResponse.secure_url,
-            cloudinaryId: uploadResponse.public_id
+            cloudinaryPublicId: uploadResponse.public_id,
+            createdAt: new Date()
         });
 
-        return res.status(201).json({
+        await newColorImage.save();
+
+        res.status(201).json({
             success: true,
-            image: {
-                id: image._id,
-                url: image.imageUrl,
-                cloudinaryId: image.cloudinaryId,
-                createdAt: image.createdAt
+            message: "Image uploaded successfully",
+            data: {
+                imageUrl: uploadResponse.secure_url,
+                publicId: uploadResponse.public_id
             }
         });
 
     } catch (error) {
-        console.error("Color Upload Error:", error);
-        return res.status(500).json({
+        console.error('Upload image error:', error);
+        res.status(500).json({
             success: false,
-            message: error.message || "Error uploading image"
+            message: "Internal server error",
+            error: error.message
         });
     }
 };
@@ -65,30 +68,63 @@ const uploadImage = async (req, res) => {
 // New function to get all user's images
 const getUserImages = async (req, res) => {
     try {
-        if (!req.user || !req.user._id) {
-            return res.status(401).json({
-                success: false,
-                message: "Authentication required"
-            });
-        }
+        const userId = req.user._id;
+        const images = await Color.find({ userId })
+            .sort({ createdAt: -1 })
+            .select('-__v');
 
-        const images = await Color.find({ userId: req.user._id })
-            .sort({ createdAt: -1 }) // Sort by newest first
-            .select('imageUrl cloudinaryId createdAt'); // Select only needed fields
-
-        return res.status(200).json({
+        res.status(200).json({
             success: true,
-            count: images.length,
-            images
+            data: images
         });
-
     } catch (error) {
-        console.error("Error fetching user images:", error);
-        return res.status(500).json({
+        console.error('Get user images error:', error);
+        res.status(500).json({
             success: false,
-            message: error.message || "Error retrieving images"
+            message: "Failed to fetch user images",
+            error: error.message
         });
     }
 };
 
-module.exports = { uploadImage, getUserImages };
+// ADD THIS NEW FUNCTION
+const getLeaderboard = async (req, res) => {
+    try {
+        console.log('Fetching color leaderboard...');
+        
+        const leaderboard = await Color.aggregate([
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            { $unwind: '$user' },
+            {
+                $group: {
+                    _id: '$userId',
+                    username: { $first: '$user.username' },
+                    rank: { $first: '$user.rank' },
+                    imagesCreated: { $sum: 1 },
+                    latestImage: { $last: '$createdAt' }
+                }
+            },
+            { $sort: { imagesCreated: -1, latestImage: -1 } },
+            { $limit: 50 }
+        ]);
+
+        console.log('Color leaderboard data:', leaderboard);
+        res.status(200).json(leaderboard);
+    } catch (error) {
+        console.error('Error fetching color leaderboard:', error);
+        res.status(500).json({ message: 'Error fetching leaderboard', error });
+    }
+};
+
+module.exports = { 
+    uploadImage, 
+    getUserImages,
+    getLeaderboard // ADD THIS
+};

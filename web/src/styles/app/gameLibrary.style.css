@@ -755,6 +755,28 @@
   cursor: not-allowed;
 }
 
+/* Add this to your gameLibrary.style.css or wherever your button styles are */
+
+.pixel-button.primary.small {
+  background: linear-gradient(180deg, #f39c12 0%, #e67e22 100%);
+  border: 3px solid #d68910;
+  border-top-color: #f8c471;
+  border-left-color: #f8c471;
+  color: #ffffff;
+  box-shadow: 0 0 15px rgba(243, 156, 18, 0.3);
+}
+
+.pixel-button.primary.small:hover {
+  background: linear-gradient(180deg, #f8c471 0%, #f39c12 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(243, 156, 18, 0.5);
+}
+
+/* Trophy icon glow effect */
+.pixel-button.primary.small:hover {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
 /* Empty State */
 .no-games-message {
   grid-column: 1 / -1;
