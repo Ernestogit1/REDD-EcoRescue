@@ -101,6 +101,7 @@ const GamePage = () => {
 
       const newAudio = new Audio(selectedAnimal.audio);
       // Preload audio
+      newAudio.playbackRate = 0.25; 
       newAudio.load();
       setAudio(newAudio);
 

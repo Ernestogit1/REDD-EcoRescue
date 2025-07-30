@@ -1,0 +1,111 @@
+EcoRescue: An Interactive Game to Promote Wildlife Conservation and Critical Thinking in Young Learners
+
+Developers:
+Baldoza, Donn Anthony S.
+Balignasay, Ernesto III T.
+Diaz, Romel Jan
+Davis, Daniel A.
+
+--------------------------------------------------------------------------------------------------------
+SETUP
+-------------------
+| cd card         |
+| cd color        |
+| cd match        |
+| cd puzzle       |
+| cd admin        |
+| cd server       |
+| cd web          |
+| cd mobile       |
+| npm i           | EACH FOLDER
+-------------------
+
+--------------------------------------------------------------------------------------------------------
+
+WEB ---- HOW TO RUN?
+
+1. Start the server
+-------------------
+| cd server       |
+| npm start       |
+-------------------
+
+2. Start the web
+-------------------
+| cd web          |
+| npm run dev     |
+-------------------
+
+3. You can now run the web via localhost
+4. To start each game 
+-------------------
+| cd card         |
+| cd color        |
+| cd match        |
+| cd puzzle       |
+| npm run dev     |
+-------------------
+
+5. To view the analytics
+-------------------
+| cd admin        |
+| npm run dev     |
+-------------------
+
+--------------------------------------------------------------------------------------------------------
+
+MOBILE ---- HOW TO RUN?
+
+*ipconfig - look at the current IP address and paste it in the .env
+
+1. Start the server
+-------------------
+| cd mobile       |
+| npx expo start  |
+-------------------
+
+2. Download Expo Go
+3. Scan or Type the URL the MetroBundler will output
+
+--------------------------------------------------------------------------------------------------------
+
+SECRETS
+
+1. SERVER .env:
+
+PORT=5000
+MONGO_URI=mongodb+srv://user@db.pyb5o07.mongodb.net/?retryWrites=true&w=majority&appName=
+JWT_SECRET=secret
+
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+
+2. ADMIN .env:
+
+VITE_API_BASE_URL=http://localhost:5000/api
+
+# firebase CONFIF
+VITE_FIREBASE_API_KEY=""
+VITE_FIREBASE_AUTH_DOMAIN=".firebaseapp.com"
+VITE_FIREBASE_PROJECT_ID=""
+VITE_FIREBASE_STORAGE_BUCKET="irebasestorage.app"
+VITE_FIREBASE_MESSAGING_SENDER_ID=""
+VITE_FIREBASE_APP_ID=""
+VITE_FIREBASE_MEASUREMENT_ID=""
+
+3. MOBILE .env:
+API_URL=http://{ip_address}:5000
+
+4. WEB .env:
+
+VITE_API_BASE_URL=http://localhost:5000/api
+
+# firebase CONFIF
+VITE_FIREBASE_API_KEY=""
+VITE_FIREBASE_AUTH_DOMAIN=".firebaseapp.com"
+VITE_FIREBASE_PROJECT_ID=""
+VITE_FIREBASE_STORAGE_BUCKET="irebasestorage.app"
+VITE_FIREBASE_MESSAGING_SENDER_ID=""
+VITE_FIREBASE_APP_ID=""
+VITE_FIREBASE_MEASUREMENT_ID=""
